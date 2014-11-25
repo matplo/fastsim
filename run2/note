@@ -1,0 +1,9 @@
+
+Plots - at 100 GeV:
+- relative stat uncert. vs L at 5.5 TeV (show also the theory uncerts)
+- relative stat uncert. vs L in the ratio 5/14 with unlimited stats for 14 TeV (does not include the systematic uncerts from scaling!)
+
+Need:
+- Nestor curve for 5 and 14
+- pp inel x-section at 5 -> about 65 mb (http://arxiv.org/pdf/1208.4968v1.pdf)
+
