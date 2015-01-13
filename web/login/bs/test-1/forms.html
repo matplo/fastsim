@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forms in Bootstrap - Demo</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+  </head>
+  <body>
+
+<div class="container">
+	<h1 class="text-muted">User login</h1>
+	<hr/>
+    <form id="myForm" formaction="accept.html">
+    	<div class="form-group">
+    		<label for="emailField">Email address</label>
+			<input type="email" class="form-control" id="emailField" placeholder="Enter email" required>
+    	</div>
+
+    	<div class="form-group">
+    		<label for="passwordField">Password</label>
+			<input type="password" class="form-control" id="passwordField" placeholder="Enter password" required>
+    	</div>
+
+    	<div class="checkbox" id="checkbox">
+    		<label>
+    			<input type="checkbox" required/> Remember Me
+	        </label>
+    	</div>
+
+    	<button type="submit" class="btn btn-success" id="submitBtn" >Login submit type</button>
+	<button type="button" class="btn btn-success" id="submitBtn" >Login button type</button>
+
+	<h3> Output: <span class="label label-info" id="output"> none </span> </h3>
+    </form>
+</div>
+	
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="forms.js"></script>
+  </body>
+</html>
