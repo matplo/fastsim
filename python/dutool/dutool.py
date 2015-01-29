@@ -12,8 +12,16 @@ class DuEntry:
         if 'Permission denied' in s:
             return
         self.ssize = s.split('\t')[0]
-        self.size = float(self.ssize.strip('M').strip('K').strip('T').strip('G'))
-        self.dir  = s.split('\t')[1]
+        self.size = 0
+        try:
+            self.size = float(self.ssize.strip('M').strip('K').strip('T').strip('G'))
+        except:
+            pass
+        self.dir = ''
+        try:
+            self.dir  = s.split('\t')[1]
+        except:
+            return
         if 'T' in self.ssize:
             self.w = self.size * 1e12
         if 'G' in self.ssize:
@@ -45,20 +53,27 @@ class DuEntries:
     def load_from_file(cls,fname, maxdepth = 4):
         entries = []        
         content = []
-        try:
-            with open(fname,'r') as f:
-                content = f.readlines()
-        except:
-            print '[e] reading from',fname,'failed.'
-            return
-        
+        if fname != None:
+            try:
+                with open(fname,'r') as f:
+                    content = f.readlines()
+            except:
+                print '[e] reading from',fname,'failed.'
+                return None
+        else:
+            try:
+                content = sys.stdin.readlines()
+            except:
+                print '[e] reading from stdin failed.'
+                return None
         print '[i] read',len(content),'lines'
         for c in content:
             if len(c.split('/')) > maxdepth:
                 continue
             e = DuEntry(c.strip('\n'))
-            if e.depth <= maxdepth:                
-                entries.append(e)
+            if e.valid:
+                if e.depth <= maxdepth:                
+                    entries.append(e)
         return cls(entries)
             
     def top_n(self, topn=10, depth=2, sdir=''):
@@ -73,7 +88,7 @@ class DuEntries:
             else:
                 #print '[d] OK depth: ask:',depth,'is:',e.depth,'entry:',e
                 pass
-            if sdir != '' and sdir not in e.string:
+            if sdir != '' and sdir+'/' not in e.string+'/':
                 #print '[d] no match',sdir,e.string
                 continue
             ret_entries.append(e)
@@ -95,21 +110,32 @@ class DuEntries:
             print sep,e
             self.print_tree(topn, d+1, maxdepth-1, e.dir, sep+'------|')
 
+def exists(fname):
+    try:
+        f = open(fname, 'r')
+        f.close()
+    except:
+        return False
+    return True
+
 def main():
     
     fname = ut.get_arg_with('-f')
     if fname==None:
-        fname = 'projectdu_jan17'        
+        fname = 'projectdu_jan17'
+
+    if exists(fname) == False:
+        fname = None
 
     depth = ut.get_arg_with('-d')
     if depth==None:
-        depth = 1
+        depth = 2 #show more than just the current dir
 
     depth = int(depth)
     
     topn = ut.get_arg_with('-t')
     if topn == None:
-        topn = 10
+        topn = 5 #this is usually enough
     else:
         try:
             topn = int(topn)
@@ -119,8 +145,8 @@ def main():
     print '[i] setup:',fname,'depth:',depth,'top n:',topn
     
     entries = DuEntries.load_from_file(fname, depth)
-    entries.print_tree(topn=topn, maxdepth=depth)
-    
+    if entries:
+        entries.print_tree(topn=topn, maxdepth=depth)    
     
     print '[i] done.'
     
