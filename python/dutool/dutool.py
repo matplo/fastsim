@@ -61,11 +61,9 @@ class DuEntries:
                 entries.append(e)
         return cls(entries)
             
-    def top_n(self, topn=10, depth=2, sdir='', reverse_flag=True):
+    def top_n(self, topn=10, depth=2, sdir=''):
         ret_entries = []
-        entries_sorted = sorted(self.entries, key=lambda e: e.w, reverse=reverse_flag)
-        if reverse_flag == False:
-            entries_sorted = entries_sorted.reversed()
+        entries_sorted = sorted(self.entries, key=lambda e: e.w, reverse=True)
         indx  = -1
         for e in entries_sorted:
             indx = indx + 1                                
@@ -79,7 +77,7 @@ class DuEntries:
                 #print '[d] no match',sdir,e.string
                 continue
             ret_entries.append(e)
-            if len(ret_entries) > topn:
+            if len(ret_entries) >= topn:
                 break
         return DuEntries(ret_entries)
 
@@ -109,8 +107,6 @@ def main():
 
     depth = int(depth)
     
-    print '[i] setup:',fname,depth
-
     topn = ut.get_arg_with('-t')
     if topn == None:
         topn = 10
@@ -120,8 +116,8 @@ def main():
         except:
             topn = 10
 
-    reverse_flag = not(ut.is_arg_set('-r'))
-
+    print '[i] setup:',fname,'depth:',depth,'top n:',topn
+    
     entries = DuEntries.load_from_file(fname, depth)
     entries.print_tree(topn=topn, maxdepth=depth)
     
