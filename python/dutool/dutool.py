@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import pyutils as ut
 
 class DuEntry:
     def __init__(self, s):
@@ -118,22 +117,36 @@ def exists(fname):
         return False
     return True
 
+def is_arg_set(arg=''):
+    for a in sys.argv:
+        if a==arg:
+            return True
+    return False
+
+def get_arg_with(arg=''):
+    retval = None
+    maxl = len(sys.argv)
+    for i in range(0,maxl):
+        if sys.argv[i]==arg and i < maxl-1:
+            retval=sys.argv[i+1]
+    return retval
+
 def main():
     
-    fname = ut.get_arg_with('-f')
+    fname = get_arg_with('-f')
     if fname==None:
         fname = 'projectdu_jan17'
 
     if exists(fname) == False:
         fname = None
 
-    depth = ut.get_arg_with('-d')
+    depth = get_arg_with('-d')
     if depth==None:
         depth = 2 #show more than just the current dir
 
     depth = int(depth)
     
-    topn = ut.get_arg_with('-t')
+    topn = get_arg_with('-t')
     if topn == None:
         topn = 5 #this is usually enough
     else:
