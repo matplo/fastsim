@@ -128,7 +128,7 @@ class DuEntries:
         for e in td.entries:
             print sep,e
             self.print_tree(topn, d+1, maxdepth-1, e.dir, sep+'------|')
-
+            
 def exists(fname):
     try:
         f = open(fname, 'r')
@@ -178,6 +178,13 @@ def main():
         except:
             topn = 10
 
+    fout   = sys.stdout
+    stdout = sys.stdout
+    foutname = '/tmp/dutool-tmp'
+    if '--html' in sys.argv:
+        fout = open(foutname,'w')
+        sys.stdout = fout
+
     print '[i] setup:',fname,'depth:',depth,'top n:',topn
     
     entries = DuEntries.load_from_file(fname, depth)
@@ -189,7 +196,16 @@ def main():
             entries.print_tree(topn=topn, maxdepth=depth)            
     
     print '[i] done.'
-    
+
+    if '--html' in sys.argv:
+        sys.stdout = stdout        
+        fout.close()
+        with open(foutname, 'r') as f:
+            lines = f.readlines()
+        for l in lines:
+            print '<br>',l.strip('\n')
+            
+        
 if __name__ == '__main__':
     if sys.version_info < ( 2, 7):
         sys.exit('[i] This script requires Python 2.7. hint: module load python')
