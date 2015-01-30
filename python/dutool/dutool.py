@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import os
 
 class DuEntry:
     def __init__(self, s):
@@ -42,6 +43,28 @@ class DuEntry:
         else:
             return self.string
 
+def readlines_file(fname):
+    content = None
+    guess_ext = os.path.splitext(fname)[1][1:].strip().lower()
+    if guess_ext == 'gz':
+        try:
+            print '[i] open with gzip...'
+            import gzip
+            with gzip.open(fname, 'r') as f: 
+                content = f.readlines()
+            print '[i] done.'
+        except:            
+            content = None
+    else:
+        try:
+            with open(fname,'r') as f:
+                content = f.readlines()
+        except:
+            content = None
+    if content == None:
+        print '[e] reading from',fname,'failed.'
+    return content
+        
 class DuEntries:
     def __init__(self,entries,fname=''):
         self.fname = fname
@@ -53,11 +76,8 @@ class DuEntries:
         entries = []        
         content = []
         if fname != None:
-            try:
-                with open(fname,'r') as f:
-                    content = f.readlines()
-            except:
-                print '[e] reading from',fname,'failed.'
+            content = readlines_file(fname)
+            if content == None:
                 return None
         else:
             try:
@@ -138,6 +158,9 @@ def main():
         fname = 'projectdu_jan17'
 
     if exists(fname) == False:
+        fname = fname + '.gz'
+        
+    if exists(fname) == False:
         fname = None
 
     depth = get_arg_with('-d')
@@ -159,9 +182,16 @@ def main():
     
     entries = DuEntries.load_from_file(fname, depth)
     if entries:
-        entries.print_tree(topn=topn, maxdepth=depth)    
+        entries.print_tree(topn=topn, maxdepth=depth)
+    else:
+        entries = DuEntries.load_from_file(fname+'.gz', depth)
+        if entries:
+            entries.print_tree(topn=topn, maxdepth=depth)            
     
     print '[i] done.'
     
 if __name__ == '__main__':
+    if sys.version_info < ( 2, 7):
+        sys.exit('[i] This script requires Python 2.7. hint: module load python')
+
     main()
