@@ -1,0 +1,26 @@
+body {
+    background: url('http://placekitten.com/900/900');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+html{
+    /* This image will be displayed fullscreen */
+    background:url('../img/background.jpg') no-repeat center center;
+
+    /* Ensure the html element always takes up the full height of the browser window */
+    min-height:100%;
+
+    /* The Magic */
+    background-size:cover;
+}
+
+body{
+    /* Workaround for some mobile browsers */
+    min-height:100%;
+}
