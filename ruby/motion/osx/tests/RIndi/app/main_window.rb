@@ -1,12 +1,12 @@
 class MainController < TeacupWindowController
   stylesheet :main_window
-
   layout do
-    @text_search = subview(NSTextField, :text_search,
+    @text_update = subview(NSTextField, :text_update,
                            stringValue: ''
                           )
-    subview(NSButton, :search_button,
-            action: 'search:',
+
+    subview(NSButton, :update_button,
+            action: 'update:',
             target: self,
            )
 
@@ -21,13 +21,17 @@ class MainController < TeacupWindowController
     column.headerCell.setTitle("data")
     column.setWidth(290)
     @table_view.addTableColumn(column)
-
     scroll_view.setDocumentView(@table_view)
+    
+    @update_result = []
+
+    @db = IndicoDB.new("Resources/test.json")
+    #puts "[i] number of events: " + db.data.length.to_s
   end
 
   def numberOfRowsInTableView(aTableView)
-    return 0 if @search_result.nil?
-    return @search_result.size
+    return 0 if @update_result.nil?
+    return @update_result.size
   end
 
   def tableView(aTableView,
@@ -35,21 +39,23 @@ class MainController < TeacupWindowController
                 row: rowIndex)
     case aTableColumn.identifier
     when "data"
-      return @search_result[rowIndex].to_s
+      return @update_result[rowIndex].to_s
     end
   end
 
-  def search(sender)
-    text = @text_search.stringValue
+  def update(sender)
+    text = @text_update.stringValue
     if text.length > 0      
-      @search_result = []      
-      @search_result.push(text)
+      #@update_result = []
+      @update_result.push(text)
+      @db.each do |e|
+           e.time_table.each do |tx|
+                         @update_result.push(tx)
+                       end
+         end      
       @table_view.reloadData
     end
-    puts text
+    #puts text
   end
 
-  def textView(aText)
-    return "some text"
-  end
 end

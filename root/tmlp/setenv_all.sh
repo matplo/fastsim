@@ -1,0 +1,1 @@
+/Users/ploskon/devel/subjets/bin/setenv_all.sh

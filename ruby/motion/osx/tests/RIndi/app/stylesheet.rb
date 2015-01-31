@@ -1,12 +1,12 @@
 Teacup::Stylesheet.new :main_window do
 
-  style :text_search,
+  style :text_update,
     frame: NSMakeRect(20, 318, 341, 22),
     autoresizingMask: autoresize.fill_top
 
-  style :search_button,
+  style :update_button,
     frame: NSMakeRect(384, 310, 82, 32),
-    title: "Search",
+    title: "Update",
     bezelStyle: NSRoundedBezelStyle,
     autoresizingMask: autoresize.fixed_top_right
 

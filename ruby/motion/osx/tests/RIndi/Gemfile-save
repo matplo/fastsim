@@ -1,0 +1,11 @@
+gem 'teacup', :path => '/Users/ploskon/devel/examples/teacup'
+source 'https://rubygems.org'
+# RubyMotion aware gems
+gem "motion-bundler"
+
+# RubyMotion unaware gems
+group :motion do
+  gem "json"
+  gem "zlib"
+  gem "archive/tar/minitar"
+end

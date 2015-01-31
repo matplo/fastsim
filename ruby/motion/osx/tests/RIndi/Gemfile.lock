@@ -1,0 +1,20 @@
+PATH
+  remote: /Users/ploskon/devel/examples/teacup
+  specs:
+    teacup (2.2.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    bubble-wrap (1.5.0)
+    motion-yaml (1.2)
+    rake (10.2.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bubble-wrap
+  motion-yaml
+  rake
+  teacup!

@@ -1,9 +1,19 @@
 # -*- coding: utf-8 -*-
 $:.unshift("/Library/RubyMotion/lib")
+#$:.unshift("/usr/lib/ruby/2.0.0")
 require 'motion/project/template/osx'
 require 'teacup'
+require 'bubble-wrap'
+require 'motion-yaml'
+require 'rubygems'
+require 'json'
+
+#require 'bundler'
+#Bundler.require
 
 Motion::Project::App.setup do |app|
   # Use `rake config' to see complete project settings.
   app.name = 'RIndi'
 end
+
+#MotionBundler.setup
