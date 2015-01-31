@@ -1,0 +1,10 @@
+{{title}}
+{{
+this is the title of the page
+}}
+{{scripts}}
+{{
+#file:"comment1.html"
+#file:"comment2.html"
+#file:"not existing file"
+}}

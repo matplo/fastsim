@@ -1,0 +1,2 @@
+#new {{ target }}{{http://google.com}}  {{ text }} {{ link to google }}
+#new {{ target }}{{http://ploskon.com}} {{ text }} {{ Other interesting pages... }}

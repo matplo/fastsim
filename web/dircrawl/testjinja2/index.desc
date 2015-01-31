@@ -1,0 +1,8 @@
+{{header}}
+{{
+#file:"header.html"
+}}
+{{footer}}
+{{
+#file:"footer.html"
+}}
