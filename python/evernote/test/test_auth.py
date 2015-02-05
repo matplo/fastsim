@@ -7,33 +7,20 @@ import evernote.api.client as enClient
 import evernote.edam.type.ttypes as enTypes
 import evernote.edam.error.ttypes as enErrors
 
-import traceback
-def debug(*msg):
-    stack = traceback.extract_stack()
-    filename, codeline, funcName, text = stack[-2]
-    #return funcName
-    msg_str = []
-    if len(msg) == 0:
-        msg_str.append('begin')
-    else:
-        for e in msg:
-            msg_str.append(str(e))
-    if msg_str[0] == '.':
-        msg_str[0] = 'done.'
-    if msg_str[0] == '-':
-        msg_str[0] = ''
-        print '   ',funcName,':',' '.join(msg_str)
-    else:
-        if msg_str[0] == 'e':
-            msg_str.remove(msg_str[0])
-            print '[error]',funcName,':',' '.join(msg_str)            
-        else:
-            print '[d]',funcName,':',' '.join(msg_str)
+from utils import *
 
 def get_client(dev_token, sandbox=True):
     debug( )
-    client = enClient.EvernoteClient(token=dev_token)
+    c_secret = '9f451936519fb24e'
+    c_key = 'ploskon'
+    client = enClient.EvernoteClient(sandbox=sandbox,
+                                     token=dev_token,
+                                     consumer_key=c_key,
+                                     consumer_secret=c_secret)
+    debug( 's host', client.service_host)
+    debug( 'c secret', client.consumer_secret, c_secret)
     debug( 'got client', client )
+    debug_obj ( client )
     return client
 
 def test_auth(client):
@@ -112,11 +99,10 @@ if __name__=='__main__':
         sandbox = True
     if token == prod_token:
         sandbox = False
-    sandbox = False        
     debug('sandbox:',sandbox)
     client = get_client(token, sandbox=sandbox)
     test_auth(client)
     print_notebooks(client)
-    create_notebook(client)
-    print_notebooks(client)
-    get_linked_notebooks(client, token)
+    #create_notebook(client)
+    #print_notebooks(client)
+    #get_linked_notebooks(client, token)
