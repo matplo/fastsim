@@ -55,8 +55,10 @@ class Node(object):
 
     def glCodes(self):
         GL.glPushMatrix()
+        #GL.glLoadIdentity()
         GL.glTranslatef(self.translation[0], self.translation[1], self.translation[2])
         GL.glRotatef(self.rotation[0], self.rotation[1], self.rotation[2], self.rotation[3])
+        GL.glScalef(self.scale, self.scale, self.scale)                
         self.glCode()
         for n in self.nodes:
             #print self.name,'::build_list',n.name,'::glCode'
@@ -74,24 +76,23 @@ class Coords(Node):
             self.name = 'Coords'
         
     def glCode(self):
-        scale = 0.3
         GL.glLineWidth(2.5); 
         GL.glBegin(GL.GL_LINES)
         
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.red)        
         GL.glColor3f(1.0, 0.0, 0.0)
         GL.glVertex3f(0.0, 0.0, 0.0)
-        GL.glVertex3f(scale * 1.0, 0.0, 0.0)
+        GL.glVertex3f( 1.0, 0.0, 0.0)
         
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.green)        
         GL.glColor3f(0.0, 1.0, 0.0)        
         GL.glVertex3f(0.0, 0.0, 0.0)
-        GL.glVertex3f(0.0, scale * 1.0, 0.0)
+        GL.glVertex3f(0.0,  1.0, 0.0)
         
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.blue)        
         GL.glColor3f(0.0, 0.0, 1.0)        
         GL.glVertex3f(0.0, 0.0, 0.0)
-        GL.glVertex3f(0.0, 0.0, scale * 1.0)
+        GL.glVertex3f(0.0, 0.0,  1.0)
         GL.glEnd()
 
 class Cube(Node):
@@ -111,12 +112,12 @@ class Cube(Node):
         if color==None:
             color = self.color
         GL.glRotatef(rotation[0],rotation[1],rotation[2],rotation[3])
-        GL.glColor4f(0.3, 0, 0, 0.8)
+        GL.glColor4f(0.3, 0.3, 0.3, 0.8)
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, color)
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, self.spec_refl);               
         GL.glBegin(GL.GL_QUADS)
         for v in self.verts:
-            GL.glVertex3d(self.scale * v[0], self.scale * v[1], self.scale * v[2])        
+            GL.glVertex3d(v[0], v[1], v[2])        
         GL.glEnd()
         
     def glCode(self):
@@ -142,9 +143,10 @@ class CoordCube(Cube):
         self.square(rotation=(180, 1.0, 0.0, 0.0), color=self.green  )        
         self.square(rotation=(90,  0.0, 1.0, 0.0), color=self.blue   )
         self.square(rotation=(180, 0.0, 1.0, 0.0), color=self.blue   )
-        GL.glLineWidth(0.5);
+        GL.glLineWidth(1.0);
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.yellow )
-        GLUT.glutWireCube(0.04)
+        ws = 3. * self.scale * 100.
+        GLUT.glutWireCube(ws) #scaling
         
 class CoordCubes(Node):
     def __init__(self, name=None, scale = 1.):
@@ -152,7 +154,7 @@ class CoordCubes(Node):
         if self.name == None:
             self.name = 'CoordCubes'
              
-        coords = Coords('coords')
+        coords = Coords('coords', scale=0.3)
         self.nodes.append(coords)
         
         cube = CoordCube('cube',scale=0.015)

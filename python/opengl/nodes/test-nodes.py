@@ -164,7 +164,8 @@ class GLWidget(QGLWidget):
         GL.glShadeModel(GL.GL_SMOOTH)
         GL.glEnable(GL.GL_DEPTH_TEST)
         #GL.glEnable(GL.GL_CULL_FACE)
-
+        # Accept fragment if it closer to the camera than the former one
+        GL.glDepthFunc(GL.GL_LESS);
         #/* Setup the view of the cube. */
         GL.glMatrixMode(GL.GL_PROJECTION);
         #GLU.gluPerspective( 90.0,   #/* field of view in degree */ 
@@ -192,18 +193,27 @@ class GLWidget(QGLWidget):
         GL.glLoadIdentity()
         GL.glTranslated(-0.5, 0.5, -10.0)
         GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)        
+        #GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+        #GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
+        
         for o in self.objects:
             o.gl()
         GL.glLoadIdentity()            
         GL.glTranslated(-0.5, -0.5, -10.0)
-        GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)        
+        #GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)        
+        GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+        #GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)        
         for o in self.objects:
             o.gl()
+            
         GL.glLoadIdentity()            
         GL.glTranslated( 0.5, -0.5, -10.0)
-        GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)        
+        #GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
+        #GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+        GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)                
         for o in self.objects:
             o.gl()
+            
         GL.glLoadIdentity()
         GL.glTranslated(0.0, 0.0, -10.0)
         GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
@@ -218,21 +228,10 @@ class GLWidget(QGLWidget):
         if side < 0:
             return
 
-        #GL.glViewport((width - side) // 2, (height - side) // 2, side, side)
         GL.glViewport(0, 0, side, side)
-
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
-        #GL.glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0)
-        GL.glOrtho(-1.0 * aspect, +1 * aspect, -1, +1, 4.0, 15.0)        
-        #GL.glOrtho(-0.5, +0.5, +0.5, -0.5, 0.0, 100.0)
-        #GL.glOrtho(-1, 1, 1, -1, 1.0, 100.0)        
-        #GL.glOrtho(0.0, width, height, 0.0, 0.0, 1.0);
-        #aspectRatio = float(width) / float(height);
-        #if width >= height:
-        #    GLU.gluOrtho2D(-0.5*aspectRatio, 0.5*aspectRatio, 0.0, 1.0); 
-        #else:
-        #    GLU.gluOrtho2D(-0.5, 0.5, 0.0, 1.0/aspectRatio);        
+        GL.glOrtho(-1.0 * aspect, +1 * aspect, -1, +1, 1.0, 15.0)        
         GL.glMatrixMode(GL.GL_MODELVIEW)
 
     def mousePressEvent(self, event):
