@@ -4,28 +4,36 @@ from OpenGL import GLUT
 import random
 import math
 
-class Node(object):
+class NodeColor():
     red       = 1.0, 0.0, 0.0, 0.3
     green     = 0.0, 1.0, 0.0, 0.3
     blue      = 0.0, 0.0, 1.0, 0.3
     yellow    = 0.9, 0.9, 0.7, 0.3
+    def __init__(self):
+        pass
+
+class NodeMaterial():
     spec_refl = 0.8, 0.8, 0.8, 1.0
+    def __init__(self):
+        pass
+
+class Node(object):
 
     def __init__(self, name=None, scale = 1.):
         self.scale = scale
         self.name  = name
-        self.translation = (0, 0, 0)
-        self.rotation = (0, 0, 0, 0)        
-        self.color = self.yellow
+        self.t = (0, 0, 0)
+        self.ra = (0, 0, 0, 0)        
+        self.color = NodeColor.yellow
         self.nodes = []
-        self.gLlist = None
-
+        self.gl_list = None
+        
     def set_translation(self, x, y, z):
-        self.translation = (x, y, z)
+        self.t = (x, y, z)
         self.build_list()
         
     def set_rotation(self, ax, ay, az):
-        self.rotation = (ax, ay, az)
+        self.ra = (ax, ay, az)
         self.build_list()
         
     def set_color(self, color):
@@ -37,30 +45,30 @@ class Node(object):
         
     def build_list(self):
         #print self.name,'::_build_list scale = ',self.scale
-        #print self.name,'::_build_list gLlist = ',self.gLlist
-        if self.gLlist != None:
-            GL.glDeleteLists(self.gLlist, 1)
-        self.gLlist = GL.glGenLists(1)
-        GL.glNewList(self.gLlist, GL.GL_COMPILE)
-        #print self.name,'::_build_list translation',self.translation
+        #print self.name,'::_build_list gl_list = ',self.gl_list
+        if self.gl_list != None:
+            GL.glDeleteLists(self.gl_list, 1)
+        self.gl_list = GL.glGenLists(1)
+        GL.glNewList(self.gl_list, GL.GL_COMPILE)
+        #print self.name,'::_build_list translation',self.t
         self.glCodes()
         GL.glEndList()
-        #print self.name,'::_build_list gLlist = ',self.gLlist
+        #print self.name,'::_build_list gl_list = ',self.gl_list
             
     def gl(self):
         GL.glPushMatrix()
-        if self.gLlist == None:
+        if self.gl_list == None:
             self.build_list()            
-        ##print self.name,'::_gl gLlist = ',self.gLlist        
-        GL.glCallList(self.gLlist)
+        ##print self.name,'::_gl gl_list = ',self.gl_list        
+        GL.glCallList(self.gl_list)
         GL.glPopMatrix()
 
     def glCodes(self):
         GL.glPushMatrix()
-        GL.glTranslatef(self.translation[0], self.translation[1], self.translation[2])
-        GL.glRotatef(self.rotation[0], 1, 0, 0)
-        GL.glRotatef(self.rotation[1], 0, 1, 0)
-        GL.glRotatef(self.rotation[2], 0, 0, 1)
+        GL.glTranslatef(self.t[0], self.t[1], self.t[2])
+        GL.glRotatef(self.ra[0], 1, 0, 0)
+        GL.glRotatef(self.ra[1], 0, 1, 0)
+        GL.glRotatef(self.ra[2], 0, 0, 1)
         GL.glScalef(self.scale, self.scale, self.scale)                
         self.glCode()
         for n in self.nodes:
@@ -82,17 +90,17 @@ class Coords(Node):
         GL.glLineWidth(2.5); 
         GL.glBegin(GL.GL_LINES)
         
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.red)        
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, NodeColor.red)        
         GL.glColor3f(1.0, 0.0, 0.0)
         GL.glVertex3f(0.0, 0.0, 0.0)
         GL.glVertex3f( 1.0, 0.0, 0.0)
         
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.green)        
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, NodeColor.green)        
         GL.glColor3f(0.0, 1.0, 0.0)        
         GL.glVertex3f(0.0, 0.0, 0.0)
         GL.glVertex3f(0.0,  1.0, 0.0)
         
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.blue)        
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, NodeColor.blue)        
         GL.glColor3f(0.0, 0.0, 1.0)        
         GL.glVertex3f(0.0, 0.0, 0.0)
         GL.glVertex3f(0.0, 0.0,  1.0)
@@ -117,7 +125,7 @@ class Cube(Node):
         GL.glRotatef(rotation[0],rotation[1],rotation[2],rotation[3])
         GL.glColor4f(0.3, 0.3, 0.3, 0.8)
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, color)
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, self.spec_refl);               
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, NodeMaterial.spec_refl);               
         GL.glBegin(GL.GL_QUADS)
         for v in self.verts:
             GL.glVertex3d(v[0], v[1], v[2])        
@@ -140,16 +148,18 @@ class CoordCube(Cube):
             
     def glCode(self):
         #print self.name,'::glCode scale:', self.scale
-        self.square(rotation=(90,  0.0, 1.0, 0.0), color=self.red    )
-        self.square(rotation=(180, 0.0, 1.0, 0.0), color=self.red    )        
-        self.square(rotation=(90,  1.0, 0.0, 0.0), color=self.green  )
-        self.square(rotation=(180, 1.0, 0.0, 0.0), color=self.green  )        
-        self.square(rotation=(90,  0.0, 1.0, 0.0), color=self.blue   )
-        self.square(rotation=(180, 0.0, 1.0, 0.0), color=self.blue   )
+        self.square(rotation=(90,  0.0, 1.0, 0.0), color=NodeColor.red    )
+        self.square(rotation=(180, 0.0, 1.0, 0.0), color=NodeColor.red    )        
+        self.square(rotation=(90,  1.0, 0.0, 0.0), color=NodeColor.green  )
+        self.square(rotation=(180, 1.0, 0.0, 0.0), color=NodeColor.green  )        
+        self.square(rotation=(90,  0.0, 1.0, 0.0), color=NodeColor.blue   )
+        self.square(rotation=(180, 0.0, 1.0, 0.0), color=NodeColor.blue   )
         GL.glLineWidth(1.0);
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.yellow )
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, NodeColor.yellow )
         ws = 3. * self.scale * 100.
         GLUT.glutWireCube(ws) #scaling
+        #GL.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, self.color)
+        #GLUT.glutSolidSphere(1,20,20)
         
 class CoordCubes(Node):
     def __init__(self, name=None, scale = 1.):
