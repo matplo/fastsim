@@ -22,13 +22,15 @@ class Node(object):
 
     def set_translation(self, x, y, z):
         self.translation = (x, y, z)
+        self.build_list()
         
-    def set_rotation(self, a, x, y, z):
-        self.rotation = (a, x, y, z)
-
+    def set_rotation(self, ax, ay, az):
+        self.rotation = (ax, ay, az)
+        self.build_list()
+        
     def set_color(self, color):
         self.color = color
-
+        
     def add_node(self, n):
         self.nodes.append(n)
         self.build_list()
@@ -55,9 +57,10 @@ class Node(object):
 
     def glCodes(self):
         GL.glPushMatrix()
-        #GL.glLoadIdentity()
         GL.glTranslatef(self.translation[0], self.translation[1], self.translation[2])
-        GL.glRotatef(self.rotation[0], self.rotation[1], self.rotation[2], self.rotation[3])
+        GL.glRotatef(self.rotation[0], 1, 0, 0)
+        GL.glRotatef(self.rotation[1], 0, 1, 0)
+        GL.glRotatef(self.rotation[2], 0, 0, 1)
         GL.glScalef(self.scale, self.scale, self.scale)                
         self.glCode()
         for n in self.nodes:
@@ -189,7 +192,9 @@ class RandomCubes(Node):
                 z     = ( random.random() - 0.5 ) * 2.
                 p     = math.sqrt(1-z*z) * math.cos(theta), math.sqrt(1-z*z) * math.sin(theta), z
                 cuber.set_translation(r*p[0], r*p[1], r*p[2])
-                cuber.set_rotation(360*random.random(), random.random(), random.random(), random.random())
+                cuber.set_rotation(360.*random.random(),
+                                   360.*random.random(),
+                                   360.*random.random())
                 #cuber.set_color((random.random(), random.random(), random.random(), random.random()))
                 cuber.set_color((rc, rc, rc, rc))
                 self.nodes.append(cuber)
