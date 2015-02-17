@@ -16,11 +16,23 @@ class GLWidgetTest(GLWidget):
         
     def addGL(self):
         n0 = Node('n0', parent = None)
-        n0.set_scale(1.0)
-        n0.set_translation(0, 0, -0.3)
+        #n0.set_scale(1.0)
+        n0.set_translation(0, 0.1, -0.3)
+
+        n1 = Node('n1', parent = n0)
+        n1.set_translation(0, 0.2, -0.3)
+        n2 = Node('n1', parent = n0)
+        n2.set_translation(0, 0.3, -0.3)
+                
+        ax0 = Axes('axes0', parent=n0)
+        
+        ax1 = Axes('axes1', parent=n0)
+        ax1.set_translation(0, 0.1, -0.3)
+        
         self.objects.append(n0)
-        c = oldNodes.Coords()
-        self.objects.append(c)
+        
+        #c = oldNodes.Coords()
+        #self.objects.append(c)
         pass
     
 if __name__ == '__main__':

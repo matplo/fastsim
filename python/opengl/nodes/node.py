@@ -48,6 +48,9 @@ class NodeBase(object):
     def set_scale(self, scale):
         if scale >= 0:
             self.scale = scale
+
+    def set_color(self, color):
+        self.color = color
             
 class Node(NodeBase):
     def __init__(self, name, parent=None):
@@ -55,7 +58,7 @@ class Node(NodeBase):
         #dbg.debug()
         self.name = name
         self.parent = parent
-        if self.parent:
+        if self.parent != None:
             self.parent.add_node(self)
         self.gl_list = None
         self.update = True
@@ -72,7 +75,7 @@ class Node(NodeBase):
         for n in self.children:
             n.gl()
         GL.glPopMatrix()
-        #self.update = False
+        self.update = False
         #dbg.debug('.')
         
     def build_gl_list(self):
@@ -92,9 +95,50 @@ class Node(NodeBase):
         GL.glEndList()
         
     def glCode(self):
-        #dbg.debug('glCode')
         GL.glLineWidth(1.0);
+        GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         GLUT.glutWireCube(0.1)
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, NodeColor.red)        
-        GLUT.glutWireSphere(0.3, 10, 10)
+        pass
+
+class LSCNode(Node):
+    def __init__(self, name = 'LSCNode', parent = None):
+        super(LSCNode, self).__init__(name, parent)
+    
+    def glCode(self):
+        #dbg.debug('glCode')
+        GL.glLineWidth(2.0);
+        GL.glColor3f(self.color[0], self.color[1], self.color[2])
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+        
+        #GLUT.glutWireCube(0.5)
+        #GLUT.glutWireSphere(0.3, 10, 10)
+                
+        GLUT.glutSolidCone(0.2, 1.0, 5, 5)
+
+        GL.glRotatef(-self.ra[0], 1, 0, 0)
+        GL.glRotatef(-self.ra[1], 0, 1, 0)
+        GL.glRotatef(-self.ra[2], 0, 0, 1)
+        GL.glBegin(GL.GL_LINES)        
+        GL.glVertex3f(0.0, 0.0, 0.0)
+        GL.glVertex3f(-self.t[0]/self.scale, -self.t[1]/self.scale, -self.t[2]/self.scale)
+        GL.glEnd()
+        
+
+class Axes(Node):
+    def __init__(self, name = 'Axes', parent = None):
+        super(Axes, self).__init__(name, parent)
+        nx = LSCNode('nx', self)
+        nx.set_color(NodeColor.red)
+        nx.set_scale(0.2)
+        nx.set_translation(0.2,0,0)
+        nx.set_rotation(0, 90, 0)
+        ny = LSCNode('ny', self)
+        ny.set_color(NodeColor.green)
+        ny.set_scale(0.2)
+        ny.set_translation(0,0.2,0)        
+        ny.set_rotation(270, 0, 0)
+        nz = LSCNode('nz', self)
+        nz.set_color(NodeColor.blue)
+        nz.set_scale(0.2)
+        nz.set_translation(0,0,0.2)
