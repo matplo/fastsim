@@ -84,14 +84,14 @@ class Node(NodeBase):
             GL.glDeleteLists(self.gl_list, 1)
         self.gl_list = GL.glGenLists(1)        
         GL.glNewList(self.gl_list, GL.GL_COMPILE)
-        GL.glPushMatrix()
+        #GL.glPushMatrix()
         GL.glTranslatef(self.t[0], self.t[1], self.t[2])
         GL.glRotatef(self.ra[0], 1, 0, 0)
         GL.glRotatef(self.ra[1], 0, 1, 0)
         GL.glRotatef(self.ra[2], 0, 0, 1)
         GL.glScalef(self.scale, self.scale, self.scale)                
         self.glCode()
-        GL.glPopMatrix()        
+        #GL.glPopMatrix()        
         GL.glEndList()
         
     def glCode(self):
@@ -99,7 +99,17 @@ class Node(NodeBase):
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         GLUT.glutWireCube(0.1)
-        pass
+
+class Cube(Node):
+    def __init__(self, name = 'Cube', parent = None):
+        super(Cube, self).__init__(name, parent)
+        
+    def glCode(self):
+        GL.glLineWidth(1.0);
+        GL.glColor3f(self.color[0], self.color[1], self.color[2])
+        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+        #GLUT.glutSolidOctahedron()
+        GLUT.glutSolidCube(1.0)
 
 class LSCNode(Node):
     def __init__(self, name = 'LSCNode', parent = None):
@@ -130,15 +140,35 @@ class Axes(Node):
         super(Axes, self).__init__(name, parent)
         nx = LSCNode('nx', self)
         nx.set_color(NodeColor.red)
-        nx.set_scale(0.2)
+        nx.set_scale(0.1)
         nx.set_translation(0.2,0,0)
         nx.set_rotation(0, 90, 0)
         ny = LSCNode('ny', self)
         ny.set_color(NodeColor.green)
-        ny.set_scale(0.2)
+        ny.set_scale(0.1)
         ny.set_translation(0,0.2,0)        
         ny.set_rotation(270, 0, 0)
         nz = LSCNode('nz', self)
         nz.set_color(NodeColor.blue)
-        nz.set_scale(0.2)
+        nz.set_scale(0.1)
         nz.set_translation(0,0,0.2)
+
+class RandomCubes(Node):
+    def __init__(self, name='RandomCubes', parent = None):
+        super(RandomCubes, self).__init__(name, parent)
+        for n in range(0, 1000):
+            for rn in range(1, 6):
+                cuber = Cube('cuber{}'.format(n), self)
+                cuber.set_scale(0.01)
+                #r     = 1.-random.random()
+                r  = float(rn/10.) * 3.
+                rc = 1. - r/3.
+                theta = math.pi * 2. * random.random()            
+                z     = ( random.random() - 0.5 ) * 2.
+                p     = math.sqrt(1-z*z) * math.cos(theta), math.sqrt(1-z*z) * math.sin(theta), z
+                cuber.set_translation(r*p[0], r*p[1], r*p[2])
+                cuber.set_rotation(360.*random.random(),
+                                   360.*random.random(),
+                                   360.*random.random())
+                cuber.set_color((random.random(), random.random(), random.random(), random.random()))
+                #cuber.set_color((rc, rc, rc, rc))
