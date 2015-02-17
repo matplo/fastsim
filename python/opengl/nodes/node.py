@@ -172,3 +172,31 @@ class RandomCubes(Node):
                                    360.*random.random())
                 cuber.set_color((random.random(), random.random(), random.random(), random.random()))
                 #cuber.set_color((rc, rc, rc, rc))
+
+def demoNodes():
+    n0 = Node('n0', parent = None)
+    #n0.set_scale(1.0)
+    #n0.set_translation(0, 0.1, -0.3)
+    ax0 = Axes('axes0', parent=n0)
+
+    n1 = Node('n1', parent = n0)
+    n1.set_translation(0, 0.3, -0.3)
+    n1.set_rotation(120,45,30)
+    ax1 = Axes('axes1', parent=n1)
+                        
+    n2 = Node('n2', parent = n1)
+    n2.set_translation(0.3, 0.1, 0.4)
+    n2.set_rotation(135,0,0)
+    ax2 = Axes('axes2', parent=n2)
+
+    na3 = Node('na3', parent = ax2)
+    na3.set_translation(0.0, 0.0, -0.4)
+    na3.set_rotation(0,0,0)
+
+    na4 = Node('na4', parent = ax2)
+    na4.set_translation(0.0, 0.0, -0.5)
+        
+    na5 = Node('na5', parent = ax2)
+    na5.set_translation(0.0, 0.1, -0.5)
+
+    return n0
