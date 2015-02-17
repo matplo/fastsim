@@ -7,10 +7,11 @@ import math
 import debug_utils as dbg
 
 class NodeColor():
-    red       = 1.0, 0.0, 0.0, 0.3
-    green     = 0.0, 1.0, 0.0, 0.3
-    blue      = 0.0, 0.0, 1.0, 0.3
-    yellow    = 0.9, 0.9, 0.7, 0.3
+    red       = 1.0, 0.0, 0.0, 0.8
+    green     = 0.0, 1.0, 0.0, 0.8
+    blue      = 0.0, 0.0, 1.0, 0.8
+    yellow    = 0.9, 0.9, 0.5, 0.8
+    
     def __init__(self):
         pass
 
@@ -97,8 +98,9 @@ class Node(NodeBase):
     def glCode(self):
         GL.glLineWidth(1.0);
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
-        GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+        GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         GLUT.glutWireCube(0.1)
+        GLUT.glutSolidCube(0.1)        
 
 class Cube(Node):
     def __init__(self, name = 'Cube', parent = None):
@@ -156,12 +158,12 @@ class Axes(Node):
 class RandomCubes(Node):
     def __init__(self, name='RandomCubes', parent = None):
         super(RandomCubes, self).__init__(name, parent)
-        for n in range(0, 1000):
-            for rn in range(1, 6):
+        for n in range(0, 500):
+            for rn in range(1, 3):
                 cuber = Cube('cuber{}'.format(n), self)
-                cuber.set_scale(0.01)
+                cuber.set_scale(0.01 + random.random() / 10.)
                 #r     = 1.-random.random()
-                r  = float(rn/10.) * 3.
+                r  = float(rn/10.) * 5.
                 rc = 1. - r/3.
                 theta = math.pi * 2. * random.random()            
                 z     = ( random.random() - 0.5 ) * 2.
@@ -170,7 +172,10 @@ class RandomCubes(Node):
                 cuber.set_rotation(360.*random.random(),
                                    360.*random.random(),
                                    360.*random.random())
-                cuber.set_color((random.random(), random.random(), random.random(), random.random()))
+                cuber.set_color((0.2 + random.random(),
+                                 0.2 + random.random(),
+                                 0.2 + random.random(),
+                                 0.5 + random.random()))
                 #cuber.set_color((rc, rc, rc, rc))
 
 def demoNodes():

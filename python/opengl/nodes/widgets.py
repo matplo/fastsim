@@ -40,7 +40,6 @@ except ImportError:
 from nodes import *
 
 class Window(QWidget):
-    nTicks = 36
     def __init__(self, glw):
         super(Window, self).__init__()        
         self.glWidget = glw
@@ -81,10 +80,10 @@ class Window(QWidget):
                 
     def createSlider(self):
         slider = QSlider(Qt.Vertical)
-        slider.setRange(0, 360)
-        slider.setSingleStep(1)
-        #slider.setPageStep(15 * self.nTicks)
-        #slider.setTickInterval(15 * self.nTicks)
+        slider.setRange(0, 360 * 16)
+        slider.setSingleStep(16)
+        slider.setPageStep(15 * 16)
+        slider.setTickInterval(15 * 16)
         slider.setTickPosition(QSlider.TicksRight)
 
         return slider
@@ -102,8 +101,6 @@ class GLWidget(QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         
-        self.nTicks = Window.nTicks
-
         self.objects = []
         self.xRot = 0
         self.yRot = 0
@@ -164,7 +161,18 @@ class GLWidget(QGLWidget):
         self.setupLight()        
         #GL.glShadeModel(GL.GL_FLAT)
         GL.glShadeModel(GL.GL_SMOOTH)
+
+        GL.glEnable(GL.GL_BLEND);
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); 
+        GL.glShadeModel(GL.GL_SMOOTH); 
+
+        GL.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_FASTEST); 
+        GL.glEnable(GL.GL_POLYGON_SMOOTH);
+
+        GL.glEnable( GL.GL_ALPHA_TEST );
+                
         GL.glEnable(GL.GL_DEPTH_TEST)
+        #GL.glDisable(GL.GL_DEPTH_TEST); 
         GL.glEnable(GL.GL_CULL_FACE)
         GL.glEnable(GL.GL_MULTISAMPLE)        
         # Accept fragment if it closer to the camera than the former one
@@ -174,11 +182,12 @@ class GLWidget(QGLWidget):
         #GLU.gluPerspective( 90.0,   #/* field of view in degree */ 
         #                    1.0,   #/* aspect ratio */ 
         #                    1.0,   #/* Z near */ 
-        #                    10.0); #/* Z far */ 
+        #                    10.0); #/* Z far */
+        
         GL.glMatrixMode(GL.GL_MODELVIEW);
-        #GLU.gluLookAt(0.0, 0.0, 10.0,  #/* eye is at (0,0,5) */
+        #GLU.gluLookAt(0.0, 0.0, -10.0,  #/* eye is at (0,0,5) */
         #              0.0, 0.0,  0.0,      #/* center is at (0,0,0) */
-        #              0.0, 0.0,  0.);      #/* up is in positive Y direction */
+        #              0.0, 1.0,  0.);      #/* up is in positive Y direction */
   
         #/* Adjust cube position to be asthetic angle. */
         #GL.glTranslatef(0.0, 0.0, -1.0);
@@ -199,9 +208,9 @@ class GLWidget(QGLWidget):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glLoadIdentity()
         GL.glTranslated(0.0, 0.0, -10.0)
-        GL.glRotated(self.xRot, 1.0, 0.0, 0.0)
-        GL.glRotated(self.yRot, 0.0, 1.0, 0.0)
-        GL.glRotated(self.zRot, 0.0, 0.0, 1.0)
+        GL.glRotated(self.xRot / 16., 1.0, 0.0, 0.0)
+        GL.glRotated(self.yRot / 16., 0.0, 1.0, 0.0)
+        GL.glRotated(self.zRot / 16., 0.0, 0.0, 1.0)
         for o in self.objects:
             o.gl()
 
@@ -212,25 +221,25 @@ class GLWidget(QGLWidget):
         if '--rots' in sys.argv:
             GL.glLoadIdentity()            
             GL.glTranslated(-0.5, 0.5, -10.0)
-            GL.glRotated(self.xRot / self.nTicks, 1.0, 0.0, 0.0)        
-            #GL.glRotated(self.yRot / self.nTicks, 0.0, 1.0, 0.0)
-            #GL.glRotated(self.zRot / self.nTicks, 0.0, 0.0, 1.0)        
+            GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)        
+            #GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+            #GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)        
             for o in self.objects:
                 o.gl()
             
             GL.glLoadIdentity()            
             GL.glTranslated(-0.5, -0.5, -10.0)
-            #GL.glRotated(self.xRot / self.nTicks, 1.0, 0.0, 0.0)        
-            GL.glRotated(self.yRot / self.nTicks, 0.0, 1.0, 0.0)
-            #GL.glRotated(self.zRot / self.nTicks, 0.0, 0.0, 1.0)        
+            #GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)        
+            GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+            #GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)        
             for o in self.objects:
                 o.gl()
                 
             GL.glLoadIdentity()            
             GL.glTranslated( 0.5, -0.5, -10.0)
-            #GL.glRotated(self.xRot / self.nTicks, 1.0, 0.0, 0.0)
-            #GL.glRotated(self.yRot / self.nTicks, 0.0, 1.0, 0.0)
-            GL.glRotated(self.zRot / self.nTicks, 0.0, 0.0, 1.0)                
+            #GL.glRotated(self.xRot / 16.0, 1.0, 0.0, 0.0)
+            #GL.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
+            GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)                
             for o in self.objects:
                 o.gl()
             
@@ -265,11 +274,10 @@ class GLWidget(QGLWidget):
     
     def normalizeAngle(self, angle):
         while angle < 0:
-            angle += 360 
-        while angle > 360:
-            angle -= 360 
+            angle += 360 * 16
+        while angle > 360 * 16:
+            angle -= 360 * 16
         return angle
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
