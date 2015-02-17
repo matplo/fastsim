@@ -23,13 +23,14 @@ class NodeMaterial():
 class NodeBase(object):
     def __init__(self):
         #dbg.debug()        
-        self.t               = (0, 0, 0)
-        self.ra              = (0, 0, 0, 0)
+        self.t               = [0, 0, 0]
+        self.ra              = [0, 0, 0]
         self.color           = NodeColor.yellow
         self.scale           = 1
         self.children        = []
         self.update_requests = []
         self.update = True
+        self.option = ''
         
     def add_node(self, n):
         #dbg.debug()
@@ -38,13 +39,14 @@ class NodeBase(object):
         self.update = True
 
     def request_update(self, n):
-        self.update_requests.append(n.name)
+        n.update = True
+        self.update_requests.append(n)
         
     def set_translation(self, x, y, z):
-        self.t = (x, y, z)
+        self.t = [x, y, z]
         
     def set_rotation(self, ax, ay, az):
-        self.ra = (ax, ay, az)
+        self.ra = [ax, ay, az]
 
     def set_scale(self, scale):
         if scale >= 0:
@@ -52,7 +54,11 @@ class NodeBase(object):
 
     def set_color(self, color):
         self.color = color
-            
+
+    def add_option(self, opt):
+        self.option = self.option+' '+opt
+        self.update = True
+        
 class Node(NodeBase):
     def __init__(self, name, parent=None):
         super(Node, self).__init__()
@@ -65,18 +71,18 @@ class Node(NodeBase):
         self.update = True
         
     def gl(self):
-        #dbg.debug()
+        #dbg.debug_obj(self)
         GL.glPushMatrix()
         if self.update:
             self.build_gl_list()
         GL.glCallList(self.gl_list)
-        for i in range( len(self.update_requests) ):
+        for i in range( len(self.update_requests) ):            
             n = self.update_requests.pop()
             n.build_gl_list()
+            #dbg.debug_obj(n)
         for n in self.children:
             n.gl()
         GL.glPopMatrix()
-        self.update = False
         #dbg.debug('.')
         
     def build_gl_list(self):
@@ -94,14 +100,24 @@ class Node(NodeBase):
         self.glCode()
         #GL.glPopMatrix()        
         GL.glEndList()
+        self.update = False
         
     def glCode(self):
         GL.glLineWidth(1.0);
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         GLUT.glutWireCube(0.1)
-        GLUT.glutSolidCube(0.1)        
+        if 'wire' in self.option.lower():
+            GLUT.glutWireCube(0.1)
+        else:            
+            GLUT.glutSolidCube(0.1)        
 
+class RootNode(Node):
+    def __init__(self, name = 'Root'):
+        super(RootNode, self).__init__(name, parent=None)
+    def glCode(self):
+        pass
+    
 class Cube(Node):
     def __init__(self, name = 'Cube', parent = None):
         super(Cube, self).__init__(name, parent)
@@ -111,8 +127,11 @@ class Cube(Node):
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         #GLUT.glutSolidOctahedron()
-        GLUT.glutSolidCube(1.0)
-
+        if 'wire' in self.option.lower():
+            GLUT.glutWireCube(1.0)
+        else:            
+            GLUT.glutSolidCube(1.0)        
+    
 class LSCNode(Node):
     def __init__(self, name = 'LSCNode', parent = None):
         super(LSCNode, self).__init__(name, parent)
@@ -154,6 +173,88 @@ class Axes(Node):
         nz.set_color(NodeColor.blue)
         nz.set_scale(0.1)
         nz.set_translation(0,0,0.2)
+
+class Surface(Node):
+    def __init__(self, name = 'Surface', parent = None, w=1, h=1, igran=5):
+        super(Surface, self).__init__(name, parent)
+        self.vertices = []
+        if w<=h:
+            csize = float(w / (igran * 1.))
+        if h<w:
+            csize = float(h / (igran * 1.))
+        nverts = int((w * h) / (csize * csize))
+        if nverts < igran*igran:
+            nverts = nverts + 1
+        for i in range(nverts):
+            irow = i / igran
+            icol = i % igran
+            x = -w/2. + icol * csize
+            y = -h/2. + irow * csize
+            z = 0
+            self.vertices.append([x,y,z])
+                        
+    def t_function(self, f):
+        for i,v in enumerate(self.vertices):
+            t = f(v)
+            v = [t[0], t[1], t[2]]
+            self.vertices.pop(i)
+            self.vertices.insert(i, v)
+        self.update = True
+            
+    def glCode(self):
+        GL.glPointSize(1.0);
+        GL.glColor3f(self.color[0], self.color[1], self.color[2])
+        GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+        GL.glBegin(GL.GL_POINTS);
+        for v in self.vertices:
+            GL.glVertex3f(v[0], v[1], v[2])
+        GL.glEnd();
+        
+class Wall(Node):
+    def __init__(self, name='Wall', parent=None, w=1, h=1, igran=5):
+        super(Wall, self).__init__(name, parent)
+        if w<=h:
+            csize = float(w / (igran * 1.))
+        if h<w:
+            csize = float(h / (igran * 1.))
+        ncubes = int((w * h) / (csize * csize))
+        if ncubes < igran*igran:
+            ncubes = ncubes + 1
+        for i in range(ncubes):
+            ncubes = 'c{}'.format(i)
+            cube = Cube(ncubes, self)
+            cube.set_scale(csize)
+            irow = i / igran
+            icol = i % igran
+            x = -w/2. + icol * csize
+            y = -h/2. + irow * csize
+            z = 0
+            #print i, x,y,z,csize
+            cube.set_translation(x, y, z)
+
+    def t_function(self, f):
+        for n in self.children:
+            n.t = f(n.t, n.scale)
+            self.request_update(n)
+            #dbg.debug_obj(n)
+            
+    def c_function(self, f):
+        for n in self.children:
+            n.color = f(n.t, n.scale)
+            self.request_update(n)
+        
+    def r_function(self, f):
+        for n in self.children:
+            n.ra = f(n.ra)
+            self.request_update(n)
+        dbg.debug_obj(self)
+        
+    def add_option(self, opt):
+        for n in self.children:
+            #print 'adding option to n',n,opt
+            n.add_option(opt)
+            #dbg.debug_obj(n)
+        super(Wall,self).add_option(opt)
 
 class RandomCubes(Node):
     def __init__(self, name='RandomCubes', parent = None):

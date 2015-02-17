@@ -67,6 +67,10 @@ class Window(QWidget):
         self.resetButton.clicked.connect(self.resetView)
         vLayout.addWidget(self.resetButton)
         
+        self.animateButton = QPushButton("&Animation Toggle", self)
+        self.animateButton.clicked.connect(self.glWidget.toggleAnimation)
+        vLayout.addWidget(self.animateButton)
+        
         self.quitButton = QPushButton("&Quit", self)
         self.quitButton.clicked.connect(QApplication.instance().quit)
         vLayout.addWidget(self.quitButton)
