@@ -2,16 +2,18 @@
 
 from widgets import *
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt, QTimer
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QVBoxLayout, QMessageBox, QSlider,
         QWidget, QPushButton)
-from PyQt5.QtOpenGL import QGLWidget
+from PyQt5.QtOpenGL import QGLWidget, QGLFormat, QGL
 
 from node import *
 import nodes as oldNodes
 
 import random
 import math
+
+import debug_utils as dbg
 
 def randomz(p):
     #return [p[0], p[1], p[2] + math.sin(p[0])]
@@ -21,7 +23,9 @@ def sincos(p, scale=1.):
     return [p[0], p[1], p[2] + math.sin(p[0] * p[1] / scale) * scale * 3.]
 
 def sincos_surf(p, scale=1.):
-    return [p[0], p[1] + math.sin(p[0]), p[2] + math.sin(p[0]) * math.cos(p[1])]
+    return [p[0],
+            p[1],
+            p[2] + math.sin(p[0]) * math.cos(p[1])]
 
 def sincosc(p, scale=1.):
     p = math.sin(p[0]), math.cos(p[1]), math.sin(p[0] * p[1]), 0.7
@@ -34,7 +38,7 @@ def raf(p):
 
 class GLWidgetTestEngine(GLWidget):
     def __init__(self):
-        super(GLWidgetTestEngine, self).__init__()
+        super(GLWidgetTestEngine, self).__init__(QGLFormat(QGL.SampleBuffers))
         self.timer = QTimer()
         #self.timer.setInterval(1)
         self.timer.timeout.connect(self.animate)
@@ -81,31 +85,40 @@ class GLWidgetTestEngine(GLWidget):
             
         if '--surface' in sys.argv:
             #n0 = Wall('wall', None, 100, 100, 5)
-            ns = Surface('surf', n0, 2, 2, 200)
+            ns = Surface('surf', n0, 1, 1, 20)
             ns.add_option('wire')
             #rcCubes = RandomCubes('rcs', n0)
-            ns.t_function(sincos_surf)
+            if '--flex' in sys.argv:
+                ns.t_function(sincos_surf)
             #ns.c_function(sincosc)            
-            #n0.r_function(raf)            
-            
+            #n0.r_function(raf)                        
         self.objects.append(n0)
+        self.addText()
             
-    def addPaintGL(self):
-        self.qglColor(Qt.white)
-        strx = 'xRot:{0:3d} yRot:{0:3d} zRot:{0:3d} #paints:{0:010}'.format(
-            int(self.xRot/16), int(self.yRot/16), int(self.zRot/16), self.npaints)
-        #self.renderText(-0.5, 0.5, -10, strx)      
-        self.npaints += 1
-        font = QFont('White Rabbit')
-        font.setPointSize(11)
-        self.renderText(-0.45, 0.40, 0, strx, font)
-        #font1 = QFont('Menlo')
-        #font1.setPointSize(11)
-        #self.renderText(-0.45, -1.40, 0, strx, font1)
-
 class GLWidgetTest(GLWidget):
     def __init__(self):
         super(GLWidgetTest, self).__init__()
+        self.timer = QTimer()
+        #self.timer.setInterval(1)
+        self.timer.timeout.connect(self.animate)
+        self.accel = 10
+        self.speedX  = 1
+        self.speedY  = 1
+        self.speedZ  = 1
+
+    def toggleAnimation(self):
+        if self.timer.isActive():
+            self.timer.stop()
+        else:
+            self.timer.start(1)            
+        
+    def animate(self):
+        angle = self.xRot + self.speedX * self.accel #random.random()
+        self.setXRotation(angle)
+        angle = self.yRot + self.speedY * self.accel #random.random()
+        self.setYRotation(angle)
+        angle = self.zRot + self.speedZ * self.accel #random.random()
+        self.setZRotation(angle)
         
     def addGL(self):
         n0 = demoNodes()

@@ -177,39 +177,57 @@ class Axes(Node):
 class Surface(Node):
     def __init__(self, name = 'Surface', parent = None, w=1, h=1, igran=5):
         super(Surface, self).__init__(name, parent)
-        self.vertices = []
+        self.vertices      = []
+        self.quad_vertices = []
         if w<=h:
-            csize = float(w / (igran * 1.))
+            self.csize = float(w / (igran * 1.))
         if h<w:
-            csize = float(h / (igran * 1.))
-        nverts = int((w * h) / (csize * csize))
+            self.csize = float(h / (igran * 1.))
+        nverts = int((w * h) / (self.csize * self.csize))
         if nverts < igran*igran:
             nverts = nverts + 1
         for i in range(nverts):
             irow = i / igran
             icol = i % igran
-            x = -w/2. + icol * csize
-            y = -h/2. + irow * csize
+            x = -w/2. + icol * self.csize
+            y = -h/2. + irow * self.csize
             z = 0
             self.vertices.append([x,y,z])
-                        
+            wd = self.csize / 3.
+            self.quad_vertices.append([x-wd, y-wd, z])
+            self.quad_vertices.append([x-wd, y+wd, z])
+            self.quad_vertices.append([x+wd, y+wd, z])
+            self.quad_vertices.append([x+wd, y-wd, z])                                    
+            
     def t_function(self, f):
         for i,v in enumerate(self.vertices):
             t = f(v)
             v = [t[0], t[1], t[2]]
             self.vertices.pop(i)
             self.vertices.insert(i, v)
+        for i,v in enumerate(self.quad_vertices):
+            t = f(v)
+            v = [t[0], t[1], t[2]]
+            self.quad_vertices.pop(i)
+            self.quad_vertices.insert(i, v)
         self.update = True
             
     def glCode(self):
         GL.glPointSize(1.0);
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
-        GL.glBegin(GL.GL_POINTS);
+        GL.glBegin(GL.GL_POINTS)
         for v in self.vertices:
             GL.glVertex3f(v[0], v[1], v[2])
         GL.glEnd();
-        
+
+        GL.glBegin(GL.GL_QUADS)
+        for v in self.quad_vertices:            
+            GL.glColor3f(self.color[0], self.color[1], self.color[2])        
+            GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+            GL.glVertex3f(v[0], v[1], v[2])
+        GL.glEnd();
+                
 class Wall(Node):
     def __init__(self, name='Wall', parent=None, w=1, h=1, igran=5):
         super(Wall, self).__init__(name, parent)

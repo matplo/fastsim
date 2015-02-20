@@ -5,10 +5,10 @@
 import sys
 import math
 
-from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt, QRect
+from PyQt5.QtGui import QColor, QPainter, QFont, QFontMetrics
 from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QVBoxLayout, QMessageBox, QSlider,
-        QWidget, QPushButton)
+        QWidget, QPushButton, QLabel)
 from PyQt5.QtOpenGL import QGLWidget
 
 import random
@@ -55,6 +55,10 @@ class Window(QWidget):
         self.zSlider.valueChanged.connect(self.glWidget.setZRotation)
         self.glWidget.zRotationChanged.connect(self.zSlider.setValue)
 
+        self.glWidget.xRotationChanged.connect(self.updateInfo)
+        self.glWidget.yRotationChanged.connect(self.updateInfo)
+        self.glWidget.zRotationChanged.connect(self.updateInfo)                
+        
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.glWidget)
         mainLayout.addWidget(self.xSlider)
@@ -62,24 +66,28 @@ class Window(QWidget):
         mainLayout.addWidget(self.zSlider)
         vLayout = QVBoxLayout()
         vLayout.addLayout(mainLayout)
+
+        self.infoLabel = QLabel()
+        vLayout.addWidget(self.infoLabel)
+        self.updateInfo()
         
         self.resetButton = QPushButton("&Reset View", self)
         self.resetButton.clicked.connect(self.resetView)
         vLayout.addWidget(self.resetButton)
-        
-        self.animateButton = QPushButton("&Animation Toggle", self)
-        self.animateButton.clicked.connect(self.glWidget.toggleAnimation)
-        vLayout.addWidget(self.animateButton)
+
+        try:        
+            self.animateButton = QPushButton("&Animation Toggle", self)
+            self.animateButton.clicked.connect(self.glWidget.toggleAnimation)
+            vLayout.addWidget(self.animateButton)
+        except:
+            pass
         
         self.quitButton = QPushButton("&Quit", self)
         self.quitButton.clicked.connect(QApplication.instance().quit)
         vLayout.addWidget(self.quitButton)
+        
         self.setLayout(vLayout)
-
-        self.xSlider.setValue(0)
-        self.ySlider.setValue(0)
-        self.zSlider.setValue(0)
-
+        self.resetView()        
         self.setWindowTitle("Test Nodes")
                 
     def createSlider(self):
@@ -89,14 +97,21 @@ class Window(QWidget):
         slider.setPageStep(15 * 16)
         slider.setTickInterval(15 * 16)
         slider.setTickPosition(QSlider.TicksRight)
-
         return slider
     
     def resetView(self):
         self.xSlider.setValue(0)
         self.ySlider.setValue(0)
         self.zSlider.setValue(0)
-    
+
+    def updateInfo(self):
+        print self.glWidget.xRot, self.glWidget.yRot, self.glWidget.zRot
+        strx = 'xRot:{:4.0f} yRot:{:4.0f} zRot:{:4.0f}'.format(
+            self.glWidget.xRot/16., self.glWidget.yRot/16., self.glWidget.zRot/16.)
+        font = QFont('White Rabbit')
+        font.setPointSize(11)
+        self.infoLabel.setText(strx)
+        
 class GLWidget(QGLWidget):
     xRotationChanged = pyqtSignal(int)
     yRotationChanged = pyqtSignal(int)
@@ -109,6 +124,7 @@ class GLWidget(QGLWidget):
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
+        self.npaints = 1
 
         self.lastPos = QPoint()
 
@@ -145,6 +161,7 @@ class GLWidget(QGLWidget):
             self.xRot = angle
             self.xRotationChanged.emit(angle)
             self.updateGL()
+        #print 'rotation',self.xRot,self.yRot,self.zRot
 
     def setYRotation(self, angle):
         angle = self.normalizeAngle(angle)
@@ -152,15 +169,20 @@ class GLWidget(QGLWidget):
             self.yRot = angle
             self.yRotationChanged.emit(angle)
             self.updateGL()
+        #print 'rotation',self.xRot,self.yRot,self.zRot
 
     def setZRotation(self, angle):
+        print 'z rotation'                
         angle = self.normalizeAngle(angle)
         if angle != self.zRot:
             self.zRot = angle
             self.zRotationChanged.emit(angle)
             self.updateGL()
-
+        #print 'rotation',self.xRot,self.yRot,self.zRot
+        
     def initializeGL(self):
+        self.makeCurrent()
+        GL.glEnable(GL.GL_MULTISAMPLE);
         GL.glClearColor(0,0,0,0)
         self.setupLight()        
         #GL.glShadeModel(GL.GL_FLAT)
@@ -198,7 +220,10 @@ class GLWidget(QGLWidget):
         #GL.glRotatef(60, 1.0, 0.0, 0.0);
         #GL.glRotatef(-20, 0.0, 0.0, 1.0);
         self.addGL()
-
+        
+    def drawInstructions(self, text):
+        pass
+    
     def addGL(self):
         #make all the things...
         self.objects.append(CoordCubes())
@@ -246,14 +271,12 @@ class GLWidget(QGLWidget):
             GL.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)                
             for o in self.objects:
                 o.gl()
-            
-            
+
     def resizeGL(self, width, height):
         side = min(width, height)
         aspect = float(width) / float(height)
         if side < 0:
             return
-
         GL.glViewport(0, 0, side, side)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
