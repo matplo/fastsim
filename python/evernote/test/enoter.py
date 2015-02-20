@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import evernote.api.client as enClient
 import evernote.edam.notestore as enStore
 import evernote.edam.type.ttypes as enTypes
 import evernote.edam.error.ttypes as enErrors
+import hashlib
+
 from utils import *
+
+from cachepickled import cachepickled as cache
 
 import datetime
     
@@ -15,18 +20,25 @@ class ENoterSetup:
     default_c_secret   = '9f451936519fb24e'
     default_c_key      = 'ploskon'
     default_sandbox    = True
+    default_use_cache  = True
+    default_cache      = './cache/default/'
     
     def __init__(self, **args):        
-        self.c_secret = not_none(self.default_c_secret,  args.get('c_secret'))
-        self.c_key    = not_none(self.default_c_key,     args.get('c_key'))
-        self.sandbox  = not_none(self.default_sandbox,   args.get('sandbox'))
-        self.token    = args.get('token')
+        self.c_secret  = not_none(self.default_c_secret,  args.get('c_secret'))
+        self.c_key     = not_none(self.default_c_key,     args.get('c_key'))
+        self.sandbox   = not_none(self.default_sandbox,   args.get('sandbox'))
+        self.use_cache = not_none(self.default_use_cache, args.get('use_cache'))
+        self.cache     = not_none(self.default_cache,     args.get('cache'))
+        self.token     = args.get('token')
         if self.token == None:
             if self.sandbox == True:
                 self.token = self.default_dev_token
+                self.cache = self.cache + '/dev/'
             else:
                 self.token = self.default_prod_token
-                
+                self.cache = self.cache + '/prod/'
+        self.filter_words       = None
+        
     def __repr__(self):
         return '[i] EnoterSetup:\n' + Inspector(self).table_members_basic()
 
@@ -34,20 +46,30 @@ class ENoter:
     def __init__(self, setup):
         self.setup      = setup
         self.reset()
+        self.check_cache()
         
     def reset(self):
         self.client     = None
         self.user_store = None
         self.user       = None
         self.note_store = None
-        
+
+    def check_cache(self):
+        if os.path.isdir(self.setup.cache):
+            pass
+        else:
+            try:
+                os.makedirs(self.setup.cache)
+            except OSError as e:
+                debug('e','unable to create cache dirs', e)
+
     def get_client(self):
         debug( )
         if self.client == None:
             self.client = enClient.EvernoteClient(sandbox=setup.sandbox,
-                                                token=setup.token,
-                                                consumer_key=setup.c_key,
-                                                consumer_secret=setup.c_secret)
+                                                    token=setup.token,
+                                                    consumer_key=setup.c_key,
+                                                    consumer_secret=setup.c_secret)
         debug_obj( self.client )
         return self.client
 
@@ -72,28 +94,38 @@ class ENoter:
         if self.note_store != None:
             return self.note_store
         try:
-            self.note_store = self.client.get_note_store()
+            self.note_store = self.get_client().get_note_store()
         except enErrors.EDAMSystemException as edue:
             debug('e','unable to get_note_store; error is:',edue)
+            return None
+        except:
+            debug('e','unable to get_note_store')
             return None
         debug_obj ( self.note_store )
         return self.note_store
 
     def get_notebooks(self):
-        try:
-            self.notebooks = self.get_note_store().listNotebooks()
-        except enErrors.EDAMSystemException as edue:
-            debug('e','unable to get notebooks; error is:',edue)
-            return None
+        cache_name = self.setup.cache + '_notebooks'
+        if self.setup.use_cache == False:
+            try:
+                self.notebooks = self.get_note_store().listNotebooks()
+                st = cache.write(cache_name, self.notebooks)
+                print '[i] cache & timestamp:',cache_name, st
+            except enErrors.EDAMSystemException as edue:
+                debug('e','unable to get notebooks; error is:',edue)
+                return None
+            except:
+                debug('e','unable to get notebooks')
+                return None                
+        else:
+            self.notebooks = cache.read(cache_name)            
         #debug_obj(self.notebooks)
-        for n in self.notebooks:
-            debug('-',n.name)
         return self.notebooks
 
     def create_note(self, title, contents):
         noteStore = self.get_note_store()
         if noteStore == None:
-            debug('e', 'unable to create a note!')
+            debug('e', 'unable to create a note')
             return
         note = enTypes.Note()
         note.title = title
@@ -102,23 +134,105 @@ class ENoter:
         created_note = noteStore.createNote(note)
         print "Successfully created a new note with GUID: ", created_note.guid
 
-    def read_notes(self, nlast = 3):
-        noteStore = self.get_note_store()
-        if noteStore == None:
-            debug('e', 'unable to create a note!')
-            return
-
+    # from: https://dev.evernote.com/doc/articles/creating_notes.php
+    def makeNote(authToken, noteStore, noteTitle, noteBody, parentNotebook=None):
+ 
+        nBody = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        nBody += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
+        nBody += "<en-note>%s</en-note>" % noteBody
+ 
+        ## Create note object
+        ourNote = Types.Note()
+        ourNote.title = noteTitle
+        ourNote.content = nBody
+ 
+        ## parentNotebook is optional; if omitted, default notebook is used
+        if parentNotebook and hasattr(parentNotebook, 'guid'):
+            ourNote.notebookGuid = parentNotebook.guid
+ 
+        ## Attempt to create note in Evernote account
+        try:
+            note = noteStore.createNote(authToken, ourNote)
+        except enErrors.EDAMUserException as edue:
+            ## Something was wrong with the note data
+            ## See EDAMErrorCode enumeration for error code explanation
+            ## http://dev.evernote.com/documentation/reference/Errors.html#Enum_EDAMErrorCode
+            print "EDAMUserException:", edue
+            return None
+        except enErrors.EDAMNotFoundException, ednfe:
+            ## Parent Notebook GUID doesn't correspond to an actual notebook
+            print "EDAMNotFoundException: Invalid parent notebook GUID"
+            return None
+        ## Return created note object
+        return note
+    
+    def get_note_list(self, nlast = 3):
         flter = enStore.NoteStore.NoteFilter()
         flter.ascending = False
+        flter.words = self.setup.filter_words
+        debug_obj ( flter )
  
         spec = enStore.NoteStore.NotesMetadataResultSpec()
         spec.includeTitle = True
- 
-        ourNoteList = noteStore.findNotesMetadata(flter, 0, nlast, spec)
-        for n in ourNoteList.notes:
-            debug_obj ( n )
-            #print n.title
+        spec.includeNotebookGuid = True
+        spec.includeCreated = True
+        spec.includeUpdated = True
+        spec.includeTagGuids = True
+        spec.includeAttributes = True        
+        debug_obj( spec )
+
+        strflter    = str(flter)
+        hash_object = hashlib.md5(strflter.encode())
+        hash_hex    = hash_object.hexdigest()
+        cache_name  = self.setup.cache + '_noteList_' + hash_hex
+        debug( strflter, cache_name )
         
+        noteList = None
+        if self.setup.use_cache == False: 
+            noteStore = self.get_note_store()
+            if noteStore == None:
+                return
+            try:
+                noteList = noteStore.findNotesMetadata(flter, 0, nlast, spec)
+                st = cache.write(cache_name, noteList)
+                print '[i] cache & timestamp:',cache_name, st
+            except:
+                debug( 'e', 'unable to get the note list')
+        else:
+            noteList = cache.read(cache_name)
+        return noteList
+
+    def get_note(self, guid):
+        note = None
+        cache_name = self.setup.cache + '_noteList_' + str(guid)
+        if self.setup.use_cache == False: 
+            noteStore = self.get_note_store()
+            if noteStore == None:
+                return
+            withContent = True
+            withResourcesData = True
+            withResourcesRecognition = True
+            withResourcesAlternateData = True
+            try:
+                note = noteStore.getNote(guid,
+                                         withContent,
+                                         withResourcesData,                                         
+                                         withResourcesRecognition,
+                                         withResourcesAlternateData)
+                st = cache.write(cache_name, note)
+                print '[i] cache & timestamp:',cache_name, st            
+            except enErrors.EDAMUserException as e:
+                debug('e', '(UserE) unable to get the note id:', guid, e)
+            except enErrors.EDAMSystemException as e:
+                debug('e', '(SysE) unable to get the note id:', guid, e)
+            except enErrors.EDAMNotFoundException as e:
+                debug('e', '(NFound) unable to get the note id:', guid, e)                
+            except:
+                debug('e', 'unable to get the note id:', guid)
+        else:
+            note = cache.read(cache_name)
+        return note
+    
 def create_notebook(client, name = 'Dev Notebook'):
     debug()
     noteStore = get_note_store(client)
@@ -147,18 +261,23 @@ def test():
     if token == prod_token:
         sandbox = False
     debug('sandbox:',sandbox)
+    
     client = get_client(token, sandbox=sandbox)
     test_auth(client)
     print_notebooks(client)
     create_notebook(client)
     print_notebooks(client)
     get_linked_notebooks(client, token)
-    
-if __name__=='__main__':
+
+def test1():
     sandbox = True
     if '--prod' in sys.argv:
         sandbox = False
-    setup = ENoterSetup(sandbox=sandbox)
+    if '--no-cache' in sys.argv:
+        use_cache = False
+    else:
+        use_cache = True
+    setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
     #print Inspector(setup).table_members_all()
     debug ( setup )
     enoter = ENoter(setup)
@@ -166,6 +285,45 @@ if __name__=='__main__':
     enoter.get_user()
     notebooks = enoter.get_notebooks()
     if '--create-test-note' in sys.argv:
-        enoter.create_note('test note at:' + str(datetime.datetime.now()), 'content from python...')
+        enoter.create_note('test note at:' + str(datetime.datetime.now()), '<div> content from </div> </br> <div> python... </div>')
     enoter.read_notes()
+    debug ('.')
+    
+if __name__=='__main__':
+    if '-d' in sys.argv:
+        Flags.debugFlag = True
+    debug()
+    sandbox = True
+    if '--prod' in sys.argv:
+        sandbox = False
+    if '--no-cache' in sys.argv:
+        use_cache = False
+    else:
+        use_cache = True
+    setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
+    setup.filter_words = get_arg_with('-w')
+    debug ( setup )
+    enoter = ENoter(setup)
+    notebooks = enoter.get_notebooks()
+    if notebooks:
+        for n in notebooks:
+            debug('-',n.name)
+    note_list = enoter.get_note_list(nlast = 20)
+    debug ( note_list )
+    try:
+        nselect = int(str(get_arg_with('-n')))
+    except:
+        nselect = -1
+    if note_list:
+        for i,n in enumerate(note_list.notes):
+            if nselect>0 and i != nselect:
+                continue
+            #enoter.setup.use_cache = False
+            note = enoter.get_note(n.guid)
+            if '--content' in sys.argv:
+                print note.content.split('<en-note>')[1].split('</en-note>')[0]
+            else:
+                print '->',i,'Note Titled:',n.title,' GUID:',n.guid
+            debug ( n )
+                
     debug ('.')

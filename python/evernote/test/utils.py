@@ -1,10 +1,38 @@
+def exists(fname):
+    try:
+        f = open(fname, 'r')
+        f.close()
+    except:
+        return False
+    return True
+
+import sys
+def is_arg_set(arg=''):
+    for a in sys.argv:
+        if a==arg:
+            return True
+    return False
+
+def get_arg_with(arg=''):
+    retval = None
+    maxl = len(sys.argv)
+    for i in range(0,maxl):
+        if sys.argv[i]==arg and i < maxl-1:
+            retval=sys.argv[i+1]
+    return retval
+
 def not_none(a,b):
     if b == None:
         return a
     return b
 
 import traceback
+class Flags:
+    debugFlag = False
+    
 def debug(*msg):
+    if Flags.debugFlag == False:
+        return
     stack = traceback.extract_stack()
     #print stack[0]
     filename, codeline, funcName, text = stack[-2]
