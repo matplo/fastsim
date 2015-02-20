@@ -66,10 +66,14 @@ class ENoter:
     def get_client(self):
         debug( )
         if self.client == None:
-            self.client = enClient.EvernoteClient(sandbox=setup.sandbox,
-                                                    token=setup.token,
-                                                    consumer_key=setup.c_key,
-                                                    consumer_secret=setup.c_secret)
+            try:
+                self.client = enClient.EvernoteClient(sandbox=self.setup.sandbox,
+                                                      token=self.setup.token,
+                                                      consumer_key=self.setup.c_key,
+                                                      consumer_secret=self.setup.c_secret)
+            except:
+                debug('e', 'unable to get_client')
+                return None
         debug_obj( self.client )
         return self.client
 
@@ -95,11 +99,17 @@ class ENoter:
             return self.note_store
         try:
             self.note_store = self.get_client().get_note_store()
-        except enErrors.EDAMSystemException as edue:
-            debug('e','unable to get_note_store; error is:',edue)
-            return None
+        except enErrors.EDAMUserException as e:
+            debug('e', '(UserE) unable to get_note_store; error is:',e)
+            return None            
+        except enErrors.EDAMSystemException as e:
+            debug('e', '(SysE) unable to get_note_store; error is:',e)
+            return None            
+        except enErrors.EDAMNotFoundException as e:
+            debug('e', '(NFound) unable to get_note_store; error is:',e)
+            return None            
         except:
-            debug('e','unable to get_note_store')
+            debug('e', '(other) unable to get_note_store')
             return None
         debug_obj ( self.note_store )
         return self.note_store
@@ -288,8 +298,14 @@ def test1():
         enoter.create_note('test note at:' + str(datetime.datetime.now()), '<div> content from </div> </br> <div> python... </div>')
     enoter.read_notes()
     debug ('.')
-    
-if __name__=='__main__':
+
+def usage():
+    print '[i]',os.path.basename(sys.argv[0]),'-d [--prod] [--no-cache] [--filter <words>] [-n <to display>] [--content]'
+
+def main():
+    if '-h' in sys.argv:
+        usage()
+        return
     if '-d' in sys.argv:
         Flags.debugFlag = True
     debug()
@@ -301,7 +317,7 @@ if __name__=='__main__':
     else:
         use_cache = True
     setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
-    setup.filter_words = get_arg_with('-w')
+    setup.filter_words = get_arg_with('--filter')
     debug ( setup )
     enoter = ENoter(setup)
     notebooks = enoter.get_notebooks()
@@ -327,3 +343,6 @@ if __name__=='__main__':
             debug ( n )
                 
     debug ('.')
+    
+if __name__=='__main__':
+    main()
