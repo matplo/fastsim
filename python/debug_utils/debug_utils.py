@@ -43,7 +43,10 @@ def debug(*msg):
 
 def debug_obj(obj, msg=' ', truncate=50):
     debug ( '|', msg, type(obj), '\n', Inspector(obj).table_members_basic(truncate=truncate) )
-    
+    try:
+        obj._debug()
+    except:
+        pass
     
 import inspect
 from tabulate import tabulate
