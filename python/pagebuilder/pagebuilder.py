@@ -42,21 +42,35 @@ class Navbar(object):
         return navbar.replace('#links', '\n'.join(links))
         
 class PageBuilder(object):
-    def __init__(self, rootdir, roothttp):
+    def __init__(self, title, rootdir, roothttp):
         self.rootdir  = rootdir
         self.roothttp = roothttp
         self.navbar   = Navbar(self.rootdir)
         self.sections = DirInfo(self.rootdir)
         #print self.sections.render_as_html()
+        self.title    = title
+        self.template = ''
         
+    def set_template(self, template):
+        self.template = load_file(template, lines=False)
+        
+    def make_title(self, intmpl):
+        templ = '''
+        <title>#title#</title>
+        '''
+        return intmpl.replace('#title', templ.replace('#title#', self.title))
+    
     def render(self):
-        idx = load_file('./templates/index.html',lines=False)
-        return idx.replace('#navbar',self.navbar.render()).replace('#sections', self.sections.render_as_html())
+        out = self.template
+        out = self.make_title(out)
+        out = out.replace('#navbar',self.navbar.render())
+        out = out.replace('#sections', self.sections.render_as_html())
+        return out
         
 def main():
     #nb = Navbar('./test')
     #print nb.render()
-    pb = PageBuilder('/Users/ploskon/devel/sandbox/python/pagebuilder/test', '/')
+    pb = PageBuilder('Just a test','/Users/ploskon/devel/sandbox/python/pagebuilder/test', '/')
     print pb.render()
     
 if __name__=='__main__':
