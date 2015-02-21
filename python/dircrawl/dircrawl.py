@@ -4,15 +4,16 @@ from utils.utils import *
 from debug_utils.debug_utils import *
 
 class HTMLFragments:
-    START_HTML_SECTION = '''
+    START_HTML = '''
     <div class="well well-sm">
     <div class="page-header">
-    <h2>TITLE<small>SUB-TITLE</small></h2>
+    <h2> TITLE <small> SUB-TITLE </small> </h2>
     </div>
     <div class="well well-sm">'''
-    END_HTML_SECTION = '</div></div>'
-    PAR_HTML_SECTION = '<p>contents</p>\n'
-    VERB_HTML_SECTION='<pre><code class="text">contents</code></pre>\n'
+    END_HTML = '</div></div>'
+    PAR_HTML = '<p>contents</p>\n'
+    VERB_HTML='<pre><code class="text">contents</code></pre>\n'
+    IMG_HTML='''"<img class="img-responsive" src="source" alt="description">'''
     
 class InfoItem(object):
     def __init__(self, fname):
@@ -29,13 +30,18 @@ class InfoItem(object):
         for l in self.data:
             if l[:1] == '#':
                 if l[:2] == '#>':
-                    ftoload = l.strip('#>')
+                    ftoload = l.lstrip('#>')
                     self.output.append('verbatim>' + load_file(ftoload, lines=False))
+                elif l[:3] == '#v>':
+                    ftoload = l.lstrip('#v>')
+                    cont = load_file(ftoload, lines=True)
+                    for c in cont:
+                        self.output.append('<p>{}</p>'.format(c))
+                elif l[:3] == '#g>':
+                    ftoload = l.lstrip('#g>')
+                    self.output.append(HTMLFragments.IMG_HTML.replace('source',ftoload))
                 else:
                     self.output.append('Section: ' + l[1:])
-                if l[:3] == '#v>':
-                    ftoload = l.strip('#>')
-                    self.output.append(load_file(ftoload, lines=False))
             else:
                 self.output.append(l)
 
@@ -48,21 +54,21 @@ class InfoItem(object):
         for l in self.output:
             if l[:len('Section:')] == 'Section:':
                 if in_section == True: #new section is starting...
-                    outstr.append(HTMLFragments.END_HTML_SECTION)
+                    outstr.append(HTMLFragments.END_HTML)
                 in_section = True
-                outstr.append(HTMLFragments.START_HTML_SECTION.replace('SUB-TITLE',self.tstamp).replace('TITLE', l))
+                outstr.append(HTMLFragments.START_HTML.replace('SUB-TITLE',self.tstamp).replace('TITLE', l))
                 continue
             if l[:len('verbatim>')] == 'verbatim>':
-                outstr.append(HTMLFragments.VERB_HTML_SECTION.replace('contents', l.strip('verbatim>')))
+                outstr.append(HTMLFragments.VERB_HTML.replace('contents', l.strip('verbatim>')))
                 continue
-            outstr.append(HTMLFragments.PAR_HTML_SECTION.replace('contents', l))
+            outstr.append(HTMLFragments.PAR_HTML.replace('contents', l))
         if in_section == True: #end the section
-            outstr.append(HTMLFragments.END_HTML_SECTION)                
+            outstr.append(HTMLFragments.END_HTML)                
         return ''.join([l for l in outstr])
     
 class DirInfo(object):
-    def __init__(self, path):
-        self.files   = find_files(path, '*.info')
+    def __init__(self, path, ext='*.info'):
+        self.files   = find_files(path, ext)
         self.entries = []
         for f in self.files:
             self.entries.append(InfoItem(f))

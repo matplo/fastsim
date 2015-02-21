@@ -1,11 +1,14 @@
-#dircrawl.py
+##1
 
 This file is a python source
 
 #>/Users/ploskon/.profile
 
-The file is described in section_a.info:
+#The file is described in section_a.info:
 
-#>/Users/ploskon/devel/sandbox/python/pagebuilder/test/section_a.info
+#v>/Users/ploskon/devel/sandbox/python/pagebuilder/test/textfile.descr
 That is it in this section
+
+#Can we put in a photo?
+#g>./resources/mp/img/IMG_2376_lowq.jpg
 
