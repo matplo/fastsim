@@ -3,7 +3,7 @@ def geo(ip):
     import os
     thisf = os.path.abspath(__file__)
     cdir  = os.path.dirname(thisf)
-    dataf = os.path.join(cdir.replace('scripts', 'resources/mp/data/'),'GeoIP.dat')
+    dataf = os.path.join(cdir.replace('scripts', 'static/mp/data/'),'GeoIP.dat')
     
     import GeoIP
     ogeo    = GeoIP.open(dataf, GeoIP.GEOIP_STANDARD)
