@@ -1,0 +1,4 @@
+*~
+*.pyc
+logs/*
+site_packages.info

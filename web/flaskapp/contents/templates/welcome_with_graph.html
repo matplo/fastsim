@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+
+{% block other %}
+<div class="row clearfix">
+<div class="col-md-12 column">
+  <div id="plotContainer" class="chart" style="width:100%;height:400px"></div>
+</div>
+</div>
+{% endblock %}   
+
+{% block scripts %}
+{{super()}}
+<script src="/static/highcharts.js"></script>
+<script src="/static/highcharts-3d.js"></script>
+<script src="/static/exporting.js"></script>
+<script src="/static/plotAccessTimes.js"></script>
+{% if plotData %}
+<script>
+$().ready( function () { plotGraph('{{ plotData }}') } );
+</script>
+{% endif %}
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+{% endblock %}
