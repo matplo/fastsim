@@ -50,6 +50,13 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+import datetime as dt
+def now_str():
+    t = dt.datetime.now()
+    mins = str(t.minute)
+    hs   = str(t.hour)
+    return '{} : {}'.format(hs, mins)
+
 ## routing...
 
 @app.route('/')
@@ -59,17 +66,27 @@ def index():
     #form.validate_on_submit() #to get error messages to the browser
     jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
     #return render_template('index.html', jumbo=jumbo)
-    return render_template('welcome.html', jumbo=jumbo, plotData='/data/access.json')
+    return render_template('welcome.html', jumbo=jumbo)
+
+@app.route('/logon')
+def logon():
+    jumbo = { 'head' : 'Logon page', 'text' : 'No text to add...'}
+    return render_template('logon.html', jumbo=jumbo)
 
 @app.errorhandler(404)
 def page_not_found(e):
     jumbo = { 'head' : 'This is the famous 404...', 'text' : 'How did we end up here?' }
-    return render_template('404.html', jumbo=jumbo), 404
+    return render_template('404.html', jumbo=jumbo, addtxt=[str(e)]), 404
 
 @app.errorhandler(500)
 def error_page(e):
     jumbo = { 'head' : 'This a 500... sorry!', 'text' : 'How did we end up here?' }
-    return render_template('500.html', jumbo=jumbo), 500
+    addtxt = {
+        'header'  : 'Error content',
+        'small'   : now_str(),
+        'content' : [str(e)]
+        }
+    return render_template('500.html', jumbo=jumbo, addtxt=addtxt), 500
     #return error_log(), 500
 
 @app.route('/geo')
@@ -116,7 +133,6 @@ def data(var=''):
 @app.route('/query/<var>')
 def query(var=''):
     retval = '[]'
-    import datetime as dt
     if var == 'time':
         t = dt.datetime.now()
         mins = str(t.minute)
