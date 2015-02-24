@@ -1,55 +1,41 @@
-from flask import Flask, render_template, request, redirect, session, escape, url_for
+from flask import Flask, render_template, request, redirect, session, escape, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
+from flask.ext.session import Session
 
 import os
-configfile=os.path.dirname(__file__) + '/config/default'
+thisdir    = os.path.dirname(os.path.realpath(__file__))    
+configfile = thisdir + '/config/default'
 
 app = Flask(__name__)
-AppConfig(app, configfile)  # Flask-Appconfig is not necessary, but
-# highly recommend =)
-# https://github.com/mbr/flask-appconfig
+AppConfig(app, configfile)
 Bootstrap(app)
+Session(app)
 
 from flask_debugtoolbar import DebugToolbarExtension
 # the toolbar is only enabled in debug mode:
 app.debug = False
-# app.debug = True
+#app.debug = True
 toolbar = DebugToolbarExtension(app)
 
 ## authentication
 from functools import wraps
 from flask import Response
 
-#import sys
-#sys.path.insert(0,"/var/www/ploskon.com/FlaskApp/scripts")
-import logon_form
-import genPass
-import geo
-import os
+import sys
+sys.path.insert(0, thisdir + '/contents' )
+from scripts import logon_form, gen_pass, geo_ip, userdb
 
 def check_auth(username, password):
-    """This function is called to check if a username /
-    password combination is valid.
-    """
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    fname = basedir+'/hash/'+username+'.hash'
-    return genPass.check_pass(password, fname)
-    #return username == 'ploskon' and password == 'mateusz'
-
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    return Response(
-    'Could not verify your access level for that URL.\n'
-    'You have to login with proper credentials', 401,
-    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    return userdb.gUsers.check_passwd(username, password)
 
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
+        try:
+            session['user'].valid
+        except:
+            return redirect(url_for('logon'))
         return f(*args, **kwargs)
     return decorated
 
@@ -73,23 +59,36 @@ def index():
 
 @app.route('/logon', methods=['GET', 'POST'])
 def logon():
-    session['username'] = ''
-    session['password'] = ''
+    try:
+        session.pop('user')
+    except:
+        pass
     jumbo = { 'head' : 'Logon page', 'text' : 'No text to add...'}
     form = logon_form.PasswordForm()
     if request.method == 'POST':
         if form.validate():
+            fentry   = request.form['password']
             try:
-                fentry   = request.form['password']
                 fentries = fentry.split('/')
-                session['username'] = fentries[0]
-                session['password'] = fentries[1]
-                return redirect(url_for('index'))
+                if check_auth(fentries[0], fentries[1]):
+                    session['user'] = userdb.gUsers.find_user(fentries[0])
+                    return redirect(url_for('index'))
             except:
                 pass
-            form.password.errors.insert(0, 'wrong pass...')
+            if len(fentry) < 1:
+                form.password.errors.insert(0, '...this is not really a password, is it?')                
+            else:
+                form.password.errors.insert(0, 'unable to authenticate...')
     return render_template('logon.html', jumbo=jumbo, form=form)
 
+@app.route('/logout')
+def logout():
+    try:
+        session.pop('user')
+    except:
+        pass
+    return redirect(url_for('index'))
+    
 @app.errorhandler(401)
 def page_not_found(e):
     jumbo = { 'head' : 'This is the famous 401... Access denied.', 'text' : 'How did we end up here?' }
@@ -135,11 +134,16 @@ def error_page(e):
 @app.route('/geo')
 def geo():
     remoteip = request.remote_addr
-    iptext = geo.geo(remoteip)
-    jumbo = { 'head' : 'Checking your location...', 'text' : 'Your ip shows : {}'.format(iptext)}
+    iptext = geo_ip.info(remoteip)
+    if remoteip == '127.0.0.1':
+        remoteip = geo_ip.public_ip()
+        iptext += ' but your public ip is: ' + geo_ip.info(remoteip)
+    jumbo = { 'head' : 'Checking your location...', 
+              'text' : 'Your ip shows: {}'.format(iptext)}
     return render_template('geo.html', jumbo=jumbo, title='ploskon.com/geo')
 
 @app.route('/test')
+@requires_auth
 def test():
     return render_template('test.html')
 

@@ -1,23 +1,24 @@
-def geo(ip):
+#!/usr/bin/env python
 
-    import os
+import os
+import GeoIP
+import urllib2
+
+def info(ip):
     thisf = os.path.abspath(__file__)
     cdir  = os.path.dirname(thisf)
     dataf = os.path.join(cdir.replace('scripts', 'static/mp/data/'),'GeoIP.dat')
     
-    import GeoIP
     ogeo    = GeoIP.open(dataf, GeoIP.GEOIP_STANDARD)
     country = ogeo.country_name_by_addr(ip)
     retval = ' '.join([str(ip),'[',str(country),']'])
     return retval
 
 # from http://commandline.org.uk/python/how-to-find-out-ip-address-in-python/
-def getNetworkIp():
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('google.com', 0))
-    return s.getsockname()[0]
+def public_ip():
+    op = urllib2.urlopen('http://ploskon.com/georaw')
+    return op.readlines()[0].strip('\n')
 
 if __name__=="__main__":
-    ip = getNetworkIp()
-    print geo(ip)
+    ip = public_ip()
+    print info(ip)

@@ -12,22 +12,33 @@
               <span class="icon-bar"></span>
             </button>
             <a class="navbar-brand" href="/">Home</a>
-	    <a class="navbar-brand pull-right" href="#">Go2Top</a>
+	    <a class="navbar-brand" href="#">Top</a>
           </div>
 	<div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav navbar-left">
               <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Links<span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
                   <li class="dropdown-header">On this server...</li>
 		  <li><a href="/geo">Geo</a></li>
-		  <li><a href="/logon">Logon</a></li>		  
+		  {% if session['user'] %}
+		  <li><a href="/test">Normal user</a></li>		  
+		    {% if session['user'].is_root %}
+		    <li><a href="/test">Special user</a></li>
+		    {% endif %}
+		  {% endif %}
                   <li class="divider"></li>
                   <li class="dropdown-header">Other links</li>
 		  <li><a href="http://www.google.com" target="_blank">Google</a></li>
                </ul>
 	     </li>
             </ul>
+	    {% if session['user'] %}
+	    <a class="navbar-brand navbar-right" href="/logout">
+	    Logout [{{ session['user'].name }}]</A>
+	    {% else %}
+	    <a class="navbar-brand navbar-right" href="/logon">Logon</a>
+	    {% endif %}	    
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
       </nav>

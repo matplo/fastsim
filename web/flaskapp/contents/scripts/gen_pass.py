@@ -31,7 +31,7 @@ def main():
         
     what = 'check'
     try:
-        if sys.argv[3] == '-gen':
+        if sys.argv[3] == '--gen':
             what = 'gen'
     except:
         pass
