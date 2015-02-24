@@ -20,10 +20,6 @@ toolbar = DebugToolbarExtension(app)
 
 from flask_flatpages import FlatPages
 pages = FlatPages(app)
-
-@app.before_request
-def before_request():
-    g.links = pages
     
 ## authentication
 from functools import wraps
@@ -52,6 +48,11 @@ def now_str():
     mins = str(t.minute)
     hs   = str(t.hour)
     return '{} : {}'.format(hs, mins)
+
+## preps
+@app.before_request
+def before_request():
+    g.links = pages
 
 ## routing...
 
