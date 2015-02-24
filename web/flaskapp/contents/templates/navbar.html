@@ -19,16 +19,23 @@
               <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Links<span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
-                  <li class="dropdown-header">On this server...</li>
+                  <li class="dropdown-header">Local links...</li>
 		  <li><a href="/geo">Geo</a></li>
 		  {% if session['user'] %}
-		  <li><a href="/test">Normal user</a></li>		  
+		    <li class="divider"></li>
+                    <li class="dropdown-header">User links</li>
+		    <li><a href="/test">Logged user</a></li>		  
 		    {% if session['user'].is_root %}
-		    <li><a href="/test">Special user</a></li>
+		    <li class="divider"></li>
+                    <li class="dropdown-header">Special links</li>
+		    <li><a href="/pages/test">Special user</a></li>		    
+		    {% for p in g.links %}
+		    <li><a href="{{ p.path }}">{{ p.path }} </a></li>
+		    {% endfor %}
 		    {% endif %}
 		  {% endif %}
                   <li class="divider"></li>
-                  <li class="dropdown-header">Other links</li>
+                  <li class="dropdown-header">External links...</li>
 		  <li><a href="http://www.google.com" target="_blank">Google</a></li>
                </ul>
 	     </li>

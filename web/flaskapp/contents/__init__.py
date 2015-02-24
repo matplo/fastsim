@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, escape, url_for, flash
+from flask import Flask, render_template, request, redirect, session, escape, url_for, flash, g
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 from flask.ext.session import Session
@@ -18,6 +18,13 @@ app.debug = False
 #app.debug = True
 toolbar = DebugToolbarExtension(app)
 
+from flask_flatpages import FlatPages
+pages = FlatPages(app)
+
+@app.before_request
+def before_request():
+    g.links = pages
+    
 ## authentication
 from functools import wraps
 from flask import Response
@@ -56,6 +63,17 @@ def index():
     jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
     #return render_template('index.html', jumbo=jumbo)
     return render_template('welcome.html', jumbo=jumbo)
+
+@app.route('/pages/<path>')
+def page(path):
+    jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
+    #ps = (p for p in pages if 'published' in p.meta)
+    p = pages.get(path)
+    addtxt = { 'header'  : p['title'],
+               'small'   : p['subtitle'],
+               'content' : [p.body] }               
+    #               'content' : [p.html] }
+    return render_template('page_template.html', jumbo=jumbo,addtxt=addtxt)
 
 @app.route('/logon', methods=['GET', 'POST'])
 def logon():
