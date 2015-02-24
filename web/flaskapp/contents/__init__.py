@@ -13,8 +13,8 @@ Bootstrap(app)
 
 from flask_debugtoolbar import DebugToolbarExtension
 # the toolbar is only enabled in debug mode:
-# app.debug = True
 app.debug = False
+# app.debug = True
 toolbar = DebugToolbarExtension(app)
 
 ## authentication
@@ -23,8 +23,11 @@ from flask import Response
 
 #import sys
 #sys.path.insert(0,"/var/www/ploskon.com/FlaskApp/scripts")
+import logon_form
 import genPass
+import geo
 import os
+
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
@@ -70,22 +73,32 @@ def index():
 
 @app.route('/logon', methods=['GET', 'POST'])
 def logon():
+    session['username'] = ''
+    session['password'] = ''
     jumbo = { 'head' : 'Logon page', 'text' : 'No text to add...'}
-    import logon_form
     form = logon_form.PasswordForm()
-    if form.validate():
-        try:
-            fentry = request.form['password']
-            fentries = fentry.split('/')
-            session['username'] = fentries[0]
-            session['password'] = fentries[1]
-        except:
-            form.errors[0] = 'failed getting uname/pass...'
-            render_template('logon.html', jumbo=jumbo, form=form)            
-        return redirect(url_for('/'))
-    else:
-        pass
+    if request.method == 'POST':
+        if form.validate():
+            try:
+                fentry   = request.form['password']
+                fentries = fentry.split('/')
+                session['username'] = fentries[0]
+                session['password'] = fentries[1]
+                return redirect(url_for('index'))
+            except:
+                pass
+            form.password.errors.insert(0, 'wrong pass...')
     return render_template('logon.html', jumbo=jumbo, form=form)
+
+@app.errorhandler(401)
+def page_not_found(e):
+    jumbo = { 'head' : 'This is the famous 401... Access denied.', 'text' : 'How did we end up here?' }
+    addtxt = {
+        'header'  : 'Error content',
+        'small'   : now_str(),
+        'content' : [str(e)]
+        }
+    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 401
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -122,7 +135,6 @@ def error_page(e):
 @app.route('/geo')
 def geo():
     remoteip = request.remote_addr
-    import geo
     iptext = geo.geo(remoteip)
     jumbo = { 'head' : 'Checking your location...', 'text' : 'Your ip shows : {}'.format(iptext)}
     return render_template('geo.html', jumbo=jumbo, title='ploskon.com/geo')
