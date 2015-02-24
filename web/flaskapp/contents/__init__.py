@@ -21,12 +21,10 @@ toolbar = DebugToolbarExtension(app)
 from functools import wraps
 from flask import Response
 
-#import sys
-#sys.path.insert(0,"/var/www/ploskon.com/FlaskApp/scripts")
-import logon_form
-import genPass
-import geo
-import os
+import sys
+thisdir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, thisdir + '/contents' )
+from scripts import logon_form, gen_pass, geo_ip
 
 def check_auth(username, password):
     """This function is called to check if a username /
@@ -34,7 +32,7 @@ def check_auth(username, password):
     """
     basedir = os.path.abspath(os.path.dirname(__file__))
     fname = basedir+'/hash/'+username+'.hash'
-    return genPass.check_pass(password, fname)
+    return gen_pass.check_pass(password, fname)
     #return username == 'ploskon' and password == 'mateusz'
 
 def authenticate():
@@ -138,8 +136,12 @@ def error_page(e):
 @app.route('/geo')
 def geo():
     remoteip = request.remote_addr
-    iptext = geo.geo(remoteip)
-    jumbo = { 'head' : 'Checking your location...', 'text' : 'Your ip shows : {}'.format(iptext)}
+    iptext = geo_ip.info(remoteip)
+    if remoteip == '127.0.0.1':
+        remoteip = geo_ip.public_ip()
+        iptext += ' but your public ip is: ' + geo_ip.info(remoteip)
+    jumbo = { 'head' : 'Checking your location...', 
+              'text' : 'Your ip shows: {}'.format(iptext)}
     return render_template('geo.html', jumbo=jumbo, title='ploskon.com/geo')
 
 @app.route('/test')
