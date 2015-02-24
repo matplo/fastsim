@@ -79,15 +79,18 @@ def logon():
     form = logon_form.PasswordForm()
     if request.method == 'POST':
         if form.validate():
+            fentry   = request.form['password']
             try:
-                fentry   = request.form['password']
                 fentries = fentry.split('/')
                 session['username'] = fentries[0]
                 session['password'] = fentries[1]
                 return redirect(url_for('index'))
             except:
                 pass
-            form.password.errors.insert(0, 'wrong pass...')
+            if len(fentry) < 1:
+                form.password.errors.insert(0, '...this is not really a password, is it?')                
+            else:
+                form.password.errors.insert(0, 'wrong pass...')
     return render_template('logon.html', jumbo=jumbo, form=form)
 
 @app.errorhandler(401)
