@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session, escape, url_for
 from flask_bootstrap import Bootstrap
 from flask_appconfig import AppConfig
 
@@ -68,15 +68,45 @@ def index():
     #return render_template('index.html', jumbo=jumbo)
     return render_template('welcome.html', jumbo=jumbo)
 
-@app.route('/logon')
+@app.route('/logon', methods=['GET', 'POST'])
 def logon():
     jumbo = { 'head' : 'Logon page', 'text' : 'No text to add...'}
-    return render_template('logon.html', jumbo=jumbo)
+    import logon_form
+    form = logon_form.PasswordForm()
+    if form.validate():
+        try:
+            fentry = request.form['password']
+            fentries = fentry.split('/')
+            session['username'] = fentries[0]
+            session['password'] = fentries[1]
+        except:
+            form.errors[0] = 'failed getting uname/pass...'
+            render_template('logon.html', jumbo=jumbo, form=form)            
+        return redirect(url_for('/'))
+    else:
+        pass
+    return render_template('logon.html', jumbo=jumbo, form=form)
 
 @app.errorhandler(404)
 def page_not_found(e):
     jumbo = { 'head' : 'This is the famous 404...', 'text' : 'How did we end up here?' }
-    return render_template('404.html', jumbo=jumbo, addtxt=[str(e)]), 404
+    addtxt = {
+        'header'  : 'Error content',
+        'small'   : now_str(),
+        'content' : [str(e)]
+        }
+    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 404
+
+@app.errorhandler(405)
+def page_not_found(e):
+    jumbo = { 'head' : 'This error #405 Method Not Allowed...',
+              'text' : 'How did we end up here?' }
+    addtxt = {
+        'header'  : 'Error content',
+        'small'   : now_str(),
+        'content' : [str(e)]
+        }
+    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 405
 
 @app.errorhandler(500)
 def error_page(e):
