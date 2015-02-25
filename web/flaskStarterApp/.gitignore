@@ -1,0 +1,6 @@
+*~
+*.pyc
+logs/*
+site_packages.info
+*.hash
+flask_session
