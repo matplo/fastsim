@@ -14,7 +14,7 @@ class Section(Output):
         self.title    = page['title']
         self.subtitle = page['subtitle']
         date_str = page['published'].strftime('%Y-%m-%d')
-        self.content.append('Page published on:' + date_str)
+        self.content.append('Page published on: ' + date_str)
         self.content.append(page.html)
         self.content.append(self.raw('We need to strip extra tags before rendering page.html'))
         self.content.append(self.raw(dbg.debug_obj_str(self)))

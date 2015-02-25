@@ -48,6 +48,8 @@ def requires_auth(f):
 def before_request():
     g.links = []
     for p in pages:
+        if 'service/' in p.path:
+            continue
         g.links.append({'link':'/pages/' + p.path, 'path' : p.path})
 
 ## routing...
@@ -56,7 +58,8 @@ def index():
     jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
     return render_template('welcome.html', jumbo=jumbo)
 
-@app.route('/pages/<path>')
+@app.route('/pages', defaults={'/pages/path', ''})
+@app.route('/pages/<path:path>')
 @requires_auth
 def page(path):
     p = pages.get(path)
