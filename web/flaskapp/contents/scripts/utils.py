@@ -66,3 +66,9 @@ def get_now(form='{}'):
     now = time.time()
     stnow = datetime.datetime.fromtimestamp(now).strftime('%Y-%m-%d %H:%M:%S')
     return form.format(stnow)
+
+def now_str():
+    t = dt.datetime.now()
+    mins = str(t.minute)
+    hs   = str(t.hour)
+    return '{} : {}'.format(hs, mins)

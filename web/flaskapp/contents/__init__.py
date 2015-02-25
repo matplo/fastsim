@@ -29,6 +29,7 @@ import sys
 sys.path.insert(0, thisdir + '/contents' )
 from scripts import logon_form, gen_pass, geo_ip, userdb
 from scripts.page_process import Section
+from scripts.utils import now_str
 
 def check_auth(username, password):
     return userdb.gUsers.check_passwd(username, password)
@@ -42,13 +43,6 @@ def requires_auth(f):
             return redirect(url_for('logon'))
         return f(*args, **kwargs)
     return decorated
-
-import datetime as dt
-def now_str():
-    t = dt.datetime.now()
-    mins = str(t.minute)
-    hs   = str(t.hour)
-    return '{} : {}'.format(hs, mins)
 
 ## preps
 @app.before_request
@@ -109,48 +103,23 @@ def logout():
     except:
         pass
     return redirect(url_for('index'))
-    
+
+from scripts.error_pages import ErrorPage    
 @app.errorhandler(401)
 def page_not_found(e):
-    jumbo = { 'head' : 'This is the famous 401... Access denied.', 'text' : 'How did we end up here?' }
-    addtxt = {
-        'header'  : 'Error content',
-        'small'   : now_str(),
-        'content' : [str(e)]
-        }
-    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 401
+    return ErrorPage(e,401).render()
 
 @app.errorhandler(404)
 def page_not_found(e):
-    jumbo = { 'head' : 'This is the famous 404...', 'text' : 'How did we end up here?' }
-    addtxt = {
-        'header'  : 'Error content',
-        'small'   : now_str(),
-        'content' : [str(e)]
-        }
-    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 404
+    return ErrorPage(e,404).render()
 
 @app.errorhandler(405)
 def page_not_found(e):
-    jumbo = { 'head' : 'This error #405 Method Not Allowed...',
-              'text' : 'How did we end up here?' }
-    addtxt = {
-        'header'  : 'Error content',
-        'small'   : now_str(),
-        'content' : [str(e)]
-        }
-    return render_template('404.html', jumbo=jumbo, addtxt=addtxt), 405
+    return ErrorPage(e,405).render()
 
 @app.errorhandler(500)
 def error_page(e):
-    jumbo = { 'head' : 'This a 500... sorry!', 'text' : 'How did we end up here?' }
-    addtxt = {
-        'header'  : 'Error content',
-        'small'   : now_str(),
-        'content' : [str(e)]
-        }
-    return render_template('500.html', jumbo=jumbo, addtxt=addtxt), 500
-    #return error_log(), 500
+    return ErrorPage(e,500).render()
 
 @app.route('/geo')
 def geo():
@@ -171,8 +140,7 @@ def test():
 @app.route('/img')
 @app.route('/img/<var>')
 def img(var=''):
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    basename = basedir + '/static/img/'
+    basename = thisdir + '/static/img/'
     fname    = basename + var
     retval = 'No Image'
     try:
@@ -185,8 +153,7 @@ def img(var=''):
 @app.route('/data')
 @app.route('/data/<var>')
 def data(var=''):
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    basename = basedir + '/static/data/'
+    basename = thisdir + '/static/data/'
     fname = basename + var
     lines = '[ {"data" : "xx"} ]'.replace('xx',fname.replace(basename, ''))
     try:
@@ -206,38 +173,6 @@ def query(var=''):
         hs   = str(t.hour)
         retval = '[ {"h" : "xh", "m" : "xm"}]'.replace('xh', hs).replace('xm',mins)
     return retval
-
-## errors / logs
-import datetime
-def log(eid):
-    logfileread = []
-    with open('./{}.log'.format(eid)) as f:
-        logfileread = f.readlines()    
-    for i in range(len(logfileread)):
-        l = logfileread[i]
-        l = '<td style="word-wrap: break-word;min-width: 160px;max-width: 160px;"><h7>' + l + '</h7></td>'
-        logfileread[i] = l
-    logfileread.reverse()
-    #nowtx = datetime.datetime.now().strftime('%Y-%m-%d Time: %H:%M:%S %Z')
-    nowtx = datetime.datetime.now().strftime('%c')
-    headtx = { 'head' : 'This is the {} log...'.format(eid), 'text' : nowtx }
-    if len(logfileread) < 1:
-        logfileread.append('No entries.')
-    return render_template('index.html', jumbo=headtx, addtxt=logfileread,
-                           title='ploskon.com '+eid+' log', isTable=True)
-    #, isTable="yes")
-    #return render_template('500.html', jumbo=headtx, addtxt=logfileread)    
-
-@app.route('/errlog')
-@requires_auth
-def error_log():
-    return log('error')
-
-## logs
-@app.route('/accesslog')
-@requires_auth
-def access_log():
-    return log('access')
 
 if __name__ == '__main__':
     if app.debug == True:
