@@ -28,6 +28,7 @@ from flask import Response
 import sys
 sys.path.insert(0, thisdir + '/contents' )
 from scripts import logon_form, gen_pass, geo_ip, userdb
+from scripts.page_process import Section
 
 def check_auth(username, password):
     return userdb.gUsers.check_passwd(username, password)
@@ -52,7 +53,9 @@ def now_str():
 ## preps
 @app.before_request
 def before_request():
-    g.links = pages
+    g.links = []
+    for p in pages:
+        g.links.append({'link':'/pages/' + p.path, 'path' : p.path})
 
 ## routing...
 
@@ -66,15 +69,12 @@ def index():
     return render_template('welcome.html', jumbo=jumbo)
 
 @app.route('/pages/<path>')
+@requires_auth
 def page(path):
-    jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
-    #ps = (p for p in pages if 'published' in p.meta)
     p = pages.get(path)
-    addtxt = { 'header'  : p['title'],
-               'small'   : p['subtitle'],
-               'content' : [p.body] }               
-    #               'content' : [p.html] }
-    return render_template('page_template.html', jumbo=jumbo,addtxt=addtxt)
+    b = Section(p)
+    jumbo = { 'head' : path, 'text' : 'Generated from {} characters'.format(len(p.body)) }
+    return render_template('flat_index.html', jumbo=jumbo, sections = b.render() )
 
 @app.route('/logon', methods=['GET', 'POST'])
 def logon():
@@ -82,16 +82,17 @@ def logon():
         session.pop('user')
     except:
         pass
+    userdb.gUsers.load()
     jumbo = { 'head' : 'Logon page', 'text' : 'No text to add...'}
     form = logon_form.PasswordForm()
     if request.method == 'POST':
-        if form.validate():
+        if form.validate_on_submit():
             fentry   = request.form['password']
             try:
                 fentries = fentry.split('/')
                 if check_auth(fentries[0], fentries[1]):
                     session['user'] = userdb.gUsers.find_user(fentries[0])
-                    return redirect(url_for('index'))
+                    return redirect(request.args.get("next") or url_for("index"))                
             except:
                 pass
             if len(fentry) < 1:
@@ -102,6 +103,7 @@ def logon():
 
 @app.route('/logout')
 def logout():
+    userdb.gUsers.load()    
     try:
         session.pop('user')
     except:

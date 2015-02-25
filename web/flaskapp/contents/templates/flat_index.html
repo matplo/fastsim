@@ -1,0 +1,25 @@
+{% extends "index_base.html" %}
+
+{% block content %}
+<div class="container">
+   <div class="row clearfix">
+      <div class="col-md-12 column">
+        <!-- <div class="jumbotron" style="background:#f5faed !important"> -->
+	<!-- <div class="jumbotron" style="background:#E6F5EB"> -->
+        <!-- <div class="jumbotron" style="background:transparent !important">-->
+	<div class="jumbotron" id="jumbo">
+	  {% if jumbo %}
+	  <h2>
+	   {{ jumbo.head }}
+	   </h2>
+	   <h3>
+	   {{ jumbo.text }}
+	   </h3>
+	  {% endif %}
+	</div>
+	{{ sections | safe }}
+	{% block other %}
+	{% endblock %}	
+   </div>
+   </div>
+{% endblock content %} <!-- end content -->

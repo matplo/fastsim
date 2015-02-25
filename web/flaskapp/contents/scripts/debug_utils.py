@@ -48,6 +48,9 @@ def debug_obj(obj, msg=' ', truncate=50):
     except:
         pass
     
+def debug_obj_str(obj, truncate=50):
+    return ''.join([str(type(obj)) + '\n', Inspector(obj).table_members_basic(truncate=truncate)])
+    
 import inspect
 from tabulate import tabulate
 class Inspector:
