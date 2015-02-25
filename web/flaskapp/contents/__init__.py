@@ -13,27 +13,26 @@ Bootstrap(app)
 Session(app)
 
 from flask_debugtoolbar import DebugToolbarExtension
-# the toolbar is only enabled in debug mode:
-app.debug = False
+app.debug = False # the toolbar is only enabled in debug mode:
 #app.debug = True
 toolbar = DebugToolbarExtension(app)
 
 from flask_flatpages import FlatPages
 pages = FlatPages(app)
-    
-## authentication
-from functools import wraps
-from flask import Response
 
 import sys
+import datetime as dt
+
 sys.path.insert(0, thisdir + '/contents' )
 from scripts import logon_form, gen_pass, geo_ip, userdb
 from scripts.page_process import Section
 from scripts.utils import now_str
 
+## authentication
 def check_auth(username, password):
     return userdb.gUsers.check_passwd(username, password)
 
+from functools import wraps
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -52,14 +51,9 @@ def before_request():
         g.links.append({'link':'/pages/' + p.path, 'path' : p.path})
 
 ## routing...
-
 @app.route('/')
 def index():
-    #import form_cuts
-    #form = form_cuts.ExampleForm()
-    #form.validate_on_submit() #to get error messages to the browser
     jumbo = { 'head' : 'Welcome!', 'text' : 'The site is under construction. Come back soon!'}
-    #return render_template('index.html', jumbo=jumbo)
     return render_template('welcome.html', jumbo=jumbo)
 
 @app.route('/pages/<path>')
