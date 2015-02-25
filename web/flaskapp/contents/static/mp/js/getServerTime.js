@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $.getJSON('query/time', function(dt) {
+    $.getJSON('/query/time', function(dt) {
 	var currentDate = new Date();
 	var now = ('0' + currentDate.getHours()).slice(-2) + ':' + ('0' + currentDate.getMinutes()).slice(-2);
 	for (d of dt)
