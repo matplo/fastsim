@@ -1,0 +1,47 @@
+        GL.glEnable(GL.GL_MULTISAMPLE);
+        GL.glClearColor(0,0,0,0)
+        self.setupLight()        
+        #GL.glShadeModel(GL.GL_FLAT)
+        GL.glShadeModel(GL.GL_SMOOTH)
+
+        GL.glEnable(GL.GL_BLEND);
+        GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); 
+        GL.glShadeModel(GL.GL_SMOOTH); 
+
+        GL.glHint(GL.GL_POLYGON_SMOOTH_HINT, GL.GL_FASTEST); 
+        GL.glEnable(GL.GL_POLYGON_SMOOTH);
+
+        GL.glEnable( GL.GL_ALPHA_TEST );
+                
+        GL.glEnable(GL.GL_DEPTH_TEST)
+        #GL.glDisable(GL.GL_DEPTH_TEST); 
+        GL.glEnable(GL.GL_CULL_FACE)
+        GL.glEnable(GL.GL_MULTISAMPLE)        
+        GL.glDepthFunc(GL.GL_LESS);
+        GL.glMatrixMode(GL.GL_PROJECTION);
+        GL.glMatrixMode(GL.GL_MODELVIEW);
+        self.addGL()
+
+
+    def setupLight(self):
+        self.light_ambient   = 0.5, 0.5, 0.5, 0.5
+        self.light_diffuse   = 0.5, 0.5, 0.5, 0.5 # diffuse light.
+        self.light_specular  = 0.5, 0.5, 0.5, 0.5
+        self.light0_position = 0.0, 0.0, -20.0, 1.0
+        #GL.glLightfv(GL.GL_LIGHT0, GL.GL_AMBIENT,  self.light_ambient);
+        #GL.glLightfv(GL.GL_LIGHT0, GL.GL_DIFFUSE,  self.light_diffuse)
+        #GL.glLightfv(GL.GL_LIGHT0, GL.GL_SPECULAR, self.light_specular);
+        #GL.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, self.light0_position)
+        #GL.glEnable(GL.GL_LIGHT0);
+        
+        self.global_ambient = 0.9, 0.9, 0.9, 1.0
+        GL.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, self.global_ambient);
+        
+        # Enable a single OpenGL light.
+        GL.glEnable(GL.GL_LIGHTING);
+                
+    def addGL(self):
+        n0 = RootNode('n0')
+        #if '--axes' in sys.argv:
+        ax0 = Axes('axes0', parent=n0)
+        self.objects.append(n0)
