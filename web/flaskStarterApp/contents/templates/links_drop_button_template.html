@@ -1,0 +1,20 @@
+<div class="btn-group" role="group">
+  <button class="btn {{ links.type }} dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+  {{ links.name }}
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu"
+    aria-labelledby="{{ links.name }}">
+    {% for gr in links.groups %}
+    <li role="presentation" class="dropdown-header">{{ gr.name }}</li>
+    {% for l in gr.links %}    
+    <li role="presentation"><a role="menuitem" tabindex="-1"
+    href="{{ l.target | safe }}"
+    {% if l.blank == True %}
+    target="_blank"
+    {% endif %}
+     >{{ l.link }}</a></li>
+     {% endfor %}
+     {% endfor %}    
+  </ul>
+</div>

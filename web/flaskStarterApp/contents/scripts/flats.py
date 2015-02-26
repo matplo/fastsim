@@ -4,8 +4,74 @@ import fnmatch
 
 from flask import render_template
 
+from links import LinksDrop
+
+def rreplace(s, old, new, occurrence):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+    
+def lreplace(s, old, new, occurrence):
+    li = s.rsplit(old, occurrence)
+    return new.join(li)
+
+def handle_hrefs(s):
+    phref   = s.partition('<href:')
+    pcol1   = phref[2].partition(':')
+    pcol2   = pcol1[2].partition('>')
+    target  = pcol1[0]
+    link    = pcol2[0]
+    old_syn = '<href:{}:{}>'.format(target, link)
+    new_syn = '<a href="{}">{}</a>'.format(target, link)
+    #new_syn = render_template('section_element_link.html', target=target, link=link)
+    news    = s.replace(old_syn, new_syn)
+    #print old_syn, new_syn        
+    retval  = None
+    try:
+        if len(pcol2[2]) > 0:
+            retval = handle_hrefs(news)
+    except:
+        pass
+    if retval == None:
+        retval = news
+    return retval
+
+# note: 1 link per line is allowed at present
+def default(v, default):
+    if v:
+        return v
+    return default
+
+def handle_page_links(s):
+    phref   = s.partition('<href:')
+    pcol1   = phref[2].partition(':')
+    pcol2   = pcol1[2].partition(':')
+    pcol3   = pcol2[2].partition(':')
+    pcol4   = pcol3[2].partition(':')
+    pcol5   = pcol4[2].partition('>')            
+    target  = default(pcol1[0].rstrip('>'), None)
+    link    = default(pcol2[0].rstrip('>'), target)
+    group   = default(pcol3[0].rstrip('>'), 'Group')
+    blank   = default(pcol4[0].rstrip('>'), 'False')
+    users   = default(pcol5[0].rstrip('>'), 'all')
+    old_syn = '<href:{}:{}>'.format(target, link)
+    new_syn = '<a href="{}">{}</a>'.format(target, link)
+    if blank == 'True':
+        blank = True
+    else:
+        blank = False
+    if blank == True:
+        target = 'http://' + target
+    retval    = [group, target, link, blank, users]
+    if not len(target):
+        retval = []
+    #print s,'->',retval            
+    return retval
+
 class Config(object):
-    KEYWORDS = ['---', 'Title:', 'Subtitle:', 'Content:', 'Raw:', 'File.txt:', '...', '>:']
+    KEYWORDS = ['---', 'Title:', 'Subtitle:', 'Content:',
+                'Raw:', 'File.txt:', '...', '>:',
+                'PageTitle:', 'PageSubTitle:',
+                '##'] #last is a comment... put links there
     TEMPLATES = {
         'Section'  : 'section_template.html',
         'Raw:'     : 'section_element_raw.html',
@@ -25,14 +91,24 @@ class Tag(object):
     def __init__(self, key):
         self.key = key
         self.content = []
+        
     def append(self, c):
         self.content.append(c)
+        
     def has_content(self):
         if len(''.join(self.content)) > 0:
             return True
         return False
+    
     def string(self):
-        return u'\n'.join(self.content)
+        return '\n'.join(self.content)
+    
+    def string_with_br(self):
+        if self.key == '>:':
+            return '<br>' + '\n'.join(self.content)            
+        else:
+            return '\n'.join(self.content)
+        
     def __repr__(self):
         return self.key
 
@@ -40,9 +116,9 @@ class Section(object):
     def __init__(self, tags, config = Config()):
         self.tconfig  = config
         self.tags     = tags
-        self.title    = 'not set'
-        self.subtitle = 'not set'
-        self.content  = 'not set'
+        self.title    = ''
+        self.subtitle = ''
+        self.content  = ''
         self.process()        
 
     def pop_tag_key(self, keyname):
@@ -67,23 +143,30 @@ class Section(object):
     def render(self):
         tmpfile = self.tconfig.template('Section')
         return render_template(tmpfile, section = self)
-
+    
     def process(self):
         self.title    = self.pop_tag_key('Title:').string()
         self.subtitle = self.pop_tag_key('Subtitle:').string()
         content = []
         for t in self.tags:
+            if t.key == '##': #do not render comments
+                continue
             if t.key == 'Content:' or t.key == '>:':
-                content.append(self.render_element(t))
+                if len(t.content):
+                    content.append(self.render_element(t))
             if t.key == 'Raw:':
-                content.append(self.render_element(t))
+                if len(t.content):           
+                    content.append(self.render_element(t))
         self.content = ''.join(content)
         
     def __repr__(self):
         return '\n > '.join([self.title,self.subtitle,self.content])
 
-class File(object):
-    def __init__(self, stream, config=Config()):
+class FilePage(object):
+    def __init__(self, stream, config=Config(), title='File Page'):
+        self.title = os.path.basename(title).rstrip('.flat').replace('_',' ')
+        self.subtitle = ''
+        self.links = LinksDrop('This Page Links', navbar=False)
         self.load_stream_to_docs(stream)
         self.config   = config
         self.sections = []
@@ -95,29 +178,12 @@ class File(object):
         summed = []
         for s in self.sections:
             summed.append(s.render())
+        #for s in self.sections:
+        #    for t in s.tags:
+        #        if t.key == '##':
+        #            print 'Comment:',t.content
         return u''.join(summed)
     
-    def handle_hrefs(self, s):
-        phref   = s.partition('<href:')
-        pcol1   = phref[2].partition(':')
-        pcol2   = pcol1[2].partition('>')
-        target  = pcol1[0]
-        link    = pcol2[0]
-        old_syn = '<href:{}:{}>'.format(target, link)
-        new_syn = '<a href="{}">{}</a>'.format(target, link)
-        #new_syn = render_template('section_element_link.html', target=target, link=link)
-        news    = s.replace(old_syn, new_syn)
-        print old_syn, new_syn        
-        retval  = None
-        try:
-            if len(pcol2[2]) > 0:
-                retval = self.handle_hrefs(news)
-        except:
-            pass
-        if retval == None:
-            retval = news
-        return retval
-
     def doc_has_entry(self, doc):
         for t in doc:
             if t.has_content():
@@ -135,6 +201,16 @@ class File(object):
                         current_doc.append(tag)
                     tag = Tag(k)
             if tag:
+                if tag.key == 'PageTitle:':
+                    self.title = l[len(tag.key):]
+                    current_doc = []
+                    tag = Tag('>:') #tag = None                        
+                    continue
+                if tag.key == 'PageSubTitle:':
+                    self.subtitle = l[len(tag.key):]
+                    current_doc = []
+                    tag = Tag('>:') #tag = None                        
+                    continue
                 if tag.key == '...' or tag.key == '---':
                     if self.doc_has_entry(current_doc):
                         self.docs.append(current_doc)
@@ -145,22 +221,21 @@ class File(object):
                     s = l[len(tag.key):].replace('\n', '')
                 else:
                     s = l.replace('\n', '')
-                if '<href:' in s:
-                    s = self.handle_hrefs(s)
+                if '<href:' in s:   
+                    if tag.key == '##':
+                        s = handle_page_links(s)
+                        if len(s):
+                            self.links.add_link(s[0], s[1], s[2], s[3], s[4])
+                    elif tag.key == 'Raw:':
+                        pass
+                    else:
+                        s = handle_hrefs(s)
                 if len(s) > 0:
                     tag.append(s)
         if tag:
             current_doc.append(tag)
         if self.doc_has_entry(current_doc):            
             self.docs.append(current_doc)
-
-def rreplace(s, old, new, occurrence):
-    li = s.rsplit(old, occurrence)
-    return new.join(li)
-    
-def lreplace(s, old, new, occurrence):
-    li = s.rsplit(old, occurrence)
-    return new.join(li)
 
 class Flats(object):
     def __init__(self, rootdir = None):
@@ -193,12 +268,12 @@ class Flats(object):
     def render_file(self, fname):
         with open(fname) as f:
             stream = f.readlines()
-        return File(stream, self.config)
+        return FilePage(stream, self.config, fname.replace('_', ' '))
         
     def get_rendered(self, path):
-        print >> sys.stderr,'request for:',path
-        for f in self.paths:
-            print >> sys.stderr,'known:',f
+        #print >> sys.stderr,'request for:',path
+        #for f in self.paths:
+        #    print >> sys.stderr,'known:',f
         return { 'title' : 'test', 'subtitle' : 'test2', 'body' : 'not much'}
     
     def get(self, path):

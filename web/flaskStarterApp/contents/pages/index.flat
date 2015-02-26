@@ -1,11 +1,2 @@
-Title: A Page
-Subtitle: generated
->: 
-This is a content of a file from a text file...
-Raw: This is 
-a raw output...
-good for code presentation..
->:
-back to the normal text
-an html link should also work: <a href="/pages/testinput">test</a>
-this is how to do it <href:/pages/testinput:test>
+Title: Starting page
+Subtitle: not much info here...

@@ -6,9 +6,11 @@
   {% endif %}
   </h2>
 </div>
+{% if body.content %}
 <div class="well well-sm">
   {% for tx in body.content %}	  
   <p> {{ tx | safe }} </p>
   {% endfor %}
 </div>
+{% endif %}
 <!-- </div> -->

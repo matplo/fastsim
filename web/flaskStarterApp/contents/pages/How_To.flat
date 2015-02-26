@@ -1,0 +1,39 @@
+PageTitle: How To Page
+PageSubTitle: Some explanations below...
+Title: Few explanations
+Subtitle: with this setup...
+>: 
+The Title tag is
+Raw:Title:
+>:
+Whatever you write after the collon will land in this tag... until another tag is set.
+The tags are - their decription in "":
+Raw:
+ PageTitle:    - the title of the page (only last instance will be used; otherwise filename)
+ PageSubTitle: - the sub-title of the section (not rendered if not present)
+ Title:        - the title of the section 
+ Subtitle:     - the sub-title
+ Content:      - the normal text; paragraph
+ >:            - short for the normal text paragraph
+ Raw:	       - raw tag - this is how this text is rendered; make sure you do not tag in here; single space is enough
+ <href:	       - if used at the start of a line it will be converted to the drop down link
+ ##	       - comment - not rendered
+ ---	       - start of a section
+ ...	       - end of a section - not needed but added for clarity (one can use just ---)
+...
+
+---
+More needs to be said on the
+Raw:<href:
+>:
+Two cases are possible:
+
+1. within the comment line - the link will be added to the drop down list of links "This Page Links". For example:
+Raw:##<href:www.google.com:google:external:True:all>
+ ##<href:"target":"text for the link":"group in the drop down menu":"_blank":"authorized users">
+>:
+2. within the text:
+Raw:some text and a link <href:/pages/testinput:test>
+>:
+Note: anywhere you can use standard html (also for the links) but this may create a mess...
+##<href:cern.ch:CERN just for example:A Group Of Links:True>

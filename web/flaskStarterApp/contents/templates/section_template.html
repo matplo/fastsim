@@ -5,9 +5,11 @@
   </div>
   {% endif %}
 
+  {% if section.content %}
   <div class="well well-sm">
     {{ section.content | safe }}
   </div>  
+  {% endif %}
   </div>
   <p></p>
   <p></p>
@@ -15,4 +17,3 @@
   <p></p>
   <p></p>
   <p></p>
-  

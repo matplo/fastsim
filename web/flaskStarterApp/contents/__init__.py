@@ -24,10 +24,23 @@ from scripts.flats import Flats
 fpages = Flats(thisdir)
 from scripts.links import Links
 gLinks = Links('all')
-gLinks.add_link('External Links', 'General','http://www.google.com','Google', True)
-for p in fpages.paths:
-    gLinks.add_link('Internal Links', 'Internal', p, p, False)
 
+def reload_pages():
+    fpages.reload()
+    gLinks.pop_by_name('Internal Links')    
+    for p in fpages.paths:
+        if p == 'Not_Found':
+            continue
+        gLinks.add_link('Internal Links', 'Internal', p, p, False)
+    gLinks.pop_by_name('External Links')
+    gLinks.add_link('External Links', 'General','http://www.google.com','Google', True)
+    gLinks.get_by_name('External Links').set_navbar(False)
+    gLinks.get_by_name('External Links').set_type('btn-warning')
+    gLinks.get_by_name('Internal Links').set_navbar(False)
+    gLinks.get_by_name('Internal Links').set_type('btn-success')
+    
+reload_pages()
+    
 ## preps
 @app.before_request
 def before_request():
@@ -42,15 +55,16 @@ def before_request():
 @app.route('/<path:path>')
 @app.route('/pages/<path>')
 def fpage(path=None):
-    fpages.get_rendered(path)
+    if path=='Reload_Pages':
+        reload_pages()
     if not path:
-        path = 'index'
+        path = 'Index'
     pf = fpages.get(path)
     if not pf:
-        p = {"title" : "Page not found: /{}".format(path), "body" : "", "html" : ""}
-    else:
-        p = {"title" : "{}".format(path), "body" : pf.body, "html" : pf.body}
-    return render_template('page_template.html', page = p, links = gLinks)
+        pf = fpages.get('Not_Found')
+    ls = pf.links
+    gLinks.replace_drop(ls)
+    return render_template('page_template.html', page = pf, links = gLinks)
 
 def page_pages(path=None):
     fpages.get_rendered(path)

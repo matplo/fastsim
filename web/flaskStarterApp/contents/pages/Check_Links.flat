@@ -1,0 +1,21 @@
+Title: A Page
+Subtitle: generated
+>: 
+This is a content of a file from a text file...
+Raw: This is 
+a raw output...
+good for code presentation..
+>:
+## this should be a link
+this text will also not be displayed
+because it is in the comment tag
+<href:www.google.com:google:external:True:all>
+<href:www.ploskon.org:ploskon.org:external::mp>
+<href:/index:this site's home:other group:False:all>
+<href:/index:this site's home:external:False:all>
+<href:/index:this site's home - forgot the rest...>
+>:
+back to the normal text
+>:
+an html link should also work: <a href="/pages/testinput">test</a>
+this is how to do it <href:/pages/testinput:test>
