@@ -34,7 +34,13 @@ def default(v, default):
     return default
 
 def handle_page_links(s):
+    tgt_htt = 'http://'        
     phref   = s.partition('<href:')
+    tag     = '<hrefs:'
+    if tag == s[:len(tag)]:
+        tgt_htt = 'https://'
+        phref   = s.partition('<hrefs:')
+        
     pcol1   = phref[2].partition(':')
     pcol2   = pcol1[2].partition(':')
     pcol3   = pcol2[2].partition(':')
@@ -52,7 +58,7 @@ def handle_page_links(s):
     else:
         blank = False
     if blank == True:
-        target = 'http://' + target
+        target = tgt_htt + target
     retval    = [group, target, link, blank, users]
     if target == None:
         retval = []

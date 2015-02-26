@@ -104,3 +104,7 @@ class Links(LinksDrop):
                 if fnmatch.fnmatch(filename, pattern)]
         for f in files:
             self.load_from_file(f)
+
+    def drop_all(self):
+        self.groups = []
+

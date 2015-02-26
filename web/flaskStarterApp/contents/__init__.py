@@ -14,7 +14,7 @@ Session(app)
 
 from flask_debugtoolbar import DebugToolbarExtension
 app.debug = False # the toolbar is only enabled in debug mode:
-app.debug = True  # helps automatic reloading
+#app.debug = True  # helps automatic reloading
 toolbar = DebugToolbarExtension(app)
 
 from flask_flatpages import FlatPages
@@ -27,9 +27,17 @@ gLinks = Links('all')
 
 gNavbar = False
 gNavbar = True
+
+gReloadFileWatch = thisdir + '/config/reloads'
+gFilesToWatch = []
+gFilesToWatch.append(gReloadFileWatch)
 def reload_pages():
+    from scripts.utils import stamp_file
+    stamp_file(gReloadFileWatch)
+    
     fpages.reload()
-    gLinks.pop_by_name('Internal Links')    
+    #gLinks.pop_by_name('Internal Links')    
+    gLinks.drop_all()
     for p in fpages.paths:
         if p == 'Not_Found':
             continue
@@ -47,6 +55,7 @@ reload_pages()
 ## preps
 @app.before_request
 def before_request():
+    g.login = False
     pass
 
 ## routing... catch all from http://flask.pocoo.org/snippets/57/
@@ -78,7 +87,7 @@ def page_pages(path=None):
 
 if __name__ == '__main__':
     if app.debug == True:
-        app.run(debug=True)
+        app.run(debug=True, extra_files=gFilesToWatch)
     else:
-        app.run(debug=False)
+        app.run(debug=False, extra_files=gFilesToWatch)
     

@@ -21,12 +21,14 @@
 	      {% endif %}
 	      {% endfor %}
             </ul>
+	    {% if g.login %}
 	    {% if session['user'] %}
 	    <a class="navbar-brand navbar-right" href="/logout">
 	    Logout [{{ session['user'].name }}]</A>
 	    {% else %}
 	    <a class="navbar-brand navbar-right" href="/logon">Logon</a>
-	    {% endif %}	    
+	    {% endif %}
+	    {% endif %}	    	    
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
       </nav>

@@ -68,7 +68,12 @@ def get_now(form='{}'):
     return form.format(stnow)
 
 def now_str():
-    t = dt.datetime.now()
+    t = datetime.datetime.now()
     mins = str(t.minute)
     hs   = str(t.hour)
     return '{} : {}'.format(hs, mins)
+
+def stamp_file(fname):
+    with open(fname, 'w') as f:
+        f.write(now_str() + '\n')
+
