@@ -15,10 +15,14 @@ class LinksGroup(object):
     def __init__(self, name):
         self.links = []
         self.name  = name
-    def add_link(self, link):
-        self.links.append(link)
+    def pop_link(self, link):
+        for i,l in enumerate(self.links):
+            if l.link == link.link:
+                self.links.pop(i)
+                return
     def add_link(self, target, link, blank = False, users='all'):
         l = Link(target, link.replace('_',' '), blank, users)
+        self.pop_link(l)
         self.links.append(l)        
     def get_links_user(self, user):
         retval = []
@@ -88,6 +92,7 @@ class Links(LinksDrop):
             ldata = handle_page_links(l)
             if len(ldata)>0:
                 dname = os.path.basename(fname).rsplit('.links')[0].replace('_', ' ')
+                #self.pop_by_name(dname) #cannot have two of the same name...
                 self.add_link(dname, ldata[0], ldata[1], ldata[2], ldata[3], ldata[4])
                 
     def load_from_directory(self, cdir):
