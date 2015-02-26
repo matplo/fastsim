@@ -27,6 +27,10 @@ class Tag(object):
         self.content = []
     def append(self, c):
         self.content.append(c)
+    def has_content(self):
+        if len(''.join(self.content)) > 0:
+            return True
+        return False
     def string(self):
         return u'\n'.join(self.content)
     def __repr__(self):
@@ -113,9 +117,15 @@ class File(object):
         if retval == None:
             retval = news
         return retval
+
+    def doc_has_entry(self, doc):
+        for t in doc:
+            if t.has_content():
+                return True
+        return False
     
     def load_stream_to_docs(self, stream):
-        tag = None    
+        tag = Tag('>:') #tag = None    
         self.docs = []
         current_doc = []
         for l in stream:
@@ -125,10 +135,11 @@ class File(object):
                         current_doc.append(tag)
                     tag = Tag(k)
             if tag:
-                if tag.key == '...':
-                    self.docs.append(current_doc)
+                if tag.key == '...' or tag.key == '---':
+                    if self.doc_has_entry(current_doc):
+                        self.docs.append(current_doc)
                     current_doc = []
-                    tag = None
+                    tag = Tag('>:') #tag = None                        
                     continue
                 if tag.key == l[:len(tag.key)]:
                     s = l[len(tag.key):].replace('\n', '')
@@ -140,7 +151,7 @@ class File(object):
                     tag.append(s)
         if tag:
             current_doc.append(tag)
-        if len(current_doc) > 0:
+        if self.doc_has_entry(current_doc):            
             self.docs.append(current_doc)
 
 def rreplace(s, old, new, occurrence):

@@ -8,14 +8,24 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container-fluid">
+<div class="md-col-8">  
 <div class="well">
-  <p>
-  <h1>  {{ page.title }} </h1>
-  {{ page.body | safe}}
-  </p>
+  <h2>  {{ page.title }} </h2>
+</div>
+
+  <p></p>
+  <p></p>
+  <p></p>
+  <p></p>
+  <p></p>
+  <p></p>
+
+{{ page.body | safe}}
+
 </div>
 </div>
+
 {% endblock content %} <!-- end content -->
 
 {% block footer %}
