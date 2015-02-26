@@ -1,6 +1,7 @@
 {% extends "flat_index.html" %}
 
 {% block navbar %}
+{% include "base_page_navbar.html" %}
 {% endblock %}
 
 {% block title %}
@@ -16,7 +17,9 @@
   <!-- <div class="btn-group-vertical" role="group"> -->
   <div class="btn-group-justified" role="group">    
     {% for gr in links.groups %}
+    {% if gr.navbar == False %}
     {{ gr.render() | safe}}
+    {% endif %}
     {% endfor %}
   </div>
 </div>

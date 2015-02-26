@@ -1,4 +1,7 @@
+import os
+import fnmatch
 from flask import render_template
+from parse_utils import handle_page_links
 
 class Link(object):
     def __init__(self, target, link, blank = False, users = 'all'):
@@ -33,6 +36,7 @@ class LinksDrop(object):
     def set_type(self, t):
         self.type = t
     def set_navbar(self, navbar):
+        self.navbar = navbar
         self.template = 'links_drop_template.html'
         if navbar == False:
             self.template = 'links_drop_button_template.html'        
@@ -76,3 +80,22 @@ class Links(LinksDrop):
         self.pop(drop)
         if len(drop.groups) > 0:
             self.groups.insert(0, drop)
+            
+    def load_from_file(self, fname):        
+        with open(fname) as f:
+            lines = f.readlines()
+        for l in lines:
+            ldata = handle_page_links(l)
+            if len(ldata)>0:
+                dname = os.path.basename(fname).rsplit('.links')[0].replace('_', ' ')
+                self.add_link(dname, ldata[0], ldata[1], ldata[2], ldata[3], ldata[4])
+                
+    def load_from_directory(self, cdir):
+        rootdir = cdir
+        pattern = '*.links'
+        files = [os.path.join(rootdir, filename)
+                for rootdir, dirnames, filenames in os.walk(rootdir)
+                for filename in filenames
+                if fnmatch.fnmatch(filename, pattern)]
+        for f in files:
+            self.load_from_file(f)

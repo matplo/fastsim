@@ -25,6 +25,8 @@ fpages = Flats(thisdir)
 from scripts.links import Links
 gLinks = Links('all')
 
+gNavbar = False
+gNavbar = True
 def reload_pages():
     fpages.reload()
     gLinks.pop_by_name('Internal Links')    
@@ -32,23 +34,20 @@ def reload_pages():
         if p == 'Not_Found':
             continue
         gLinks.add_link('Internal Links', 'Internal', p, p, False)
-    gLinks.pop_by_name('External Links')
-    gLinks.add_link('External Links', 'General','http://www.google.com','Google', True)
-    gLinks.get_by_name('External Links').set_navbar(False)
-    gLinks.get_by_name('External Links').set_type('btn-warning')
-    gLinks.get_by_name('Internal Links').set_navbar(False)
+    gLinks.get_by_name('Internal Links').set_navbar(gNavbar)
     gLinks.get_by_name('Internal Links').set_type('btn-success')
+
+    gLinks.load_from_directory(thisdir + '/config')
+    #gLinks.pop_by_name('External Links')
+    #gLinks.get_by_name('External Links').set_navbar(gNavbar)
+    #gLinks.get_by_name('External Links').set_type('btn-warning')
     
 reload_pages()
     
 ## preps
 @app.before_request
 def before_request():
-    g.links = []
-    for p in pages:
-        if 'service/' in p.path:
-            continue
-        g.links.append({'link':'/pages/' + p.path, 'path' : p.path})
+    pass
 
 ## routing... catch all from http://flask.pocoo.org/snippets/57/
 @app.route('/', defaults = {'path': ''})
@@ -58,12 +57,12 @@ def fpage(path=None):
     if path=='Reload_Pages':
         reload_pages()
     if not path:
-        path = 'Index'
+        path = 'Welcome'
     pf = fpages.get(path)
     if not pf:
         pf = fpages.get('Not_Found')
-    ls = pf.links
-    gLinks.replace_drop(ls)
+    pf.links.set_type('btn-primary')
+    gLinks.replace_drop(pf.links)
     return render_template('page_template.html', page = pf, links = gLinks)
 
 def page_pages(path=None):
