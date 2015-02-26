@@ -15,7 +15,7 @@
   <h1>  {{ page.title }} </h1>
   <h2>  {{ page.subtitle }} </h2>
   <!-- <div class="btn-group-vertical" role="group"> -->
-  <div class="btn-group-justified" role="group">    
+  <div class="btn-group-vertical" role="group">    
     {% for gr in links.groups %}
     {% if gr.navbar == False %}
     {{ gr.render() | safe}}
