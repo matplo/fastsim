@@ -20,8 +20,8 @@ toolbar = DebugToolbarExtension(app)
 from flask_flatpages import FlatPages
 pages = FlatPages(app)
 
-import sys
-sys.path.insert(0, thisdir + '/contents' )
+from scripts.flats import Flats
+fpages = Flats(thisdir)
 
 ## preps
 @app.before_request
@@ -36,7 +36,21 @@ def before_request():
 @app.route('/', defaults = {'path': ''})
 @app.route('/<path:path>')
 @app.route('/pages/<path>')
-def page(path=None):
+def fpage(path=None):
+    fpages.get_rendered(path)
+    if not path:
+        path = 'index'
+    pf = fpages.get(path)
+    if not pf:
+        p = {"title" : "Page not found: /{}".format(path), "body" : "", "html" : ""}
+    else:
+        p = {"title" : "{}".format(path), "body" : pf.body, "html" : pf.body}
+    return render_template('page_template.html', page = p)
+
+def page_pages(path=None):
+    fpages.get_rendered(path)
+    pf = fpages.get(path)
+    print pf
     p = pages.get(path)
     if not path:
         p = pages.get('index')
