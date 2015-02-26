@@ -5,7 +5,11 @@ role="button" aria-expanded="true">{{ links.name }}<span class="caret"></span></
   {% for gr in links.groups %}
     <li class="dropdown-header">{{ gr.name }}</li>
     {% for l in gr.links %}
-    <li><a href="{{ l.target | safe }}">{{ l.link }}</a></li>
+    <li><a href="{{ l.target | safe }}"
+    {% if l.blank == True %}
+    target="_blank"
+    {% endif %}
+    >{{ l.link }}</a></li>
     {% endfor %}
   {% endfor %}
 </ul>

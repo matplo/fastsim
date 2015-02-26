@@ -22,9 +22,11 @@ pages = FlatPages(app)
 
 from scripts.flats import Flats
 fpages = Flats(thisdir)
-from scripts.links import LinksDrop
-links  = LinksDrop('General')
-links.add_link('General','http://www.google.com','Google')
+from scripts.links import Links
+gLinks = Links('all')
+gLinks.add_link('External Links', 'General','http://www.google.com','Google', True)
+for p in fpages.paths:
+    gLinks.add_link('Internal Links', 'Internal', p, p, False)
 
 ## preps
 @app.before_request
@@ -48,7 +50,7 @@ def fpage(path=None):
         p = {"title" : "Page not found: /{}".format(path), "body" : "", "html" : ""}
     else:
         p = {"title" : "{}".format(path), "body" : pf.body, "html" : pf.body}
-    return render_template('page_template.html', page = p, links=links.render())
+    return render_template('page_template.html', page = p, links = gLinks)
 
 def page_pages(path=None):
     fpages.get_rendered(path)
