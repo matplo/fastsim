@@ -1,4 +1,4 @@
 #!/bin/bash
 
-brew install homebrew/science/root
+brew install --enable-mathmore homebrew/science/root
 

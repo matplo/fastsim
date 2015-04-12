@@ -7,3 +7,5 @@ rver=$(root-config --version)
 export PS1="(R$rver):$PS1"
 
 export ROOTSYS=$(root-config --prefix)
+
+export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
