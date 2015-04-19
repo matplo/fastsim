@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-pThatmins = [ 10, 15, 20, 25, 30, 40, 50 ]
+pThatmins = [ 5, 10, 15, 20, 25, 30, 40, 50, 70 ]
 quark     = [0, 1]
-nevents   = 10000
+nevents   = 20000
 
 for q in quark:
     for b in pThatmins:
