@@ -13,6 +13,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
 #include <TString.h>
 
 int gwhich = 0;
@@ -94,7 +95,7 @@ int run(unsigned int nevents, double pThatmin, int corb)
 //pythia.readString("Random.setSeed = on");// doesn't work needs fixing
 //pythia.readString("Random.seed = 3000000");
 
-    pythia.init( 2212, 2212, 200.);
+    pythia.init( 2212, 2212, 2760.);
     Hist mult("charged multiplicity", 100, -0.5, 799.5);
 
     TH1D* multHist = new TH1D("multHist","Multiplicity",100,-0.5,99.5);
@@ -107,6 +108,8 @@ int run(unsigned int nevents, double pThatmin, int corb)
     TH1D* epluseminusMinv = new TH1D("epluseminusMinv","e+ e- Inv. Mass",100,0,30);
 
     TH2D* qpTepT = new TH2D("qpTepT", "qpTepT;quark p_{T};electron p_{T}", 100, 0, 100, 100, 0, 100);
+
+    TProfile* sigmaGen = new TProfile("sigmaGen", "sigmaGen", 100, 0, nevents);
     
 // Begin event loop. Generate event. Skip if error. List first one.
     for (int iEvent = 0; iEvent < nevents; ++iEvent) {
@@ -149,8 +152,12 @@ int run(unsigned int nevents, double pThatmin, int corb)
         bbarquarkPt->Fill(pythia.event[indexBbarQuark].pT());
         mult.fill( nCharged );
         multHist->Fill(nCharged);
-//cout << "Event " << iEvent << ", Nch= " << nCharged << endl;
-
+	cout << "[i] sigmaGen = " << TString::Format("%1.10f", pythia.info.sigmaGen()) << endl;
+	sigmaGen->Fill(iEvent, pythia.info.sigmaGen());
+	if (iEvent % 1000 == 0)
+	  {
+	    cerr << "- pThatmin:" << pThatmin << " Event " << iEvent << ", Nch= " << nCharged << endl;
+	  }
 
 //Find hadronization products of b and bbar.
         int bQuarkDaughter1 = pythia.event[indexBQuark].daughter1();
@@ -302,6 +309,7 @@ int run(unsigned int nevents, double pThatmin, int corb)
 // End of event loop. Statistics. Histogram. Done.
     }// event loop
     pythia.statistics();
+    cout << "WeightSum:=" << pythia.info.weightSum() << endl;    
 //cout << mult << endl;
 
 //Write Output ROOT hisotgram into ROOT file
@@ -316,6 +324,7 @@ int run(unsigned int nevents, double pThatmin, int corb)
     positronFrombPt->Write();
     epluseminusMinv->Write();
     qpTepT->Write();
+    sigmaGen->Write();
     outFile->Close();
 
     return 0;
