@@ -1,0 +1,83 @@
+project (hfpy8)
+
+cmake_minimum_required(VERSION 2.6)
+
+SET ( BUILD_TYPE Release)
+SET ( CINTDICTS hfpy8DICTS.cxx )
+SET ( LINKDEFS  hfpy8LinkDefs.h )
+
+SET ( hfpy8_SOURCES
+    target.cxx
+    )
+
+FOREACH(cxxfile ${hfpy8_SOURCES})
+	STRING(REPLACE ".cxx" ".h" hfile ${cxxfile})
+	SET ( hfpy8_HEADERS ${hfpy8_HEADERS} ${hfile})
+ENDFOREACH(cxxfile)
+
+#MESSAGE("[i] Headers: ${hfpy8_HEADERS}")
+#MESSAGE("[i] ROOT set: $ENV{ROOTSYS}")
+
+
+EXECUTE_PROCESS ( COMMAND root-config --cflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOTCFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
+MESSAGE("[i] ROOTCFLAGS set ${ROOTCFLAGS} ")
+EXECUTE_PROCESS ( COMMAND root-config --incdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOTINCLUDES OUTPUT_STRIP_TRAILING_WHITESPACE )
+MESSAGE("[i] ROOTINCLUDES is ${ROOTINCLUDES} ")
+
+#EXECUTE_PROCESS ( COMMAND root-config --libs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOTLIBS
+EXECUTE_PROCESS ( COMMAND root-config --glibs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOTGLIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+MESSAGE("[i] ROOTLIBS set ${ROOTLIBS} ")
+
+EXECUTE_PROCESS ( COMMAND root-config --libdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOTLIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+MESSAGE("[i] ROOTLIBDIR set ${ROOTLIBDIR} ")
+#MESSAGE("[i] Sources are : ${hfpy8_SOURCES}")
+
+ADD_CUSTOM_COMMAND(
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CINTDICTS}
+	COMMAND $ENV{ROOTSYS}/bin/rootcint -f ${CINTDICTS} -c ${hfpy8_HEADERS} ${LINKDEFS}
+	DEPENDS ${hfpy8_HEADERS}
+   )
+
+#Make sure the compiler can find include files from our Hello library.
+# include_directories (${HELLO_SOURCE_DIR}/Hello)
+#INCLUDE_DIRECTORIES ( ${hfpy8_SOURCE_DIR}/src )
+#INCLUDE_DIRECTORIES (${ALIROOTINCLUDES})
+#INCLUDE_DIRECTORIES (${ROOTINCLUDES})
+INCLUDE_DIRECTORIES ($ENV{PYTHIA8LOCATION}/include)
+
+SET(CMAKE_CXX_FLAGS "${ROOTCFLAGS}")
+SET(CMAKE_CPP_FLAGS "${ROOTCFLAGS}")
+SET(CMAKE_LD_FLAGS "${ROOTLIBS} ${ROOTGLIBS}" )
+
+# Make sure the linker can find the Hello library once it is built.
+#link_directories (${hfpy8_BINARY_DIR} ${ROOTLIBS} )
+
+LINK_DIRECTORIES (${hfpy8_BINARY_DIR} ${ROOTLIBDIR} $ENV{PYTHIA8LOCATION}/lib)
+
+ADD_LIBRARY ( hfpy8 SHARED ${hfpy8_SOURCES} ${CINTDICTS} )
+#ADD_LIBRARY ( hfpy8 SHARED ${CINTDICTS} )
+#ADD_LIBRARY ( hfpy8 SHARED ${hfpy8_SOURCES} )
+
+#SET_TARGET_PROPERTIES( hfpy8 PROPERTIES LINK_FLAGS "${ROOTLIBS}" SO_VERSION 0.0.1)
+#TARGET_LINK_LIBRARIES( hfpy8 Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore freetype Gui)
+
+SET (ROOTLIBLINK Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore freetype Gui VMC EG Geom Minuit)
+TARGET_LINK_LIBRARIES( hfpy8 ${ROOTLIBLINK})
+
+SET (PYTHIALIBS lhapdfdummy pythia8)  
+TARGET_LINK_LIBRARIES( hfpy8 ${PYTHIALIBS})
+
+#SET(optionalSources)
+#SET(optionalLibs)
+
+#IF(ROOT_FOUND)
+#   SET(optionalSources ${optionalSources} ROOTview.cpp)
+#   INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIR} )
+#   SET(optionalLibs ${optionalLibs} ${ROOT_LIBRARIES} )
+#ENDIF(ROOT_FOUND)
+
+#--------------- EXECS
+#add_executable ( trdhltserv trdhltserv.cxx trdhltutil.cxx)
+# Link the executable
+#target_link_libraries( trdhltserv hfpy8 ${ROOTLIBLINK} )
