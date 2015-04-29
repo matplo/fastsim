@@ -20,7 +20,7 @@
 
   char *clibs[] =
     {
-      "$PYTHIA8LOCATION/lib/liblhapdfdummy",
+      //"$PYTHIA8LOCATION/lib/liblhapdfdummy",  not anymore there in new pythia8 ?
       "$PYTHIA8LOCATION/lib/libpythia8",      
       "./libhfpy8.dylib",
       0
@@ -31,13 +31,13 @@
     {
       ierr = gSystem->Load(clibs[i]);
       if (ierr != 0)
-	{
-	  cerr << "Unable to load lib:" << clibs[i] << endl;
-	}
+    	{
+        cerr << "Unable to load lib:" << clibs[i] << endl;
+      }
       else
-	{
-	  cerr << "Loaded: " << clibs[i] << endl;
-	}
+      {
+        cerr << "Loaded: " << clibs[i] << endl;
+      }
       i++;
     }
   

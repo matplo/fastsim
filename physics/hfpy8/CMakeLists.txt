@@ -66,7 +66,8 @@ ADD_LIBRARY ( hfpy8 SHARED ${hfpy8_SOURCES} ${CINTDICTS} )
 SET (ROOTLIBLINK Core Cint RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore freetype Gui VMC EG Geom Minuit)
 TARGET_LINK_LIBRARIES( hfpy8 ${ROOTLIBLINK})
 
-SET (PYTHIALIBS lhapdfdummy pythia8)  
+#SET (PYTHIALIBS lhapdfdummy pythia8)  
+SET (PYTHIALIBS pythia8)  
 TARGET_LINK_LIBRARIES( hfpy8 ${PYTHIALIBS})
 
 #SET(optionalSources)
