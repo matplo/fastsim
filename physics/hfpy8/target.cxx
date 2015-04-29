@@ -80,14 +80,24 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 	
 	if (gwhich == 0)
 	  {
-		pythia.readString("HardQCD:gg2ccbar = on");
-		pythia.readString("HardQCD:qqbar2ccbar = on");
+	  	pythia.readString("HardQCD:gg2ccbar = on");
+	  	pythia.readString("HardQCD:qqbar2ccbar = on");
+	  	if (qqbarflag > 0)
+	  	{		
+	  		pythia.readString("Charmonium:all = on");
+	  	}
 	  }
 	else
 	  {
 		pythia.readString("HardQCD:gg2bbbar = on");
 		pythia.readString("HardQCD:qqbar2bbbar = on");
+		if (qqbarflag > 0)
+		{
+			pythia.readString("Bottomonium:all = on");
+		}
 	  }
+	// see more at: http://hepmcanalysistool.desy.de/ValidationRelease3.0/Doxygen/html/standardSettings__all_8cmnd-source.html
+
 	pythia.readString(TString::Format("PhaseSpace:pTHatMin = %f", pThatmin).Data());
 
 // Random number Generator Should be Set Here if needed (before pythia.init())
@@ -367,7 +377,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 //cout << mult << endl;
 
 //Write Output ROOT hisotgram into ROOT file
-	TString foutname = TString::Format("quark-%d-pThatmin-%1.1f-nev%d.root", gwhich, pThatmin, nevents);
+	TString foutname = TString::Format("quark-%d-pThatmin-%1.1f-onia-%d-nev%d.root", gwhich, pThatmin, qqbarflag, nevents);
 	TFile* outFile = new TFile(foutname.Data(),"RECREATE");
 	multHist->Write();
 	aquarkPt->Write();
