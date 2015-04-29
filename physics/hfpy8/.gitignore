@@ -6,3 +6,5 @@ CMakeCache.txt
 *DICTS.*
 *.dylib
 Makefile
+*~
+*.so

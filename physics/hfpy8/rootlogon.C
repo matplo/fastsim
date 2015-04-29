@@ -22,7 +22,7 @@
     {
       //"$PYTHIA8LOCATION/lib/liblhapdfdummy",  not anymore there in new pythia8 ?
       "$PYTHIA8LOCATION/lib/libpythia8",      
-      "./libhfpy8.dylib",
+      "./libhfpy8",
       0
     };
 
