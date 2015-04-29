@@ -8,5 +8,5 @@ nevents   = 50000
 for q in quark:
     for b in pThatmins:
     	for onia in [0,1]:
-    		logname = '{}-{}-{}-{}.log'.format(nevents, b, onia, q)
+    		logname = '{}-{}-{}-{}.log'.format(nevents, b, q, onia)
     		print 'root -l -q \"gener.C({},{},{},{})\" > {}'.format(nevents, b, q, onia, logname)

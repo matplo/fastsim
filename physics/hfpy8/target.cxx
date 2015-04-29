@@ -18,19 +18,7 @@
 #include <TNtuple.h>
 
 int gwhich = 0;
-
-bool isXHadron(int id)
-{
-  if (gwhich == 0)
-	{
-	  return isDHadron(id);
-	}
-  else
-	{
-	  return isBHadron(id);
-	}
-  return false;
-}
+int gonia = 0;
 
 bool isBHadron(int id)
 {
@@ -50,6 +38,38 @@ bool isDHadron(int id)
 	return (fmod(id/100,4.)==0.0 || id/1000==4);
 }
 
+bool isCOnia(int id)
+{
+	if (id==443)
+		return kTRUE;
+	return kFALSE;
+}
+
+bool isBOnia(int id)
+{
+	if (id==553)
+		return kTRUE;
+	return kFALSE;
+}
+
+bool isXHadron(int id)
+{
+  if (gwhich == 0)
+	{
+		if (gonia == 0)
+			return isDHadron(id);
+		else
+			return isCOnia(id);
+	}
+  else
+	{
+		if (gonia == 0)
+			return isBHadron(id);
+		else
+			return isBOnia(id);
+	}
+  return false;
+}
 using namespace Pythia8;
 int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 {
@@ -65,6 +85,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 		qbarID = -4;
 	}
 
+	gonia = qqbarflag;
 	int qqbarID = qID*100+qID*10+3;
 	cout << "qqbar id is:" << qqbarID << endl;
 // Generator. Process selection. LHC initialization. Histogram.
@@ -130,7 +151,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 	TProfile* sigmaGen = new TProfile("sigmaGen", "sigmaGen", 100, 0, nevents);
 
 	TNtuple *tnqe  = new TNtuple("tnqe",  "tnqe",  "qpT:qy:epT:ey:w");
-	TNtuple *tnqee = new TNtuple("tnqee", "tnqee", "epT:ey:ppT:py:minv;w");
+	TNtuple *tnqee = new TNtuple("tnqee", "tnqee", "epT:ey:ppT:py:minv:w");
 	TNtuple *tnqqbar = new TNtuple("tnqqbar", "tnqqbar", "pT:y:m:w");
 	
 // Begin event loop. Generate event. Skip if error. List first one.
@@ -192,10 +213,10 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 		{
 			continue;
 		}
-		if (qqbarfound == kTRUE)
-		{
-			cerr << "qqbar found:" << qqbarID << endl;
-		}
+		//if (qqbarfound == kTRUE)
+		//{
+			//cerr << "qqbar found:" << qqbarID << endl;
+		//}
 
 		iEventAccepted++;
 
