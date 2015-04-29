@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-pThatmins = [ 5, 10, 15, 20, 25, 30, 40, 50, 70 ]
+#pThatmins = [ 5, 10, 15, 20, 25, 30, 40, 50, 70 ]
+pThatmins = [ 5, 10, 15]
 quark     = [0, 1]
-nevents   = 20000
+nevents   = 50000
 
 for q in quark:
     for b in pThatmins:
-        logname = '{}-{}-{}.log'.format(nevents, b, q)
-        print 'root -l -q \"gener.C({},{},{})\" > {}'.format(nevents, b, q, logname)
+    	for onia in [0,1]:
+    		logname = '{}-{}-{}-{}.log'.format(nevents, b, onia, q)
+    		print 'root -l -q \"gener.C({},{},{},{})\" > {}'.format(nevents, b, q, onia, logname)
