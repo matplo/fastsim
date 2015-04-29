@@ -15,6 +15,7 @@
 #include <TH2.h>
 #include <TProfile.h>
 #include <TString.h>
+#include <TNtuple.h>
 
 int gwhich = 0;
 
@@ -117,10 +118,13 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 	TH1D* epluseminusMinv = new TH1D("epluseminusMinv","e+ e- Inv. Mass",300,0,30);
 	TH1D* epluseminusMinvw = new TH1D("epluseminusMinvw","e+ e- Inv. Mass",300,0,30);
 
-	TH2D* qpTepT = new TH2D("qpTepT", "qpTepT;quark p_{T};electron p_{T}", 100, 0, 100, 100, 0, 100);
+	TH2D* qpTepT  = new TH2D("qpTepT",  "qpTepT;quark p_{T};electron p_{T}",  100, 0, 100, 100, 0, 100);
 	TH2D* qpTepTw = new TH2D("qpTepTw", "qpTepTw;quark p_{T};electron p_{T}", 100, 0, 100, 100, 0, 100);
 
 	TProfile* sigmaGen = new TProfile("sigmaGen", "sigmaGen", 100, 0, nevents);
+
+	TNtuple *tnqe  = new TNtuple("tnqe",  "tnqe",  "qpT:qy:epT:ey:w");
+	TNtuple *tnqee = new TNtuple("tnqee", "tnqee", "epT:ey:ppT:py:minv;w");
 	
 // Begin event loop. Generate event. Skip if error. List first one.
 	int iEventAccepted = 0;
@@ -253,7 +257,10 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 					electronIndex=iDaughter;
 					electronFrombPt->Fill(pythia.event[electronIndex].pT());
 					qpTepT->Fill(pythia.event[indexaquark].pT(), pythia.event[electronIndex].pT());
-					qpTepTw->Fill(pythia.event[indexaquark].pT(), pythia.event[positronIndex].pT(), fSigmaGen);
+					qpTepTw->Fill(pythia.event[indexaquark].pT(), pythia.event[electronIndex].pT(), fSigmaGen);
+					tnqe->Fill(pythia.event[indexaquark].pT(), pythia.event[indexaquark].y(),
+								pythia.event[electronIndex].pT(), pythia.event[electronIndex].y(),
+								fSigmaGen);
 					break;
 				}
 				if (pythia.event[iDaughter].id()==-11) {
@@ -263,6 +270,9 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 					positronFrombPt->Fill(pythia.event[positronIndex].pT());
 					qpTepT->Fill(pythia.event[indexaquark].pT(), pythia.event[positronIndex].pT());		    
 					qpTepTw->Fill(pythia.event[indexaquark].pT(), pythia.event[positronIndex].pT(), fSigmaGen);		    
+					tnqe->Fill(pythia.event[indexaquark].pT(), pythia.event[indexaquark].y(),
+								pythia.event[positronIndex].pT(), pythia.event[positronIndex].y(),
+								fSigmaGen);
 					break;
 				}
 			}// loop over daughters to check for e+e-
@@ -305,7 +315,8 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 					cout << pythia.event[iDaughter].name() << endl;
 					electronIndex=iDaughter;
 					electronFrombPt->Fill(pythia.event[electronIndex].pT());
-			qpTepT->Fill(pythia.event[indexabarquark].pT(), pythia.event[electronIndex].pT());
+					qpTepT->Fill(pythia.event[indexabarquark].pT(), pythia.event[electronIndex].pT());
+					qpTepTw->Fill(pythia.event[indexabarquark].pT(), pythia.event[electronIndex].pT(), fSigmaGen);
 					break;
 				}
 				if (pythia.event[iDaughter].id()==-11) {
@@ -313,7 +324,8 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 					cout << pythia.event[iDaughter].name() << endl;
 					positronIndex=iDaughter;
 					positronFrombPt->Fill(pythia.event[positronIndex].pT());
-			qpTepT->Fill(pythia.event[indexabarquark].pT(), pythia.event[positronIndex].pT());
+					qpTepT->Fill(pythia.event[indexabarquark].pT(), pythia.event[positronIndex].pT());
+					qpTepTw->Fill(pythia.event[indexabarquark].pT(), pythia.event[positronIndex].pT(), fSigmaGen);					
 					break;
 				}
 			}// loop over daughters to check for e+e-
@@ -339,6 +351,10 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 			Vec4 epluseminus(pythia.event[electronIndex].p()+pythia.event[positronIndex].p());
 			epluseminusMinv->Fill(epluseminus.mCalc());
 			epluseminusMinvw->Fill(epluseminus.mCalc(), fSigmaGen);
+			tnqee->Fill(pythia.event[electronIndex].pT(), pythia.event[electronIndex].y(),
+						pythia.event[positronIndex].pT(), pythia.event[positronIndex].y(),
+						epluseminus.mCalc(), epluseminus.rap(),
+						fSigmaGen);
 		}
 		else {
 			cout << "No e+e- pair in event" << endl;
@@ -366,6 +382,10 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 	qpTepT->Write();
 	qpTepTw->Write();	
 	sigmaGen->Write();
+
+	tnqe->Write();
+	tnqee->Write();
+
 	outFile->Close();
 
 	return 0;
