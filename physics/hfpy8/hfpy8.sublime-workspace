@@ -3,6 +3,38 @@
 	{
 		"selected_items":
 		[
+			[
+				"tnq",
+				"tnqee"
+			],
+			[
+				"inc",
+				"include"
+			],
+			[
+				"pos",
+				"positronIndex"
+			],
+			[
+				"electron",
+				"electronIndex"
+			],
+			[
+				"iEven",
+				"iEventAccepted"
+			],
+			[
+				"qq",
+				"qqbarID"
+			],
+			[
+				"qqbar",
+				"qqbarfound"
+			],
+			[
+				"qqba",
+				"qqbarfound"
+			]
 		]
 	},
 	"buffers":
@@ -11,7 +43,7 @@
 			"file": "target.h",
 			"settings":
 			{
-				"buffer_size": 147,
+				"buffer_size": 166,
 				"line_ending": "Unix"
 			}
 		},
@@ -19,7 +51,7 @@
 			"file": "gener.C",
 			"settings":
 			{
-				"buffer_size": 59,
+				"buffer_size": 89,
 				"line_ending": "Unix"
 			}
 		},
@@ -27,7 +59,7 @@
 			"file": "target.cxx",
 			"settings":
 			{
-				"buffer_size": 14001,
+				"buffer_size": 14286,
 				"line_ending": "Unix"
 			}
 		},
@@ -35,7 +67,7 @@
 			"file": "CMakeLists.txt",
 			"settings":
 			{
-				"buffer_size": 3208,
+				"buffer_size": 3280,
 				"line_ending": "Unix"
 			}
 		},
@@ -44,6 +76,14 @@
 			"settings":
 			{
 				"buffer_size": 896,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "rootlogon.C",
+			"settings":
+			{
+				"buffer_size": 1155,
 				"line_ending": "Unix"
 			}
 		}
@@ -55,12 +95,12 @@
 		"selected_items":
 		[
 			[
-				"package",
+				"packa",
 				"Package Control: Install Package"
 			],
 			[
-				"packa",
-				"Package Control: Discover Packages"
+				"package",
+				"Package Control: Install Package"
 			]
 		],
 		"width": 449.0
@@ -80,6 +120,8 @@
 	},
 	"file_history":
 	[
+		"/Users/ploskon/devel/nerscsvn/ploskon/misc/python/calc/calcR.py",
+		"/Users/ploskon/Software/pythia/modules/8205",
 		"/Users/ploskon/devel/sandbox/physics/hfpy8/hfpy8.sublime-workspace",
 		"/Users/ploskon/Dropbox/Settings/st3/sublime-licence.txt"
 	],
@@ -92,6 +134,9 @@
 		"height": 0.0,
 		"where_history":
 		[
+			"",
+			"current file",
+			""
 		]
 	},
 	"find_state":
@@ -99,6 +144,18 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			".y()",
+			"tntu",
+			"Fill",
+			"w->",
+			"qpTepT",
+			"qpt",
+			"Bbar",
+			"bbarquark",
+			"bquark",
+			"bbar quark",
+			"b quark",
+			"list"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -106,6 +163,11 @@
 		"regex": false,
 		"replace_history":
 		[
+			".rap()",
+			"abarquark",
+			"aquark",
+			"abar quark",
+			"a quark"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -116,7 +178,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -124,15 +186,15 @@
 					"file": "target.h",
 					"settings":
 					{
-						"buffer_size": 147,
+						"buffer_size": 166,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								166,
+								166
 							]
 						],
 						"settings":
@@ -150,15 +212,15 @@
 					"file": "gener.C",
 					"settings":
 					{
-						"buffer_size": 59,
+						"buffer_size": 89,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								54,
+								54
 							]
 						],
 						"settings":
@@ -176,25 +238,25 @@
 					"file": "target.cxx",
 					"settings":
 					{
-						"buffer_size": 14001,
+						"buffer_size": 14286,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								13338,
-								13338
+								3672,
+								3672
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C++.tmLanguage",
 							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1287.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -204,15 +266,15 @@
 					"file": "CMakeLists.txt",
 					"settings":
 					{
-						"buffer_size": 3208,
+						"buffer_size": 3280,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2749,
-								2749
+								403,
+								403
 							]
 						],
 						"settings":
@@ -220,7 +282,7 @@
 							"syntax": "Packages/CMakeEditor/CMakeEditor.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 647.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -247,6 +309,34 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "rootlogon.C",
+					"settings":
+					{
+						"buffer_size": 1155,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								413,
+								413
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 57.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -287,7 +377,7 @@
 	"menu_visible": true,
 	"replace":
 	{
-		"height": 0.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -295,6 +385,14 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"ta",
+				"target.h"
+			],
+			[
+				"root",
+				"rootlogon.C"
+			]
 		],
 		"width": 0.0
 	},

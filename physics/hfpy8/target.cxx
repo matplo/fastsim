@@ -65,12 +65,8 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 		qbarID = -4;
 	}
 
-	int qqbarID = 0;
-	if (qqbarflag > 0 )
-	{
-		qqbarID = qID*100+qID*10+3;
-		cout << "qqbar id is:" << qqbarID << endl;
-	}
+	int qqbarID = qID*100+qID*10+3;
+	cout << "qqbar id is:" << qqbarID << endl;
 // Generator. Process selection. LHC initialization. Histogram.
 	Pythia pythia;
 
@@ -125,6 +121,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 
 	TNtuple *tnqe  = new TNtuple("tnqe",  "tnqe",  "qpT:qy:epT:ey:w");
 	TNtuple *tnqee = new TNtuple("tnqee", "tnqee", "epT:ey:ppT:py:minv;w");
+	TNtuple *tnqqbar = new TNtuple("tnqqbar", "tnqqbar", "pT:y:m:w");
 	
 // Begin event loop. Generate event. Skip if error. List first one.
 	int iEventAccepted = 0;
@@ -143,6 +140,9 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 //   23 outgoing particles of hardest subprocess
 //   81-89 primary hadrons produced by hadronization process (B mesons, e.g.)
 //   91-99 particles produced in decay process or by B-E effects (e.g. the electrons)
+
+		Double_t fSigmaGen = pythia.info.sigmaGen();
+		cout << "[i] sigmaGen = " << TString::Format("%1.10f", fSigmaGen) << endl;
 
 		int nCharged = 0;
 		int indexaquark(0), indexabarquark(0);
@@ -168,6 +168,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 			if ( theParticle.id() == qqbarID )
 			{
 				qqbarfound = kTRUE;
+				tnqqbar->Fill(theParticle.pT(),theParticle.y(),theParticle.m(),fSigmaGen);
 			}
 		} // particle loop
 
@@ -194,8 +195,6 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 		abarquarkPt->Fill(pythia.event[indexabarquark].pT());
 		mult.fill( nCharged );
 		multHist->Fill(nCharged);
-		Double_t fSigmaGen = pythia.info.sigmaGen();
-		cout << "[i] sigmaGen = " << TString::Format("%1.10f", fSigmaGen) << endl;
 		sigmaGen->Fill(iEvent, fSigmaGen);
 
 //Find hadronization products of b and bbar.
@@ -385,7 +384,7 @@ int run(unsigned int nevents, double pThatmin, int corb, int qqbarflag)
 
 	tnqe->Write();
 	tnqee->Write();
-
+	tnqqbar->Write();
 	outFile->Close();
 
 	return 0;
