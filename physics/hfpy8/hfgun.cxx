@@ -46,6 +46,9 @@ void HFGun::FillOutput()
 	if (event.size() < 1)
 		return;
 
+	int hadronIDmin = fPartonID * 100;
+	int hadronIDmax = fPartonID * 100 + 99;
+
 	Particle parton = event[0];
 	int pIndex = -1;
 	for (int i = 0; i < event.size(); i++) 
@@ -58,14 +61,14 @@ void HFGun::FillOutput()
 			Out1D(kqpt)->Fill(event[i].pT());
 			parton = event[i];
 			if (fDebug) PrintParticle(pIndex);
-			vector<int> charmH  = FollowDaughters(pIndex, 400, 499, !fDebug);
-			for (unsigned int ic = 0; ic < charmH.size(); ic++)
+			vector<int> decayH  = FollowDaughters(pIndex, hadronIDmin, hadronIDmax, !fDebug);
+			for (unsigned int ih = 0; ih < decayH.size(); ih++)
 			{
-				if (fDebug) PrintParticle(charmH[ic]);
-				vector<int> electrons = GetDaughters(charmH[ic], 11, 11, !fDebug);
-				Particle &hadron = event[charmH[ic]];
-				int cDaughters = GetDaughters(charmH[ic], 400, 499, !fDebug).size();
-				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), cDaughters);
+				if (fDebug) PrintParticle(decayH[ih]);
+				vector<int> electrons = GetDaughters(decayH[ih], 11, 11, !fDebug);
+				Particle &hadron = event[decayH[ih]];
+				int hDaughters = GetDaughters(decayH[ih], hadronIDmin, hadronIDmax, !fDebug).size();
+				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), hDaughters);
 				for (unsigned int ip = 0; ip < electrons.size(); ip++)
 				{
 					if (fDebug) PrintParticle(electrons[ip]);
