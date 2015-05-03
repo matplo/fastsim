@@ -9,5 +9,6 @@
 #pragma link C++ function run;
 
 #pragma link C++ class PGun;
+#pragma link C++ class HFGun;
 
 #endif
