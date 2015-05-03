@@ -23,10 +23,20 @@ public:
 	PGun();
 	virtual ~PGun();
 
+	void SetDebug(bool dbg)
+	{
+		fDebug = dbg;
+	}
+
 	void SetSpectrum(TH1 *h, int id = -1);
 	void SetPartonID(int id)
 	{
 		fPartonID = id;
+	}
+
+	void PrintNEvents(int d)
+	{
+		fPrintN = d;
 	}
 
 	int Generate(int nEvent);
@@ -54,6 +64,8 @@ protected:
 	TH1 *Out1D(int index);
 	TH2 *Out2D(int index);
 
+	bool             fDebug;
+	int              fPrintN;
 	Pythia8::Pythia *fPythia; //!
 	TH1             *fSpectrum; //!
 	int              fPartonID;
@@ -61,7 +73,6 @@ protected:
 	TString          fOutputName;
 	TFile           *fOutputFile;
 	TObjArray       *fOutput;
-
 	ClassDef(PGun, 0)
 };
 

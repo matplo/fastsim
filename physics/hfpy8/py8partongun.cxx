@@ -21,6 +21,8 @@ using namespace Pythia8;
 ClassImp(PGun);
 
 PGun::PGun() : TObject()
+	, fDebug(false)
+	, fPrintN(-1)
 	, fPythia(0)
 	, fSpectrum(0)
 	, fPartonID(21)
@@ -86,9 +88,6 @@ int PGun::Generate(int nEvent)
 	// 2 = g g.
 	// more selections in main21.cc
 
-	// Set number of events to print.
-	int n = 0;
-
 	// Generator; shorthand for event and particleData.
 	Pythia pythia;
 	fPythia = &pythia;
@@ -116,7 +115,7 @@ int PGun::Generate(int nEvent)
 	InitOutput();
 
 	// Begin of event loop.
-	for (unsigned int iEvent = 0; iEvent < nEvent; ++iEvent) 
+	for (int iEvent = 0; iEvent < nEvent; iEvent ++) 
 	{
 
 	    // Set up parton-level configuration.
@@ -131,8 +130,9 @@ int PGun::Generate(int nEvent)
 		}
 
 	    //  first few events.
-		if (iEvent < n) 
+		if (iEvent < fPrintN) 
 		{
+			cout << "printing because " << iEvent << "< " << fPrintN << endl;
 			event.list();
 			// Also  junctions.
 			event.listJunctions();
@@ -241,9 +241,7 @@ std::vector<int> PGun::GetDaughters(int idx, int minID, int maxID, bool quiet)
 	{
 		int id = event[idxd].id(); 
 			if (quiet == false)
-			{
 				PrintParticle(idxd);
-			}
 		if (abs(id) >= minID && abs(id) <= maxID)
 		{
 			if (quiet == false)
@@ -262,7 +260,8 @@ std::vector<int> PGun::FollowDaughters(int idx, int minID, int maxID, bool quiet
 	vector<int> daughters  = GetDaughters(idx, minID, maxID, quiet);
 	for (unsigned int i = 0; i < daughters.size(); i++)
 	{
-		PrintParticle(daughters[i]);
+		if (quiet == false) 
+			PrintParticle(daughters[i]);
 		retval.push_back(daughters[i]);
 		vector<int> subds = FollowDaughters(daughters[i], minID, maxID, quiet);
 		for (unsigned int id = 0; id < subds.size(); id++)

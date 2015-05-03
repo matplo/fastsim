@@ -5,8 +5,9 @@ using namespace Pythia8;
 
 #include <TObjArray.h>
 #include <TH1F.h>
+#include <TNtuple.h>
 
-enum {kin, kqpt};
+enum {kin, kqpt, ktne, ktnh};
 
 ClassImp(HFGun)
 
@@ -24,9 +25,13 @@ HFGun::~HFGun()
 void HFGun::InitOutput()
 {
 	PGun::InitOutput();
-	TH1F *h = new TH1F("qpt", "qpt", 100, 0, 100);
 	fOutput->Add(fSpectrum->Clone("input"));
+	TH1F *h = new TH1F("qpt", "qpt", 100, 0, 100);
 	fOutput->Add(h);
+	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid");
+	fOutput->Add(tne);
+	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:hpt:hy:id:nd");
+	fOutput->Add(tnh);
 }
 
 void HFGun::FillOutput()
@@ -35,18 +40,16 @@ void HFGun::FillOutput()
 	Event     &event  = pythia.event;
 	TObjArray &out    = *fOutput;
 
+	TNtuple *tne = (TNtuple*)fOutput->At(ktne);
+	TNtuple *tnh = (TNtuple*)fOutput->At(ktnh);
+
 	if (event.size() < 1)
 		return;
-
-	event.list();
-
-	bool quiet = true;
 
 	Particle parton = event[0];
 	int pIndex = -1;
 	for (int i = 0; i < event.size(); i++) 
 	{
-		//PrintParticle(i);
 		//int status = event[i].statusAbs();
 		int id = event[i].id();
 		if (id == fPartonID)
@@ -54,23 +57,25 @@ void HFGun::FillOutput()
 			pIndex = i;
 			Out1D(kqpt)->Fill(event[i].pT());
 			parton = event[i];
-			PrintParticle(pIndex);
-			cout << "    -> selected parton" << endl;
-			// now check the daughters
-			vector<int> charmH  = FollowDaughters(pIndex, 400, 499, quiet);
-			// now find an electron and check whether the mother is fPartonID
-			cout << "number of charmH: " << charmH.size() << endl;
+			if (fDebug) PrintParticle(pIndex);
+			vector<int> charmH  = FollowDaughters(pIndex, 400, 499, !fDebug);
 			for (unsigned int ic = 0; ic < charmH.size(); ic++)
 			{
-				PrintParticle(charmH[ic]);
-				vector<int> electrons = GetDaughters(charmH[ic], 11, 11, quiet);
-				cout << " charmH:" << ic << " - number of electrons: " << electrons.size() << endl;
+				if (fDebug) PrintParticle(charmH[ic]);
+				vector<int> electrons = GetDaughters(charmH[ic], 11, 11, !fDebug);
+				Particle &hadron = event[charmH[ic]];
+				int cDaughters = GetDaughters(charmH[ic], 400, 499, !fDebug).size();
+				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), cDaughters);
 				for (unsigned int ip = 0; ip < electrons.size(); ip++)
 				{
-					PrintParticle(electrons[ip]);
+					if (fDebug) PrintParticle(electrons[ip]);
+					//TNtuple *tne = new TNtuple("tne", "qpt:hpt:ept:ey");
+					Particle &electron = event[electrons[ip]];
+					tne->Fill(parton.pT(), parton.id(),
+								hadron.pT(), hadron.y(), hadron.id(), 
+								electron.pT(), electron.y(), electron.id());
 				}
 			}
 		}
 	}
-	cout << "::FillOutput done." << endl; cout << endl;
 }
