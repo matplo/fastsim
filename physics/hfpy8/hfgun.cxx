@@ -1,4 +1,4 @@
-#include "HFGun.h"
+#include "hfgun.h"
 
 #include <Pythia8/Pythia.h>
 using namespace Pythia8;
