@@ -15,6 +15,9 @@ using namespace Pythia8;
 
 // based on Pythia example #21 (main21.cc)
 
+#include <iostream>     // std::cout, std::endl
+#include <iomanip>      // std::setfill, std::setw
+
 ClassImp(PGun);
 
 PGun::PGun() : TObject()
@@ -83,8 +86,8 @@ int PGun::Generate(int nEvent)
 	// 2 = g g.
 	// more selections in main21.cc
 
-	// Set number of events to .
-	int n = 1;
+	// Set number of events to print.
+	int n = 0;
 
 	// Generator; shorthand for event and particleData.
 	Pythia pythia;
@@ -113,7 +116,7 @@ int PGun::Generate(int nEvent)
 	InitOutput();
 
 	// Begin of event loop.
-	for (int iEvent = 0; iEvent < nEvent; ++iEvent) 
+	for (unsigned int iEvent = 0; iEvent < nEvent; ++iEvent) 
 	{
 
 	    // Set up parton-level configuration.
@@ -195,4 +198,77 @@ TH1 *PGun::Out1D(int index)
 TH2 *PGun::Out2D(int index)
 {
 	return (TH2*)fOutput->At(index);
+}
+
+void PGun::PrintParticle(Particle &p)
+{
+	cout << "    particle id: " << p.id() 
+	<< "\t\tname: " << p.name() 
+	<< endl;
+}
+
+void PGun::PrintParticle(int idx)
+{
+	Pythia &pythia = *fPythia;
+	Event  &event  = pythia.event;
+	Particle &p    = event[idx];
+	std::cout << "    p index: "; cout.flush();	
+	std::cout << std::setfill(' ') << std::setw(7) << std::right << std::noshowpos;
+	std::cout << idx; cout.flush();
+	std::cout << " | id: "; cout.flush();
+	std::cout << std::setfill(' ') << std::setw(10) << std::right << std::showpos;
+	std::cout << p.id(); cout.flush();
+	std::cout << " | name: "; cout.flush();
+	std::cout << std::setfill(' ') << std::setw(10) << std::right << std::noshowpos;
+	std::cout << p.name(); cout.flush();
+	std::cout << " | pT: "; cout.flush();
+	std::cout << std::setfill(' ') << std::setw(10) << std::right << std::noshowpos;
+	std::cout << p.pT(); cout.flush();
+	std::cout << " | y: "; cout.flush();
+	std::cout << std::setfill(' ') << std::setw(10) << std::right << std::noshowpos;
+	std::cout << p.y(); cout.flush();
+	std::cout << std::endl;
+}
+
+std::vector<int> PGun::GetDaughters(int idx, int minID, int maxID, bool quiet)
+{
+	Pythia &pythia = *fPythia;
+	Event  &event  = pythia.event;
+	int pDaughter1 = event[idx].daughter1();
+	int pDaughter2 = event[idx].daughter2();
+	vector<int> retval;
+	for (int idxd = pDaughter1; idxd <= pDaughter2; idxd++)
+	{
+		int id = event[idxd].id(); 
+			if (quiet == false)
+			{
+				PrintParticle(idxd);
+			}
+		if (abs(id) >= minID && abs(id) <= maxID)
+		{
+			if (quiet == false)
+			{
+				cout << "    -> selected daughter" << endl;
+			}
+			retval.push_back(idxd);
+		}
+	}
+	return retval;
+}
+
+std::vector<int> PGun::FollowDaughters(int idx, int minID, int maxID, bool quiet)
+{
+	vector<int> retval;
+	vector<int> daughters  = GetDaughters(idx, minID, maxID, quiet);
+	for (unsigned int i = 0; i < daughters.size(); i++)
+	{
+		PrintParticle(daughters[i]);
+		retval.push_back(daughters[i]);
+		vector<int> subds = FollowDaughters(daughters[i], minID, maxID, quiet);
+		for (unsigned int id = 0; id < subds.size(); id++)
+		{
+			retval.push_back(subds[id]);
+		}
+	}
+	return retval;
 }

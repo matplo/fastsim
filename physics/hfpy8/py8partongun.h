@@ -1,12 +1,15 @@
 #ifndef __PGUN__HH
 #define __PGUN__HH
 
+#include <vector>
+
 #include <TObject.h>
 #include <TString.h>
 
 namespace Pythia8
 {
 	class Pythia;
+	class Particle;
 }
 
 class TH1;
@@ -36,6 +39,11 @@ public:
 	{
 		fOutputName = outname;
 	}
+
+	void PrintParticle(Pythia8::Particle &p);
+	void PrintParticle(int idx);
+	std::vector<int> GetDaughters(int idx, int minID = 0, int maxID = 10000, bool quiet = true); // default is all
+	std::vector<int> FollowDaughters(int idx, int minID = 0, int maxID = 10000, bool quiet = true);
 
 private:
 

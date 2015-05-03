@@ -35,15 +35,42 @@ void HFGun::FillOutput()
 	Event     &event  = pythia.event;
 	TObjArray &out    = *fOutput;
 
-	for (int i = 0; i < event.size(); ++i) 
+	if (event.size() < 1)
+		return;
+
+	event.list();
+
+	bool quiet = true;
+
+	Particle parton = event[0];
+	int pIndex = -1;
+	for (int i = 0; i < event.size(); i++) 
 	{
+		//PrintParticle(i);
 		//int status = event[i].statusAbs();
 		int id = event[i].id();
-		cout << id << " " << event[i].e() << endl;
 		if (id == fPartonID)
 		{
-			Out1D(kqpt)->Fill(event[i].pT());			
+			pIndex = i;
+			Out1D(kqpt)->Fill(event[i].pT());
+			parton = event[i];
+			PrintParticle(pIndex);
+			cout << "    -> selected parton" << endl;
+			// now check the daughters
+			vector<int> charmH  = FollowDaughters(pIndex, 400, 499, quiet);
+			// now find an electron and check whether the mother is fPartonID
+			cout << "number of charmH: " << charmH.size() << endl;
+			for (unsigned int ic = 0; ic < charmH.size(); ic++)
+			{
+				PrintParticle(charmH[ic]);
+				vector<int> electrons = GetDaughters(charmH[ic], 11, 11, quiet);
+				cout << " charmH:" << ic << " - number of electrons: " << electrons.size() << endl;
+				for (unsigned int ip = 0; ip < electrons.size(); ip++)
+				{
+					PrintParticle(electrons[ip]);
+				}
+			}
 		}
-		// now find an electron and check whether the mother is fPartonID
 	}
+	cout << "::FillOutput done." << endl; cout << endl;
 }
