@@ -68,6 +68,7 @@ protected:
 	int              fPrintN;
 	Pythia8::Pythia *fPythia; //!
 	TH1             *fSpectrum; //!
+	Double_t         fWeight;
 	int              fPartonID;
 
 	TString          fOutputName;

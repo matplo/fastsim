@@ -28,9 +28,9 @@ void HFGun::InitOutput()
 	fOutput->Add(fSpectrum->Clone("input"));
 	TH1F *h = new TH1F("qpt", "qpt", 100, 0, 100);
 	fOutput->Add(h);
-	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid");
+	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid:w");
 	fOutput->Add(tne);
-	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:hpt:hy:id:nd");
+	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:hpt:hy:id:nd:w");
 	fOutput->Add(tnh);
 }
 
@@ -68,7 +68,7 @@ void HFGun::FillOutput()
 				vector<int> electrons = GetDaughters(decayH[ih], 11, 11, !fDebug);
 				Particle &hadron = event[decayH[ih]];
 				int hDaughters = GetDaughters(decayH[ih], hadronIDmin, hadronIDmax, !fDebug).size();
-				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), hDaughters);
+				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), hDaughters, fWeight);
 				for (unsigned int ip = 0; ip < electrons.size(); ip++)
 				{
 					if (fDebug) PrintParticle(electrons[ip]);
@@ -76,7 +76,8 @@ void HFGun::FillOutput()
 					Particle &electron = event[electrons[ip]];
 					tne->Fill(parton.pT(), parton.id(),
 								hadron.pT(), hadron.y(), hadron.id(), 
-								electron.pT(), electron.y(), electron.id());
+								electron.pT(), electron.y(), electron.id(),
+								fWeight);
 				}
 			}
 		}

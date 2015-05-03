@@ -25,6 +25,7 @@ PGun::PGun() : TObject()
 	, fPrintN(-1)
 	, fPythia(0)
 	, fSpectrum(0)
+	, fWeight(0)
 	, fPartonID(21)
 	, fOutputName("pgun_default_output.root")
 	, fOutputFile(0)
@@ -114,13 +115,17 @@ int PGun::Generate(int nEvent)
 	pythia.init();
 	InitOutput();
 
+	Double_t inputIntegral = fSpectrum->Integral();
 	// Begin of event loop.
 	for (int iEvent = 0; iEvent < nEvent; iEvent ++) 
 	{
 
 	    // Set up parton-level configuration.
-		double energy = fSpectrum->GetRandom();
-		FillPartons(energy);
+		double qKine = fSpectrum->GetRandom();
+		Int_t ib     = fSpectrum->FindBin(qKine);
+		fWeight      = fSpectrum->GetBinContent(ib) / inputIntegral;
+
+		FillPartons(qKine);
 
 	    // Generate events. Quit if failure.
 		if (!pythia.next()) 
