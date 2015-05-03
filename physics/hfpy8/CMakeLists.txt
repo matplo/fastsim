@@ -8,6 +8,8 @@ SET ( LINKDEFS  hfpy8LinkDefs.h )
 
 SET ( hfpy8_SOURCES
     target.cxx
+    py8partongun.cxx
+    hfgun.cxx
     )
 
 FOREACH(cxxfile ${hfpy8_SOURCES})
