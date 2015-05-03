@@ -8,4 +8,6 @@
 #pragma link C++ function isDHadron;
 #pragma link C++ function run;
 
+#pragma link C++ class PGun;
+
 #endif

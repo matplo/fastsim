@@ -1,0 +1,67 @@
+			// Origin of primary hadrons.
+			if (status == 85) ++n85;
+			if (status == 86) ++n86;
+			if (status == 83) ++n83;
+			if (status == 84) ++n84;
+
+			// Flow of primary hadrons in the event plane.
+			if (status > 80 && status < 90) 
+			{
+				double eAbs = event[i].e();
+				if (eAbs < 0.) {cout << " e < 0 line " << i; event.list();}
+				double thetaXZ = event[i].thetaXZ();
+				dndtheta.fill(thetaXZ);
+				dedtheta.fill(thetaXZ, eAbs);
+
+				// Rapidity distribution of primary hadrons.
+				double y = event[i].y();
+				dndySum.fill(y);
+				if (type >= 6) 
+				{
+					int motherId = event[event[i].mother1()].id();
+					if (motherId > 0 ) 
+						dndyJun.fill(event[i].y());
+					else 
+						dndyAnti.fill(event[i].y());
+				}
+			}
+
+				// Study final-state particles.
+			if (event[i].isFinal()) 
+			{
+				pSum += event[i].p();
+				chargeSum += event[i].charge();
+				nFin++;
+				double pAbs = event[i].pAbs();
+				dnparticledp.fill(pAbs);
+			}
+
+		    // Parton flow in event plane.
+			if (status == 71 || status == 72) 
+			{
+				double thetaXZ = event[i].thetaXZ();
+				dpartondtheta.fill(thetaXZ);
+			}
+
+		// Fill histograms once for each event.
+		//double epDev = abs(pSum.e()) + abs(pSum.px()) + abs(pSum.py()) + abs(pSum.pz());
+		//if (epDev > 1e-3  || abs(chargeSum) > 0.1) event.list();
+
+
+//outside the event loop...
+
+	cout << epCons << chgCons << nFinal << dnparticledp
+	<< dndtheta << dedtheta << dpartondtheta << dndySum;
+	if (type >= 4) cout << status85 << status86 << status83
+		<< status84;
+	if (type >= 6) cout << dndyJun << dndyAnti;
+
+// fill partons:
+	// Information on a g g system, to be hadronized.
+	else if (type == 2) 
+	{
+		event.append( 21, 23, 101, 102, 0., 0.,  ee, ee);
+		event.append( 21, 23, 102, 101, 0., 0., -ee, ee);
+	}
+
+
