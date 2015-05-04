@@ -10,6 +10,7 @@ using namespace Pythia8;
 #include <TProfile.h>
 #include <TString.h>
 #include <TNtuple.h>
+#include <TRandom.h>
 
 #include "py8partongun.h"
 
@@ -119,32 +120,38 @@ int PGun::Generate(int nEvent)
 	// Begin of event loop.
 	for (int iEvent = 0; iEvent < nEvent; iEvent ++) 
 	{
-
-	    // Set up parton-level configuration.
-		double qKine = fSpectrum->GetRandom();
-		Int_t ib     = fSpectrum->FindBin(qKine);
-		fWeight      = fSpectrum->GetBinContent(ib) / inputIntegral;
-
-		FillPartons(qKine);
-
-	    // Generate events. Quit if failure.
-		if (!pythia.next()) 
+		// now this will be per bin of the input histogram!
+		for (Int_t ib = 1; ib <= fSpectrum->GetNbinsX(); ib++)
 		{
-			cout << " Event generation aborted prematurely, owing to error!\n";
-			break;
-		}
+		    // Set up parton-level configuration.
+			//double qKine = fSpectrum->GetRandom();
+			//Int_t ib     = fSpectrum->FindBin(qKine);
+			//double qKine = fSpectrum->GetBinLowEdge(ib) + fSpectrum->GetBinWidth(ib) * gRandom->Rndm();
+			double qKine = fSpectrum->GetBinCenter(ib);
+			if (qKine < 4.)
+				continue;
+			fWeight      = fSpectrum->GetBinContent(ib)/nEvent; //fSpectrum->GetBinContent(ib) / inputIntegral;
 
-	    //  first few events.
-		if (iEvent < fPrintN) 
-		{
-			cout << "printing because " << iEvent << "< " << fPrintN << endl;
-			event.list();
+			FillPartons(qKine);
+
+		    // Generate events. Quit if failure.
+			if (!pythia.next()) 
+			{
+				cout << " Event generation aborted prematurely, owing to error!\n";
+				break;
+			}
+
+		    //  first few events.
+			if (iEvent < fPrintN) 
+			{
+				cout << "printing because " << iEvent << "< " << fPrintN << endl;
+				event.list();
 			// Also  junctions.
-			event.listJunctions();
-		}
+				event.listJunctions();
+			}
 
-		FillOutput();
-
+			FillOutput();
+		}			
 		// End of event loop.
 	}
 

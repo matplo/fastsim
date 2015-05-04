@@ -46,8 +46,12 @@ void HFGun::FillOutput()
 	if (event.size() < 1)
 		return;
 
-	int hadronIDmin = fPartonID * 100;
-	int hadronIDmax = fPartonID * 100 + 99;
+	//int hadronIDmin = fPartonID * 100;
+	//int hadronIDmax = fPartonID * 100 + 99;
+
+	//get all D's and B's
+	int hadronIDmin = 4 * 100;
+	int hadronIDmax = 5 * 100 + 99;
 
 	Particle parton = event[0];
 	int pIndex = -1;
@@ -78,7 +82,7 @@ void HFGun::FillOutput()
 								hadron.pT(), hadron.y(), hadron.id(), 
 								electron.pT(), electron.y(), electron.id(),
 								fWeight);
-				}
+				}				
 			}
 		}
 	}
