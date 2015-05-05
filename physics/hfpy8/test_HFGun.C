@@ -26,4 +26,13 @@ void test_HFGun()
 	hh->SetTitle(TString::Format("z: electrons from partonID=%d",partonID));
 	gPad->BuildLegend(0.1,0.6,0.4,0.9);
 	gPad->Print("test_HFGun.pdf", ".pdf");
+
+	TFile *fin = new TFile("hfgun_default_output.root");
+	TNtuple *tnh = (TNtuple*)fin->Get("tnh");	
+	tnh->Draw("hpt/qpt>>htemp2", "nd==1", "same");
+	TH1 *hh = (TH1*)gDirectory->Get("htemp2");
+	hh->Scale(1./nevents);
+	hh->SetLineColor(kRed);
+	hh->SetTitle(TString::Format("z: hadrons from partonID=%d",partonID));
+
 }

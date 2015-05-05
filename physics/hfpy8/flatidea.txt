@@ -1,0 +1,8 @@
+flatidea.txt
+
+So, here is an idea:
+- generate flat in quark pT
+- decide on the qpT binning
+- decide on the f(qpT) shape
+- run TNtuple::Draw(electrons) for each bin with a weight set by the bin content of the f(qpT)
+

@@ -59,7 +59,7 @@ void HFGun::FillOutput()
 	{
 		//int status = event[i].statusAbs();
 		int id = event[i].id();
-		if (id == fPartonID)
+		if (abs(id) == fPartonID)
 		{
 			pIndex = i;
 			Out1D(kqpt)->Fill(event[i].pT());

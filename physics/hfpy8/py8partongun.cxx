@@ -11,6 +11,7 @@ using namespace Pythia8;
 #include <TString.h>
 #include <TNtuple.h>
 #include <TRandom.h>
+#include <TMath.h>
 
 #include "py8partongun.h"
 
@@ -116,6 +117,8 @@ int PGun::Generate(int nEvent)
 	pythia.init();
 	InitOutput();
 
+	double partonMass = pdt.m0(fPartonID);
+
 	Double_t inputIntegral = fSpectrum->Integral();
 	// Begin of event loop.
 	for (int iEvent = 0; iEvent < nEvent; iEvent ++) 
@@ -126,10 +129,12 @@ int PGun::Generate(int nEvent)
 		    // Set up parton-level configuration.
 			//double qKine = fSpectrum->GetRandom();
 			//Int_t ib     = fSpectrum->FindBin(qKine);
-			//double qKine = fSpectrum->GetBinLowEdge(ib) + fSpectrum->GetBinWidth(ib) * gRandom->Rndm();
-			double qKine = fSpectrum->GetBinCenter(ib);
-			if (qKine < 4.)
-				continue;
+			double qKine = fSpectrum->GetBinLowEdge(ib) + fSpectrum->GetBinWidth(ib) * gRandom->Rndm();
+			//double qKine = fSpectrum->GetBinCenter(ib);
+			//double e   = TMath::Sqrt(qKine * qKine + partonMass * partonMass);
+			//double thr = partonMass * 2.;
+			//if (e < thr)
+			//	continue;
 			fWeight      = fSpectrum->GetBinContent(ib)/nEvent; //fSpectrum->GetBinContent(ib) / inputIntegral;
 
 			FillPartons(qKine);
