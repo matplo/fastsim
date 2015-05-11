@@ -11,7 +11,9 @@ function exec_lbnlcern()
 function exec_darwin()
 {
 	setroot
-	pythia8	
+    . $HOME/devel/subjets/pythia8/setenv.sh
+    export PYTHIA8LOCATION=$PYTHIA8DIR
+	#pythia8
 }
 
 hostid=`uname -a`
