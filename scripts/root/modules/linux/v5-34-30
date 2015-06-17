@@ -1,0 +1,31 @@
+#%Module########################################################################
+##
+## root modulefile
+##
+proc ModulesHelp { } {
+        global version
+
+        puts stderr "	Setup root."
+        puts stderr "
+	Version $version
+"
+}
+
+# for Tcl script use only
+set     version      v5-34-30
+set     rsys         /home/mateusz/software/root/$version
+
+module-whatis	"setup $rsys"
+
+setenv ROOTSYS $rsys
+
+prepend-path PATH $rsys/bin
+prepend-path LD_LIBRARY_PATH $rsys/lib
+#prepend-path MANPATH $rsys/man
+prepend-path PYTHONPATH $rsys/lib
+
+#set extramod "R($version)"
+set extramod "R"
+#prepend-path PS1 $extramod
+
+module-whatis   "ROOT $version"
