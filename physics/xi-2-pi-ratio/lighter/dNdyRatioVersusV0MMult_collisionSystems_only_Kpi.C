@@ -1,5 +1,10 @@
 {
-//=========Macro generated from canvas: cdNdyRatio_V0M/cdNdyRatio
+    //Nie ja te wykresy  robiłem ale dane pochodzą z publikacji więc dla PbPb to będzę:
+    //0-5-10-20-30-40-50-60-70-80-90%
+    //a dla pPb:
+    //0-5-10-20-40-60-80-100%
+    
+        //=========Macro generated from canvas: cdNdyRatio_V0M/cdNdyRatio
 //=========  (Tue Sep 15 15:18:29 2015) by ROOT version5.34/30
    TCanvas *cdNdyRatio_V0M = new TCanvas("cdNdyRatio_V0M", "cdNdyRatio",0,0,1000,700);
    gStyle->SetOptStat(0);
