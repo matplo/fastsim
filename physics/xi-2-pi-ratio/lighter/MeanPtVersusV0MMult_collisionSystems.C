@@ -1,6 +1,10 @@
 {
 //=========Macro generated from canvas: cMeanPt_V0M/cMeanPt
 //=========  (Tue Sep 15 15:25:36 2015) by ROOT version5.34/30
+
+   TFile fout("MeanPtV0MMult.root", "recreate");
+   TList *outl = new TList();
+
    TCanvas *cMeanPt_V0M = new TCanvas("cMeanPt_V0M", "cMeanPt",12,83,1000,700);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -84,6 +88,8 @@
    gre->SetPointError(9,0,7.279283e-05);
    gre->SetPoint(10,2.261159,0.3906971);
    gre->SetPointError(10,0,6.519221e-05);
+
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforPionSum_stat50 = new TH1F("Graph_MeanPt_ResultsforPionSum_stat50","Graph",100,2.035043,27.69973);
    Graph_MeanPt_ResultsforPionSum_stat50->SetMinimum(0.374601);
@@ -147,6 +153,9 @@
    gre->SetPoint(10,2.261159,0.3906971);
    gre->SetPointError(10,0.06783476,0.009193384);
    
+   outl.Add(gre);
+
+
    TH1F *Graph_MeanPt_ResultsforPionSum_sys51 = new TH1F("Graph_MeanPt_ResultsforPionSum_sys51","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforPionSum_sys51->SetMinimum(0.3637119);
    Graph_MeanPt_ResultsforPionSum_sys51->SetMaximum(0.5772146);
@@ -208,7 +217,8 @@
    gre->SetPointError(9,0.1169043,0.006625931);
    gre->SetPoint(10,2.261159,0.3906971);
    gre->SetPointError(10,0.06783476,0.009193384);
-   
+   outl.Add(gre);
+
    TH1F *Graph_MeanPt_ResultsforPionSum_sys52 = new TH1F("Graph_MeanPt_ResultsforPionSum_sys52","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforPionSum_sys52->SetMinimum(0.3637119);
    Graph_MeanPt_ResultsforPionSum_sys52->SetMaximum(0.5772146);
@@ -274,6 +284,7 @@
    gre->SetPointError(9,0,0.0003170758);
    gre->SetPoint(10,2.261159,0.5894686);
    gre->SetPointError(10,0,0.0002974352);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforKaonSum_stat53 = new TH1F("Graph_MeanPt_ResultsforKaonSum_stat53","Graph",100,2.035043,27.69973);
    Graph_MeanPt_ResultsforKaonSum_stat53->SetMinimum(0.551804);
@@ -340,6 +351,7 @@
    gre->SetPointError(9,0.1169043,0.01297464);
    gre->SetPoint(10,2.261159,0.5894686);
    gre->SetPointError(10,0.06783476,0.01536901);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforKaonSum_sys54 = new TH1F("Graph_MeanPt_ResultsforKaonSum_sys54","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforKaonSum_sys54->SetMinimum(0.5340304);
@@ -406,6 +418,7 @@
    gre->SetPointError(9,0.1169043,0.01297464);
    gre->SetPoint(10,2.261159,0.5894686);
    gre->SetPointError(10,0.06783476,0.01536901);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforKaonSum_sys55 = new TH1F("Graph_MeanPt_ResultsforKaonSum_sys55","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforKaonSum_sys55->SetMinimum(0.5340304);
@@ -468,6 +481,7 @@
    gre->SetPointError(9,0,0.0005161854);
    gre->SetPoint(10,2.261159,0.6699754);
    gre->SetPointError(10,0,0.0004829965);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforProtonSum_stat56 = new TH1F("Graph_MeanPt_ResultsforProtonSum_stat56","Graph",100,2.035043,27.69973);
    Graph_MeanPt_ResultsforProtonSum_stat56->SetMinimum(0.6185131);
@@ -530,6 +544,7 @@
    gre->SetPointError(9,0.1169043,0.03264043);
    gre->SetPoint(10,2.261159,0.6699754);
    gre->SetPointError(10,0.06783476,0.03802097);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforProtonSum_sys57 = new TH1F("Graph_MeanPt_ResultsforProtonSum_sys57","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforProtonSum_sys57->SetMinimum(0.5750789);
@@ -592,6 +607,7 @@
    gre->SetPointError(9,0.1169043,0.03264043);
    gre->SetPoint(10,2.261159,0.6699754);
    gre->SetPointError(10,0.06783476,0.03802097);
+   outl.Add(gre);
    
    TH1F *Graph_MeanPt_ResultsforProtonSum_sys58 = new TH1F("Graph_MeanPt_ResultsforProtonSum_sys58","Graph",100,1.973992,28.44653);
    Graph_MeanPt_ResultsforProtonSum_sys58->SetMinimum(0.5750789);
@@ -650,6 +666,7 @@
    grae->SetPointError(5,0.2,0.2,0.05592218,0.05592218);
    grae->SetPoint(6,4.4,0.6809);
    grae->SetPointError(6,0.1,0.1,0.0396207,0.0396207);
+   outl.Add(grae);
    
    TH1F *Graph_HepData8420d20x1y11 = new TH1F("Graph_HepData/8420/d20x1y11","/HepData/8420/d20x1y1",100,0.13,50.17);
    Graph_HepData8420d20x1y11->SetMinimum(0.6017081);
@@ -708,6 +725,7 @@
    grae->SetPointError(5,0.2,0.2,0.01379855,0.01379855);
    grae->SetPoint(6,4.4,0.4336);
    grae->SetPointError(6,0.1,0.1,0.01155422,0.01155422);
+   outl.Add(grae);
    
    TH1F *Graph_HepData8420d21x1y12 = new TH1F("Graph_HepData8420d21x1y12","HepData/8420/d21x1y1",100,0.13,50.17);
    Graph_HepData8420d21x1y12->SetMinimum(0.407956);
@@ -766,6 +784,7 @@
    grae->SetPointError(5,0.2,0.2,0.03295709,0.03295709);
    grae->SetPoint(6,4.4,0.8208);
    grae->SetPointError(6,0.1,0.1,0.02663475,0.02663475);
+   outl.Add(grae);
    
    TH1F *Graph_HepData8420d18x1y13 = new TH1F("Graph_HepData/8420/d18x1y13","/HepData/8420/d18x1y1",100,0.13,50.17);
    Graph_HepData8420d18x1y13->SetMinimum(0.7440226);
@@ -830,6 +849,7 @@
    grae->SetPointError(8,2,2,0.017,0.017);
    grae->SetPoint(9,13.4,0.434);
    grae->SetPointError(9,1.2,1.6,0.014,0.014);
+   outl.Add(grae);
    
    TH1F *Graph_HepData8463d32x1y14 = new TH1F("Graph_HepData8463d32x1y14","/HepData/8463/d32x1y1",100,10.98,1825.88);
    Graph_HepData8463d32x1y14->SetMinimum(0.4084);
@@ -894,6 +914,7 @@
    grae->SetPointError(8,2,2,0.027,0.027);
    grae->SetPoint(9,13.4,0.711);
    grae->SetPointError(9,1.2,1.6,0.027,0.027);
+   outl.Add(grae);
    
    TH1F *Graph_HepData8463d32x1y35 = new TH1F("Graph_HepData8463d32x1y35","/HepData/8463/d32x1y3",100,10.98,1825.88);
    Graph_HepData8463d32x1y35->SetMinimum(0.6622);
@@ -958,7 +979,8 @@
    grae->SetPointError(8,2,2,0.025,0.025);
    grae->SetPoint(9,13.4,0.905);
    grae->SetPointError(9,1.2,1.6,0.026,0.026);
-   
+   outl.Add(grae);
+
    TH1F *Graph_HepData8463d32x1y56 = new TH1F("Graph_/HepData/8463/d32x1y56","/HepData/8463/d32x1y5",100,10.98,1825.88);
    Graph_HepData8463d32x1y56->SetMinimum(0.8303);
    Graph_HepData8463d32x1y56->SetMaximum(1.4147);
@@ -1182,4 +1204,9 @@
    cMeanPt_V0M->Modified();
    cMeanPt_V0M->cd();
    cMeanPt_V0M->SetSelected(cMeanPt_V0M);
+
+   fout.cd();
+   outl.Write();
+   fout.Write();
+   fout.Close();
 }
