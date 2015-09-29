@@ -17,6 +17,6 @@ THISDIR=`dirname $THISFILE`
 
 cdir=$PWD
 
-rm -rf $THISDIR/EmcalTriggerFast $THISDIR/include $THISDIR/lib
+rm -rfv $THISDIR/EmcalTriggerFast $THISDIR/include $THISDIR/lib
 
 cd $cdir
