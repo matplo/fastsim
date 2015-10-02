@@ -2,14 +2,14 @@
 
 savedir=$PWD
 
-if [ ! -z "$SUBJDIR" ]; then
-    cd $SUBJDIR
+if [ ! -z "$RUN2EMCTRIGGER" ]; then
+    cd $RUN2EMCTRIGGER
 
-    $SUBJDIR/bin/patch_scripts.py $SUBJDIR '#load_modules' $SUBJDIR/load_modules.sh
+    $RUN2EMCTRIGGER/bin/patch_scripts.py $RUN2EMCTRIGGER '#load_modules' $RUN2EMCTRIGGER/load_modules.sh
     echo "[i] done."
     
     cd $savedir
 else
-    echo "SUBJDIR not set. call set_env_all.sh or setup manually..."
+    echo "RUN2EMCTRIGGER not set. call set_env_all.sh or setup manually..."
 fi
 

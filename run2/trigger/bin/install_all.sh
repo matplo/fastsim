@@ -2,13 +2,13 @@
 
 savedir=$PWD
 
-if [ ! -z "$SUBJDIR" ]; then
-    cd $SUBJDIR
+if [ ! -z "$RUN2EMCTRIGGER" ]; then
+    cd $RUN2EMCTRIGGER
 
-    $SUBJDIR/bin/make_scripts.sh
+    $RUN2EMCTRIGGER/bin/make_scripts.sh
 
     #ifiles=`find . -name "install.sh"`
-    ifiles="./pythia8"
+    ifiles="./lhapdf/install.sh ./pythia8/install.sh ./fastjet/install.sh"
 
     for fn in $ifiles
     do
@@ -22,7 +22,7 @@ if [ ! -z "$SUBJDIR" ]; then
 
     for cdir in ./pythia8
     do
-	cd $SUBJDIR/$cdir
+	cd $RUN2EMCTRIGGER/$cdir
 	make
 	cd -
     done
@@ -31,5 +31,5 @@ if [ ! -z "$SUBJDIR" ]; then
     
     cd $savedir
 else
-    echo "SUBJDIR not set. call set_env_all.sh or setup manually..."
+    echo "RUN2EMCTRIGGER not set. call set_env_all.sh or setup manually..."
 fi
