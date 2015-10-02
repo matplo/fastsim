@@ -27,10 +27,14 @@ RUN2EMCTRIGGER=`dirname $XDIR`
 export RUN2EMCTRIGGER=`cd $RUN2EMCTRIGGER;pwd`
 
 lhapdf_version=5.9.1
-export LHAPDFDIR=$SUBJDIR/lhapdf/$lhapdf_version
+export LHAPDFDIR=$RUN2EMCTRIGGER/lhapdf/$lhapdf_version
+export LHAPATH=$LHAPDFDIR/share/lhapdf/PDFsets
 
 fastjet_version=3.1.2
 export FASTJETDIR=$RUN2EMCTRIGGER/fastjet/$fastjet_version
+
+export HEPMCDIR=$RUN2EMCTRIGGER/hepmc/$hepmc_version
+export HEPMCPATH=$HEPMCDIR
 
 add_to_path=$LHAPDFDIR/bin:$JEWELDIR/bin:$HEPMC2ROOTDIR/bin:$FASTJETDIR/bin:$RUN2EMCTRIGGER/bin
 add_to_ld_path=$LHAPDFDIR/lib:$SJESTRUCTDIR/lib:$HEPMCDIR/lib:$HEPMC2ROOTDIR/lib:$FASTJETDIR/lib:$RUN2EMCTRIGGER/analysis/base/lib

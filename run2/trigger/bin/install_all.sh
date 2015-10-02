@@ -8,7 +8,8 @@ if [ ! -z "$RUN2EMCTRIGGER" ]; then
     $RUN2EMCTRIGGER/bin/make_scripts.sh
 
     #ifiles=`find . -name "install.sh"`
-    ifiles="./lhapdf/install.sh ./pythia8/install.sh ./fastjet/install.sh"
+    #ifiles="./lhapdf/install.sh ./pythia8/install.sh ./fastjet/install.sh"
+    ifiles="./hepmc/install.sh ./pythia8/install.sh"
 
     for fn in $ifiles
     do
@@ -20,12 +21,12 @@ if [ ! -z "$RUN2EMCTRIGGER" ]; then
 	echo "[i] executing $fn done -------"
     done
 
-    for cdir in ./pythia8
-    do
-	cd $RUN2EMCTRIGGER/$cdir
-	make
-	cd -
-    done
+    ##for cdir in ./pythia8
+    ##do
+	##cd $RUN2EMCTRIGGER/$cdir
+	##make
+	##cd -
+    ##done
 
     echo "[i] done."
     

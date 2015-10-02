@@ -5,7 +5,7 @@ savedir=$PWD
 if [ ! -z "$RUN2EMCTRIGGER" ]; then
     cd $RUN2EMCTRIGGER
 
-    $RUN2EMCTRIGGER/bin/patch_scripts.py $RUN2EMCTRIGGER '#load_modules' $RUN2EMCTRIGGER/load_modules.sh
+    $RUN2EMCTRIGGER/bin/patch_scripts.py $RUN2EMCTRIGGER '#load_modules' $RUN2EMCTRIGGER/bin/load_modules.sh
     echo "[i] done."
     
     cd $savedir
