@@ -12,6 +12,8 @@ function abspath()
   esac
 }
 
+savedir=$PWD
+
 THISFILE=`abspath $BASH_SOURCE`
 XDIR=`dirname $THISFILE`
 if [ -L ${THISFILE} ];
@@ -20,6 +22,7 @@ then
     XDIR=`dirname $target`
 fi
 
+THISDIR=$XDIR
 XDIR=`dirname $XDIR`
 
 [ ! -z $1 ] && XDIR=$1
@@ -28,12 +31,18 @@ XDIR=`dirname $XDIR`
 
 if [ -d $XDIR ]; then
     cd $XDIR
-    echo $PWD
+    echo "[i] setup in $PWD"
 else
     echo "[error] $XDIR does not exist. stop here."
 fi
 
-for TDIR in hepmc lhapdf pythia8 fastjet
+templates=`find $THISDIR/templates -name "*.sh"`
+for TMPLATE in $templates
 do
-    mkdir -p $XDIR/$TDIR
+    cp $TMPLATE $THISDIR
+    XDIRr="${XDIR//\//\\/}"
+    FNAME=`basename $TMPLATE`
+    sed -i "" -e "s/<dir to be set>/${XDIRr}/" $THISDIR/$FNAME
 done
+
+cd $savedir
