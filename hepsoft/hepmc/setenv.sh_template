@@ -1,0 +1,43 @@
+#!/bin/bash
+
+function abspath()
+{
+  case "${1}" in
+    [./]*)
+    echo "$(cd ${1%/*}; pwd)/${1##*/}"
+    ;;
+    *)
+    echo "${PWD}/${1}"
+    ;;
+  esac
+}
+
+
+THISFILE=`abspath $BASH_SOURCE`
+XDIRHEPMC=`dirname $THISFILE`
+if [ -L ${THISFILE} ];
+then
+    target=`readlink $THISFILE`
+    XDIRHEPMC=`dirname $target`
+fi
+
+version=2.06.09
+[ "$1" == "2.06.09" ] && version=2.06.09
+export HEPMCDIR=$XDIRHEPMC/$version
+export HEPMCPATH=$XDIRHEPMC/$version
+
+if [ -z "$PATH" ];
+then
+    export PATH=$HEPMCDIR/bin
+else
+    export PATH=$HEPMCDIR/bin:$PATH
+fi
+
+if [ -z "$LD_LIBRARY_PATH" ];
+then
+    export LD_LIBRARY_PATH=$HEPMCDIR/lib
+else
+    export LD_LIBRARY_PATH=$HEPMCDIR/lib:$LD_LIBRARY_PATH
+fi
+
+#load_modules
