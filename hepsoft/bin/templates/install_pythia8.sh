@@ -90,6 +90,8 @@ else
 
     make && make install
 
+    chmod +x $install_dir/bin/pythia8-config
+
     write_setup_script $install_dir $version
 fi
 cd $savedir
