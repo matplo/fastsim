@@ -17,13 +17,15 @@ function write_setup_script()
     outdir=$1/bin
     #outfile=$outdir/$fname
     outfile=$XDIR/bin/$fname
+    rm -rf $outfile
+    
     cat>>$outfile<<EOF
 #!/bin/bash
 
 export HEPMCDIR=$1
 export HEPMC_VERSION=$2    
-export DYLD_LIBRARY_PATH=\$HEPMCDIR/lib:$DYLD_LIBRARY_PATH
-export LD_LIBRARY_PATH=\$HEPMCDIR/lib:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=\$HEPMCDIR/lib:\$DYLD_LIBRARY_PATH
+export LD_LIBRARY_PATH=\$HEPMCDIR/lib:\$LD_LIBRARY_PATH
 
 EOF
 }
