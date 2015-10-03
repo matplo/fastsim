@@ -1,2 +1,4 @@
 /install*.sh
+/setenv_*.sh
 /cleanup.sh
+/clean_*.sh
