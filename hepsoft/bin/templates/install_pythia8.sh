@@ -41,7 +41,8 @@ function write_setup_script()
     fname=setenv_pythia_$2.sh
     outdir=$1/bin
     #outfile=$outdir/$fname
-    outfile=$XDIR/bin/$fname
+    mkdir -p $XDIR/scripts 
+    outfile=$XDIR/scripts/$fname
     rm -rf $outfile
 
     cat>>$outfile<<EOF
