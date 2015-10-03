@@ -2,6 +2,10 @@
 
 savedir=$PWD
 
+XDIR="<dir to be set>"
+working_dir="$XDIR/lhapdf"
+mkdir -p $working_dir
+
 function abspath()
 {
   case "${1}" in
@@ -35,49 +39,61 @@ function get_PDFsets()
     echo $PWD
 }
 
-THISFILE=`abspath $BASH_SOURCE`
-XDIR=`dirname $THISFILE`
-if [ -L ${THISFILE} ];
-then
-    target=`readlink $THISFILE`
-    XDIR=`dirname $target`
-fi
+function write_setup_script()
+{
+    fname=setenv_lhapdf_$2.sh
+    outdir=$1/bin
+    #outfile=$outdir/$fname
+    outfile=$XDIR/bin/$fname
+    rm -rf $outfile
 
-cd $XDIR
-echo $PWD
+    cat>>$outfile<<EOF
+#!/bin/bash
 
-version=5.9.1
-install_dir="$XDIR/$version"
-echo "[i] will install to: $install_dir"
+export LHAPDFDIR=$1
+export LHAPDF_VERSION=$2    
+export DYLD_LIBRARY_PATH=\$LHAPDFDIR/lib:\$DYLD_LIBRARY_PATH
+export LD_LIBRARY_PATH=\$LHAPDFDIR/lib:\$LD_LIBRARY_PATH
+export PATH=\$LHAPDFDIR/bin:\$PATH
+EOF
+}
 
-echo "[i] getting the PDFsets first..."
-get_PDFsets $install_dir
-
-echo "[i] installing lhapdf $version"
-fdfile="lhapdf-$version.tar.gz"
-srcdir="lhapdf-$version"
-echo "[i] file to download: $fdfile"
-echo "[i] source sub dir: $srcdir"
-
-if [ -e "./downloads/$fdfile" ]; then
-    echo "[i] ./downloads/$fdfile exists - will not download"
+if [ ! -d "$working_dir" ]; then
+    echo "[error] $working_dir does not exist."
 else
-    mkdir -p ./downloads
-    cd ./downloads
-    wget http://www.hepforge.org/archive/lhapdf/$fdfile
-    cd -
+    version=$1
+    [ -z $version ] && version=5.9.1
+    install_dir="$working_dir/$version"
+
+    cd $working_dir
+    echo $PWD
+    echo "[i] will install to: $install_dir"    
+    echo "[i] installing lhapdf $version"
+    echo "[i] getting the PDFsets first..."
+    get_PDFsets $install_dir
+    fdfile="lhapdf-$version.tar.gz"
+    srcdir="lhapdf-$version"
+    echo "[i] file to download: $fdfile"
+    echo "[i] source sub dir: $srcdir"
+    
+    if [ -e "./downloads/$fdfile" ]; then
+        echo "[i] ./downloads/$fdfile exists - will not download"
+    else
+        mkdir -p ./downloads
+        cd ./downloads
+        wget http://www.hepforge.org/archive/lhapdf/$fdfile
+        cd -
+    fi
+    
+    tar zxvf ./downloads/$fdfile
+    cd $srcdir
+    
+    [ "$2" = "clean" ] && make clean    
+
+    ./configure --prefix=$install_dir
+    make && make install
+    write_setup_script $install_dir $version
+
 fi
-
-tar zxvf ./downloads/$fdfile
-cd $srcdir
-
-XDIR=$XDIRLHA
-#. $XDIR/../bin/load_modules.sh
-
-#load_modules
-
-make clean
-./configure --prefix=$install_dir
-make && make install
 
 cd $savedir

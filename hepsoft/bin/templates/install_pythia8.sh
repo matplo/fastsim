@@ -1,6 +1,8 @@
 #!/bin/bash
 
-[ -z "$LHAPDFDIR" ] && echo "[e] needs LHAPDFDIR" && exit 1
+[ -z "$LHAPDFDIR" ] && echo "[error] needs LHAPDFDIR" && exit 1
+fjpath=`fastjet-config --prefix`
+[ -z "$fjpath" ] && echo "[error] needs fastjet-config" && exit 1
 
 savedir=$PWD
 
@@ -20,11 +22,21 @@ function abspath()
   esac
 }
 
-THISFILE=`abspath $BASH_SOURCE`
-XDIR=`dirname $THISFILE`
-cd $XDIR
+function exec_configure()
+{
+    rsys=`root-config --prefix`
+    rsysinc=`root-config --incdir`
+    rsyslib=`root-config --libdir`
+    ./configure --prefix=$install_dir \
+        --enable-shared \
+        --with-root=$rsys \
+        --with-root-lib=$rsyslib \
+        --with-root-include=$rsysinc \
+        --with-hepmc2=$HEPMCDIR \
+        --with-fastjet3=$fjpath
+}
 
-unction write_setup_script()
+function write_setup_script()
 {
     fname=setenv_pythia_$2.sh
     outdir=$1/bin
@@ -51,29 +63,32 @@ else
     [ -z $version ] && version=8205
     install_dir="$working_dir/$version"
 
+    cd $working_dir
+    echo $PWD
+    echo "[i] will install to: $install_dir"    
     echo "[i] install for PYTHIA version $version"
+
     fdfile="pythia$version.tgz"
+    srcdir="pythia$version"
+    echo "[i] file to download: $fdfile"
+    echo "[i] source sub dir: $srcdir"    
     if [ -e "./downloads/$fdfile" ]; then
-        echo "[i] ./downloads/$fdfile exists - will not download"
+        echo "[i] $fdfile exists - will not download"
     else
         mkdir -p ./downloads
         cd ./downloads
         wget http://home.thep.lu.se/~torbjorn/pythia8/$fdfile
         cd -
     fi
-    #rm -rf ./$version
-    #mkdir -p ./$version
-    #cd ./$version
-    mkdir ./tmp
-    cd ./tmp
-    tar xvf ../downloads/$fdfile
-    cd pythia$version
-    #./configure --prefix=$XDIR/$version --enable-shared --with-root=$ROOTSYS --with-hepmc2=$HEPMCDIR --with-lhapdf5=$LHAPDFDIR
-    ./configure --prefix=$XDIR/$version --enable-shared --with-root=$ROOTSYS --with-hepmc2=$HEPMCDIR --with-fastjet3=$PYTHIA8DIR
-    make
-    make install
-    #cp -v ../misc/Makefile .
-    #echo $PWD
-    #make
+    tar xvf ./downloads/$fdfile
+    cd $srcdir
+
+    [ "$2" = "clean" ] && make clean   
+
+    exec_configure $install_dir
+
+    make && make install
+
+    write_setup_script $install_dir $version
 fi
 cd $savedir
