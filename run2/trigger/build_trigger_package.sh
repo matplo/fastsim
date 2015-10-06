@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cdir=$PWD
+
 function abspath()
 {
   case "${1}" in
@@ -15,9 +17,13 @@ function abspath()
 THISFILE=`abspath $BASH_SOURCE`
 THISDIR=`dirname $THISFILE`
 
-cdir=$PWD
-
 cd $THISDIR/EmcalTriggerFast/src
+cmake -DCMAKE_INSTALL_PREFIX=$THISDIR
+make clean
+make && make install
+
+cd $THISDIR/AliGenFME/src
+./clean.sh
 cmake -DCMAKE_INSTALL_PREFIX=$THISDIR
 make && make install
 
