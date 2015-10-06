@@ -12,7 +12,8 @@ cd $wdir
 
 git clone http://root.cern.ch/git/root.git
 
-version=v6-05-02
+#version=v6-05-02
+version=v5-34-32
 tdir=$HOME/software/root/$version
 
 cd root
@@ -22,7 +23,7 @@ git checkout -b $version $version
 cd $wdir
 
 dname=`date +"%Y-%m-%d"`
-bdir="build_$dname"
+bdir="build_$version_$dname"
 rm -rf $bdir
 mkdir $bdir
 cd $bdir
