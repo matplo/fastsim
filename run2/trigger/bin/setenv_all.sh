@@ -20,12 +20,17 @@ then
     XDIR=`dirname $target`
 fi
 
-. $HOME/devel/sandbox/hepsoft/bin/setenv_all.sh
-
 #assuming the main dir is ../ up
 RUN2EMCTRIGGER=`dirname $XDIR`
 export RUN2EMCTRIGGER
 #cd $RUN2EMCTRIGGER
+
+setroot
+. $HOME/devel/sandbox/hepsoft/bin/setenv_all.sh
+
+export DYLD_LIBRARY_PATH=$RUN2EMCTRIGGER/lib:$DYLD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$RUN2EMCTRIGGER/lib:$LD_LIBRARY_PATH
+export PATH=$RUN2EMCTRIGGER/bin:$PATH
 
 RUTILSDIR=$HOME/devel/rootutils
 . $RUTILSDIR/python/2.7/setenv.sh

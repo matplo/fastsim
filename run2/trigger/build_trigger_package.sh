@@ -29,7 +29,9 @@ make && make install
 
 cd $THISDIR/gener/src
 ./clean.sh
-cmake -DCMAKE_INSTALL_PREFIX=$THISDIR
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$THISDIR ..
 make && make install
 
 cd $cdir
