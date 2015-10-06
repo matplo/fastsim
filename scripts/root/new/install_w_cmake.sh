@@ -70,9 +70,12 @@ if $configure; then
 	cd $wdir
 	
 	dname=`date +"%Y-%m-%d"`
-	bdir="build_$version_$dname"
-	rm -rf $bdir
-	mkdir $bdir
+	#bdir="build_$version_$dname"
+	bdir="build_$version"
+	if is_arg_set "clean"; then
+		rm -rf $bdir
+	fi
+	mkdir -p $bdir
 	cd $bdir
 	
 	cmake $wdir/root
