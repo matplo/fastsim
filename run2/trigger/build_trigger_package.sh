@@ -17,21 +17,15 @@ function abspath()
 THISFILE=`abspath $BASH_SOURCE`
 THISDIR=`dirname $THISFILE`
 
-cd $THISDIR/EmcalTriggerFast/src
-cmake -DCMAKE_INSTALL_PREFIX=$THISDIR
-make clean
-make && make install
-
-cd $THISDIR/AliGenFME/src
-./clean.sh
-cmake -DCMAKE_INSTALL_PREFIX=$THISDIR
-make && make install
-
-cd $THISDIR/gener/src
-./clean.sh
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=$THISDIR ..
-make && make install
+bdir=$THISDIR/build
+mkdir $bdir
+for pack in EmcalTriggerFast AliGenFME gener
+do
+	cd $bdir
+	mkdir $pack
+	cd $pack
+	cmake -DCMAKE_INSTALL_PREFIX=$THISDIR $THISDIR/$pack/src
+	make && make install
+done
 
 cd $cdir
