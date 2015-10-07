@@ -6,7 +6,7 @@
 // This is a simple test program. 
 // It compares SlowJet and FastJet, showing that they find the same jets.
 
-#include "Pythia.h"
+#include "Pythia8/Pythia.h"
 
 // The FastJet3.h header enables automatic initialisation of 
 // fastjet::PseudoJet objects from Pythia8 Particle and Vec4 objects, 
@@ -15,7 +15,7 @@
 // and fastjet selectors that make use of the Particle properties.
 // See the extensive comments in the header file for further details 
 // and examples.
-#include "FastJet3.h"
+#include "Pythia8Plugins/FastJet3.h"
 
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"

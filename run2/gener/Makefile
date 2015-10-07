@@ -19,7 +19,8 @@ TOPDIR=$(shell \pwd)
 INCDIR=include
 SRCDIR=src
 LIBDIR=lib
-LIBDIRARCH=lib/archive
+#LIBDIRARCH=lib/archive
+LIBDIRARCH=lib
 BINDIR=bin
 
 CXXFLAGSMOD = $(patsubst -pedantic,,$(CXXFLAGS)) 
@@ -30,7 +31,7 @@ LIBGZIP=-L$(BOOSTLIBLOCATION) -lboost_iostreams -L$(ZLIBLOCATION) -lz
 endif
 
 # There is no default behaviour, so remind user.
-all:	toypyPb
+all:	toymcpy8
 #	@echo "Usage: for NN = example number: make mainNN"
 
 # Create an executable for one of the normal test programs
@@ -114,7 +115,8 @@ ifneq (x$(FASTJETLOCATION),x)
 	`$(ROOTSYS)/bin/root-config --libs`
 	@ln -fs $(BINDIR)/$@.exe $@.exe
 	@rm -f $@.o
-  toymcpy8mb:  $(PYTHIA8LOCATION)/$(LIBDIRARCH)/libpythia8.a
+  toymcpy8:  $(PYTHIA8LOCATION)/$(LIBDIRARCH)/libpythia8.a
+	@echo LOCATION is $(PYTHIA8LOCATION)
 	@mkdir -p $(BINDIR)
     # Note: $(CXXFLAGSMOD) is after Fastjet flags as Fastjet includes
     #       optimisation/debug flags which may be unwanted (e.g. -g -O2)
@@ -123,7 +125,7 @@ ifneq (x$(FASTJETLOCATION),x)
 	-I$(ROOTSYS)/include \
 	$(CXXFLAGSMOD) -Wno-shadow \
 	-o $(BINDIR)/$@.exe \
-	-L$(PYTHIA8LOCATION)/$(LIBDIRARCH) $(LIBGZIP) -lpythia8 -llhapdfdummy \
+	-L$(PYTHIA8LOCATION)/$(LIBDIRARCH) $(LIBGZIP) -lpythia8 \
 	-L$(FASTJETLOCATION)/lib \
 	`$(FASTJETLOCATION)/bin/fastjet-config --libs --plugins` \
 	`$(ROOTSYS)/bin/root-config --libs`
