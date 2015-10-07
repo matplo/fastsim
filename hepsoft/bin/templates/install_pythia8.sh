@@ -85,7 +85,7 @@ if [ ! -d "$working_dir" ]; then
     echo "[error] $working_dir does not exist."
 else
     version=$1
-    [ -z $version ] && version=8205
+    [ -z $version ] && version=8212
     install_dir="$working_dir/$version"
 
     cd $working_dir
