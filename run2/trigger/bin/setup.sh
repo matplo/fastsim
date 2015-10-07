@@ -46,6 +46,9 @@ do
     XDIRr="${XDIR//\//\\/}"
     FNAME=`basename $TMPLATE`
     sed -i "" -e "s/<dir to be set>/${XDIRr}/" $outdir/$FNAME
+
+    mkdir -p $HOME/privatemodules
+    cp $outdir/$FNAME $HOME/privatemodules
 done
 
 cd $savedir
