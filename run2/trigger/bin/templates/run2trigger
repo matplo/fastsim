@@ -1,0 +1,15 @@
+#%Module
+proc ModulesHelp { } {
+        global version
+        puts stderr "   Setup RUN2EMCTRIGGER $version"
+    }
+
+module load root
+module load hepsoft/latest
+
+set    version nover
+set    sdir <dir to be set>
+setenv RUN2EMCTRIGGER $sdir
+prepend-path LD_LIBRARY_PATH $sdir/lib
+prepend-path DYLD_LIBRARY_PATH $sdir/lib
+prepend-path PATH $sdir/bin
