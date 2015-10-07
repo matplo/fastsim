@@ -6,3 +6,4 @@ setenv.sh
 *install.log
 /build
 /bin/toymcpy8
+/modules
