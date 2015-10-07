@@ -1,7 +1,7 @@
 #ifndef GENERUTIL_HH
 #define GENERUTIL_HH
 
-#include <RTypes.h>
+#include <Rtypes.h>
 #include <vector>
 
 class TF1;

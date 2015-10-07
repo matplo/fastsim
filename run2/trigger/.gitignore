@@ -1,4 +1,5 @@
 /EmcalTriggerFast
+/AliGenFME
 /lib
 /include
 install.sh

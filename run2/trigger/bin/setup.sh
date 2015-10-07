@@ -37,7 +37,8 @@ else
 fi
 
 outdir=`abspath $THISDIR/../modules`
-module use $outdir
+mkdir -p $outdir
+#module use $outdir
 
 templates=`find $THISDIR/templates -name "run2trigger*"`
 for TMPLATE in $templates
