@@ -21,11 +21,12 @@ bdir=$THISDIR/build
 mkdir $bdir
 for pack in EmcalTriggerFast AliGenFME gener
 do
-	cd $bdir
-	mkdir $pack
-	cd $pack
-	cmake -DCMAKE_INSTALL_PREFIX=$THISDIR $THISDIR/$pack/src
-	make && make install
+  cd $bdir
+  mkdir $pack
+  cd $pack
+  cmake -DCMAKE_INSTALL_PREFIX=$THISDIR $THISDIR/$pack/src
+  make clean
+  make $1 && make install
 done
 
 cd $cdir
