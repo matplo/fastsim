@@ -28,6 +28,32 @@ function is_arg_set
 	return 1 #this is false
 }
 
+function write_module_file()
+{
+    version=$2
+    outfile=$HOME/privatemodules/root/$version
+    outdir=`dirname $outfile`
+    mkdir -p $outdir
+    rm -rf $outfile
+
+    cat>>$outfile<<EOF
+#%Module
+proc ModulesHelp { } {
+        global version
+        puts stderr "   Setup root \$version"
+    }
+
+set     version $version
+setenv  ROOTSYS $1
+setenv  ROOTDIR $1
+setenv  ROOT_VERSION $2    
+prepend-path LD_LIBRARY_PATH $1/lib
+prepend-path DYLD_LIBRARY_PATH $1/lib
+prepend-path PATH $1/bin
+
+EOF
+}
+
 build=false
 configure=false
 install=false
@@ -92,6 +118,8 @@ if $install; then
 	
 	ln -s $tdir/bin/thisroot.sh "/usr/local/bin/root-$version"
 fi
+
+write_module_file $tdir $version
 
 cd $savedir
 
