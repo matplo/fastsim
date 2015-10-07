@@ -1,0 +1,8 @@
+/EmcalTriggerFast
+/lib
+/include
+install.sh
+setenv.sh
+*install.log
+/build
+/bin/toymcpy8

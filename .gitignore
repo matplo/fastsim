@@ -1,1 +1,4 @@
 libpythia8.a
+test_toy.log
+toymcpy8.cmnd
+default_toymcpy8_out.root
