@@ -28,12 +28,16 @@ if [ -z "$ROOTSYS" ]; then
 else
     ./configure \
 	--prefix=$ROOTSYS \
+	--libdir=$ROOTSYS/lib \
+	--incdir=$ROOTSYS/include \
+	--etcdir=$ROOTSYS/etc \
+	--docdir=$ROOTSYS/doc \
 	--enable-mathmore \
 	--enable-minuit2 \
 	--enable-roofit \
 	--enable-soversion
 fi
 
-time make -j 4 && make install
+time make -j 10 && make install
 
 cd $cdir
