@@ -31,6 +31,30 @@ export LD_LIBRARY_PATH=\$HEPMCDIR/lib:\$LD_LIBRARY_PATH
 EOF
 }
 
+function write_module_file()
+{
+    version=$2
+    outfile=$XDIR/modules/hepmc/$version
+    outdir=`dirname $outfile`
+    mkdir -p $outdir
+    rm -rf $outfile
+
+    cat>>$outfile<<EOF
+#%Module
+proc ModulesHelp { } {
+        global version
+        puts stderr "   Setup hepmc \$version"
+    }
+
+set     version $version
+setenv  HEPMCDIR $1
+setenv  HEPMC_VERSION $2    
+prepend-path LD_LIBRARY_PATH $1/lib
+prepend-path DYLD_LIBRARY_PATH $1/lib
+
+EOF
+}
+
 if [ ! -d "$working_dir" ]; then
     echo "[error] $working_dir does not exist."
 else
@@ -63,6 +87,7 @@ else
     make && make install
 
     write_setup_script $install_dir $version
+    write_module_file $install_dir $version
 fi
 
 cd $savedir

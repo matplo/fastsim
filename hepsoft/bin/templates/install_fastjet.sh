@@ -61,6 +61,30 @@ export PATH=\$FASTJETDIR/bin:\$PATH
 EOF
 }
 
+function write_module_file()
+{
+    version=$2
+    outfile=$XDIR/modules/fastjet/$version
+    outdir=`dirname $outfile`
+    mkdir -p $outdir
+    rm -rf $outfile
+
+    cat>>$outfile<<EOF
+#%Module
+proc ModulesHelp { } {
+        global version
+        puts stderr "   Setup fastjet \$version"
+    }
+
+set     version $version
+setenv  FASTJETDIR $1
+setenv  FASTJET_VERSION $2    
+prepend-path LD_LIBRARY_PATH $1/lib
+prepend-path DYLD_LIBRARY_PATH $1/lib
+prepend-path PATH $1/bin
+
+EOF
+}
 
 if [ ! -d "$working_dir" ]; then
     echo "[error] $working_dir does not exist."
@@ -96,6 +120,7 @@ else
     make && make install
 
     write_setup_script $install_dir $version
+    write_module_file $install_dir $version
 
 fi
 
