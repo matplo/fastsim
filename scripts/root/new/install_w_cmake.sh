@@ -50,6 +50,7 @@ setenv  ROOT_VERSION $2
 prepend-path LD_LIBRARY_PATH $1/lib
 prepend-path DYLD_LIBRARY_PATH $1/lib
 prepend-path PATH $1/bin
+prepend-path PYTHONPATH $1/lib
 
 EOF
 }
@@ -59,8 +60,10 @@ configure=false
 install=false
 
 if is_arg_set "configure"; then configure=true; fi
-if is_arg_set "build"; then build=true; configure=true; fi
-if is_arg_set "install"; then build=true; configure=true; install=true; fi
+#if is_arg_set "build"; then build=true; configure=true; fi
+if is_arg_set "build"; then build=true; fi
+#if is_arg_set "install"; then build=true; configure=true; install=true; fi
+if is_arg_set "install"; then install=true; fi
 
 
 echo "[i] configure:"$configure
@@ -91,31 +94,29 @@ cd root
 
 git checkout tags/$version
 
-if $configure; then
+cd $wdir
 
-	cd $wdir
-	
-	dname=`date +"%Y-%m-%d"`
-	#bdir="build_$version_$dname"
-	bdir="build_$version"
+dname=`date +"%Y-%m-%d"`
+#bdir="build_$version_$dname"
+bdir="build_$version"
+
+if $configure; then
 	if is_arg_set "clean"; then
 		rm -rf $bdir
 	fi
 	mkdir -p $bdir
-	cd $bdir
-	
-	cmake $wdir/root
+	cd $bdir	
+	cmake $wdir/root -Droofit=ON -Drpath=OFF
 fi
 
 if $build; then
-
+	cd $bdir	
 	cmake --build .
 fi
 
 if $install; then
-
-	cmake -DCMAKE_INSTALL_PREFIX=$tdir -P cmake_install.cmake
-	
+	cd $bdir	
+	cmake -DCMAKE_INSTALL_PREFIX=$tdir -P cmake_install.cmake	
 	ln -s $tdir/bin/thisroot.sh "/usr/local/bin/root-$version"
 fi
 
