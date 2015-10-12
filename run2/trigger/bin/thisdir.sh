@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cdir=$PWD
-
 function abspath()
 {
   case "${1}" in
@@ -17,16 +15,4 @@ function abspath()
 THISFILE=`abspath $BASH_SOURCE`
 THISDIR=`dirname $THISFILE`
 
-bdir=$THISDIR/build
-mkdir $bdir
-for pack in gener
-do
-  cd $bdir
-  mkdir $pack
-  cd $pack
-  cmake -DCMAKE_INSTALL_PREFIX=$THISDIR $THISDIR/$pack/src
-  make clean
-  make $1 && make install
-done
-
-cd $cdir
+echo $THISDIR
