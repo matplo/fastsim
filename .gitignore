@@ -3,3 +3,5 @@ test_toy.log
 toymcpy8.cmnd
 default_toymcpy8_out.root
 stdin-canvas.ps
+default_emctrig_out.root
+test_emc.log
