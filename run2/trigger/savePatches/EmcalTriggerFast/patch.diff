@@ -1,0 +1,215 @@
+From 0faebb72402e033df22d8de6b4ed005f56074c9c Mon Sep 17 00:00:00 2001
+From: matplo <ploskon@gmail.com>
+Date: Tue, 13 Oct 2015 00:32:00 +0200
+Subject: [PATCH] adding a test (was crashing previously) - now ok (after
+ Markus' fix)
+
+---
+ CMakeLists.txt                        | 12 ++++----
+ tests/CMakeLists.txt                  |  5 +++-
+ tests/ChannelMapTester/CMakeLists.txt | 38 ++++++++++++++++--------
+ tests/TriggerLoop/CMakeLists.txt      | 39 +++++++++++++++++++++++++
+ tests/TriggerLoop/testETF.cxx         | 55 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 130 insertions(+), 19 deletions(-)
+ create mode 100644 tests/TriggerLoop/CMakeLists.txt
+ create mode 100644 tests/TriggerLoop/testETF.cxx
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 369e076..d1f97c7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,13 +15,13 @@
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-project(EMCALTriggerFast CXX)
+ cmake_minimum_required(VERSION 2.8.11)
+-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+-include(CheckCXXCompilerFlag)
+ 
+-# ROOT NEEDED for tests
+-find_package(ROOT 5.34.30 REQUIRED)
++project(EMCALTriggerFast CXX)
++
++set(CMAKE_MACOSX_RPATH 1)
++
++include(CheckCXXCompilerFlag)
+ 
+ add_subdirectory(src)
+-add_subdirectory(tests)
+\ No newline at end of file
++add_subdirectory(tests)
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 3f0f921..dfb7fd0 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -15,4 +15,7 @@
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-add_subdirectory(ChannelMapTester)
+\ No newline at end of file
++cmake_minimum_required(VERSION 2.8.11)
++
++add_subdirectory(ChannelMapTester)
++add_subdirectory(TriggerLoop)
+diff --git a/tests/ChannelMapTester/CMakeLists.txt b/tests/ChannelMapTester/CMakeLists.txt
+index 297c008..de2b511 100644
+--- a/tests/ChannelMapTester/CMakeLists.txt
++++ b/tests/ChannelMapTester/CMakeLists.txt
+@@ -15,18 +15,32 @@
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-include_directories(
+-    ${ROOT_INCLUDE_DIR}
+-    ${EMCALTriggerFast_SOURCE_DIR}/src
+-    ${CMAKE_CURRENT_SOURCE_DIR}
+-)
+-link_directories(
+-    ${ROOT_LIBDIR}
+-)
++cmake_minimum_required(VERSION 2.8.11)
+ 
+-SET(LIBDEPS EMCALTriggerFast Core EG Geom Gpad Graf Hist MathCore Matrix Physics RIO Tree VMC)
++execute_process ( COMMAND root-config --etcdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_ETCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
++set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
++find_package(ROOT) # REQUIRED)
+ 
+-add_executable(channelmaptester channelmaptester.cxx)
+-target_link_libraries(channelmaptester ${LIBDEPS})
++if (ROOT_FOUND)
++	message (STATUS "ROOT found via root-config --etcdir and etc/FindROOT.cmake : CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
++endif (ROOT_FOUND)
+ 
+-install(TARGETS channelmaptester RUNTIME DESTINATION bin)
+\ No newline at end of file
++if (ROOT-NOTFOUND)
++	message (STATUS "ROOT not found - checking with the provided FindROOT.cmake")
++	set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
++	message (STATUS "+ROOT CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
++	find_package(ROOT REQUIRED)
++endif(ROOT-NOTFOUND)
++
++if (ROOT_FOUND)
++	include_directories(
++	    ${ROOT_INCLUDE_DIR}
++	    ${EMCALTriggerFast_SOURCE_DIR}/src
++	    ${CMAKE_CURRENT_SOURCE_DIR}
++	)
++	add_executable(channelmaptester channelmaptester.cxx)
++	target_link_libraries(channelmaptester ${ROOT_LIBRARIES} EMCALTriggerFast )
++	install(TARGETS channelmaptester RUNTIME DESTINATION bin)
++else()
++	message(WARNING "no ROOT -> channelmaptester will not be compiled")
++endif (ROOT_FOUND)
+diff --git a/tests/TriggerLoop/CMakeLists.txt b/tests/TriggerLoop/CMakeLists.txt
+new file mode 100644
+index 0000000..ba39c98
+--- /dev/null
++++ b/tests/TriggerLoop/CMakeLists.txt
+@@ -0,0 +1,39 @@
++# Fast simulation tool for the trigger response of the ALICE EMCAL-DCAL
++# Detector system
++# Copyright (C) 2015  Markus Fasel, ALICE Collaboration
++#
++# This program is free software: you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation, either version 3 of the License, or
++# (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++set(EXE_SRCS testETF.cxx)
++string(REPLACE ".cxx" "" EXE_NAME "${EXE_SRCS}")
++
++find_package(Boost REQUIRED random math_c99 system)
++if (BOOST-NOTFOUND)
++	message(SEND_ERROR "Boost or one of the components not found. Will not compile ${EXE_NAME}")
++endif (BOOST-NOTFOUND)
++
++include_directories(
++    ${EMCALTriggerFast_SOURCE_DIR}/src
++    ${CMAKE_CURRENT_SOURCE_DIR}
++)
++
++add_executable(${EXE_NAME} ${EXE_SRCS})
++target_link_libraries(${EXE_NAME} ${LIB_NAME} ${Boost_LIBRARIES} EMCALTriggerFast )
++
++install(TARGETS ${EXE_NAME} ${LIB_NAME}
++        RUNTIME DESTINATION bin
++        LIBRARY DESTINATION lib)
++
++install(FILES ${HDRS} DESTINATION include)
++
+diff --git a/tests/TriggerLoop/testETF.cxx b/tests/TriggerLoop/testETF.cxx
+new file mode 100644
+index 0000000..c4d2105
+--- /dev/null
++++ b/tests/TriggerLoop/testETF.cxx
+@@ -0,0 +1,55 @@
++#include "TriggerSetup.h"
++#include "TriggerMaker.h"
++#include "TriggerBitConfig.h"
++
++#include <cstdlib>
++#include <iostream>
++#include <ctime>
++
++#include <boost/random.hpp>
++#include <boost/math/constants/constants.hpp>
++#include <boost/random/uniform_real.hpp>
++
++// This is a typedef for a random number generator.
++// Try boost::mt19937 or boost::ecuyer1988 instead of boost::minstd_rand
++typedef boost::random::mt19937 base_generator_type;
++
++int main()
++{
++	using namespace boost::math;
++	//using namespace boost::multiprecision;
++	using namespace boost::random;
++	base_generator_type generator(42);
++	generator.seed(static_cast<unsigned int>(std::time(0)));
++	const double pi = constants::pi<double>();
++	boost::uniform_real<> uni_dist(0, 1);
++	boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(generator, uni_dist);
++
++	TriggerSetup tsetup;
++	tsetup.SetThresholds(0., 0., 1., 1.);
++	tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
++	TriggerMaker tm;
++	tm.SetTriggerSetup(tsetup);
++
++	std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
++	std::cout.precision(2);
++
++	int nevents = 1000;
++	for (unsigned int iev = 0; iev < nevents; iev++)
++	{
++		int nparticles = uni() * 100;
++		std::cout << "[i] Evevt: " << iev << " N particles: " << nparticles << std::endl;
++		for (unsigned int ip = 0; ip < nparticles; ip++)
++		{
++			double phi_v = uni() * pi * 2. - pi;
++			double eta_v = uni() * 2. - 1.;
++			double ene_v = uni() * 100.;
++			std::cout << "[i] phi,eta,ene: "
++			          << phi_v << " \t"
++			          << eta_v << " \t"
++			          << ene_v
++			          << std::endl;
++			tm.FillChannelMap(eta_v, phi_v, ene_v);
++		}
++	}
++};
+\ No newline at end of file
+-- 
+1.8.4.2
+
