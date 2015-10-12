@@ -5,6 +5,6 @@
 install.sh
 setenv.sh
 *install.log
-./build
+/.build
 /bin/toymcpy8
 /modules
