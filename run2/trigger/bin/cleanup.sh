@@ -5,9 +5,10 @@ savedir=$PWD
 if [ -d $RUN2EMCTRIGGER ]; then
 	cd $RUN2EMCTRIGGER
 
-	for d in EmcalTriggerFast include lib AliGenFME build
+	for d in EmcalTriggerFast include lib AliGenFME .build
 	do
-		rm -rfv $RUN2EMCTRIGGER/$d
+		echo "cleaning $RUN2EMCTRIGGER/$d ..."
+		rm -rf $RUN2EMCTRIGGER/$d
 	done
 	
 	for ex in toymcpy8 testETF channelmaptester 
