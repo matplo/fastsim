@@ -189,8 +189,6 @@ int emctrig( int argc, char *argv[])
 		double ghost_maxrap = etaMax; // this is the range of the detector
 
 		// ------------ pure pythia
-		// this is for the signal jets - anti-kT
-		// Run Fastjet algorithm and sort jets in pT order.
 		fj::JetDefinition jet_def_hard(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
 		fj::ClusterSequence clust_seq_hard(py_hard_event, jet_def_hard);
 		vector <fj::PseudoJet> inclusive_jets_hard = clust_seq_hard.inclusive_jets(pTMin);
@@ -205,31 +203,57 @@ int emctrig( int argc, char *argv[])
 		vector<fj::PseudoJet> full_jets = fj::sorted_by_pt(clust_seq_full.inclusive_jets(pTMin));
 
 		// Run the fastjet background estimation - kT
-		// define the area etc... - do the same for anti-kt
 		fj::JetDefinition jet_def_bkgd(fj::kt_algorithm, R);
 		fj::AreaDefinition area_def_bkgd(fj::active_area_explicit_ghosts,
 		                                 fj::GhostedAreaSpec(ghost_maxrap));
 		fj::Selector selector = fj::SelectorAbsRapMax(ghost_maxrap) * (!fj::SelectorNHardest(2));
 		fj::JetMedianBackgroundEstimator bkgd_estimator(selector, jet_def_bkgd, area_def_bkgd);
 
-		// To help manipulate the background estimator, we also provide a
-		// transformer that allows to apply directly the background
-		// subtraction on the jets. This will use the background estimator
-		// to compute rho for the jets to be subtracted.
 		// ----------------------------------------------------------
 		fj::Subtractor subtractor(&bkgd_estimator);
 
-		// Finally, once we have an event, we can just tell the background
-		// estimator to use that list of particles
-		// This could be done directly when declaring the background
-		// estimator but the usage below can more easily be accomodated to a
-		// loop over a set of events.
 		// ----------------------------------------------------------
 		bkgd_estimator.set_particles(full_event);
 		double rho   = bkgd_estimator.rho();
 		double sigma = bkgd_estimator.sigma();
 
+		// Fill inclusive FastJet jet from the pythia event - hard event
+		for (int i = 0; i < int(sorted_jets_hard.size()); ++i)
+		{
+			pt  = sorted_jets_hard[i].perp();
+			phi = sorted_jets_hard[i].phi();
+			eta = sorted_jets_hard[i].eta();
+
+			vector<fj::PseudoJet> constituents = sorted_jets_hard[i].constituents();
+			lead_pT = fj::SelectorNHardest(1)(constituents)[0].perp();
+			matched_pT = 0;
+			matched_pT_tmp = 0;
+			double matched_area  = -1;
+			double matched_pTraw = -1;
+			for (int j = 0; j < int(subtracted_jets_full.size()); ++j)
+			{
+				matched_pT_tmp = GenerUtil::pt_matched(sorted_jets_hard[i], subtracted_jets_full[j]);
+				if ((matched_pT_tmp > sorted_jets_hard[i].perp() / 2.) && (matched_pT_tmp > matched_pT))
+				{
+					matched_pT    = subtracted_jets_full[j].perp();
+					matched_area  = full_jets[j].area();
+					matched_pTraw = full_jets[j].perp();
+				}
+			}
+
+			tnj_hard->Fill(     -1, xsec,
+			                    pt, eta, phi,
+			                    lead_pT, matched_pT,
+			                    matched_pTraw, matched_area, rho, sigma);
+		}
+
 	} // end of event loop
 
+	// Statistics. Histograms.
+	pythia.stat();
+
+	fout->Write();
+	fout->Close();
+
 	return 0;
-};
+}
