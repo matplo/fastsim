@@ -31,11 +31,11 @@ set(CMAKE_MACOSX_RPATH 1)
 
 set(SOURCES_LIB
 	util.cxx
+	toymcpy8.cxx
+	emctrig.cxx
 )
 
-set(SOURCES_EXE
-	toymcpy8.cxx
-)
+set(SOURCES_EXE main.cxx)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HEADERS_LIB "${SOURCES_LIB}")
