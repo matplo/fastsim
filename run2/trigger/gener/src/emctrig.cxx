@@ -31,9 +31,9 @@ namespace py = Pythia8;
 
 int emctrig( int argc, char *argv[])
 {
-	Int_t kCollider        = 1;
+	Int_t 	 kCollider     = 1;
 	Double_t gmultCollider = GenerUtil::gmultLHC;
-	Int_t gNbinCollider    = GenerUtil::gNbinLHC;
+	Int_t 	 gNbinCollider = GenerUtil::gNbinLHC;
 
 	int verbosity = 0;
 	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
@@ -42,7 +42,7 @@ int emctrig( int argc, char *argv[])
 	TString outputFname = SysUtil::getArg("-out", argc, argv);
 	if (outputFname.Length() == 0)
 	{
-		outputFname = "default_toymcpy8_out.root";
+		outputFname = "default_emctrig_out.root";
 	}
 	cout << "[i] Output file: " << outputFname.Data() << endl;
 
@@ -211,11 +211,122 @@ int emctrig( int argc, char *argv[])
 
 		// ----------------------------------------------------------
 		fj::Subtractor subtractor(&bkgd_estimator);
+		subtractor.set_use_rho_m(true);
 
 		// ----------------------------------------------------------
 		bkgd_estimator.set_particles(full_event);
 		double rho   = bkgd_estimator.rho();
 		double sigma = bkgd_estimator.sigma();
+		if (verbosity > 7)
+		{
+			double particle_maxrap = etaMax;
+
+			cout << "Main clustering:" << endl;
+			cout << "  Ran:   " << jet_def_full.description() << endl;
+			cout << "  Area:  " << area_def_full.description() << endl;
+			cout << "  Particles up to |y|=" << particle_maxrap << endl;
+			cout << endl;
+
+			cout << "Background estimation:" << endl;
+			cout << "  " << bkgd_estimator.description() << endl << endl;;
+			cout << "  Giving, for the full event" << endl;
+			cout << "    rho   = " << bkgd_estimator.rho()   << endl;
+			cout << "    sigma = " << bkgd_estimator.sigma() << endl;
+			cout << endl;
+		}
+
+		if (verbosity > 8)
+		{
+			cout << "Full Event: Jets above " << pTMin << " GeV in the hard event (" << full_event.size() << " particles)" << endl;
+			cout << "---------------------------------------\n";
+			printf("%5s %15s %15s %15s %15s\n", "jet #", "rapidity", "phi", "pt", "area");
+			if (verbosity > 9)
+			{
+				for (unsigned int i = 0; i < full_jets.size(); i++)
+				{
+					printf("%5u %15.8f %15.8f %15.8f %15.8f\n", i,
+					       full_jets[i].rap(), full_jets[i].phi(), full_jets[i].perp(),
+					       full_jets[i].area());
+				}
+			}
+			cout << endl;
+		}
+
+		// Once the background properties have been computed, subtraction
+		// can be applied on the jets. Subtraction is performed on the
+		// full 4-vector
+		//
+		// We output the jets before and after subtraction
+		// ----------------------------------------------------------
+		if (verbosity > 8)
+		{
+			cout << "Full Event: Jets above " << pTMin << " GeV in the full event (" << full_event.size() << " particles)" << endl;
+			cout << "---------------------------------------\n";
+			printf("%5s %15s %15s %15s %15s %15s %15s %15s\n", "jet #", "rapidity", "phi", "pt", "area", "rap_sub", "phi_sub", "pt_sub");
+		}
+
+		// get the subtracted jets
+		vector<fj::PseudoJet> subtracted_jets_full = subtractor(full_jets);
+		// ----------------------------------------------------
+		//
+		// at this point we have everything to fill the output!
+		//
+		// ----------------------------------------------------
+
+		unsigned int idx = 0;
+		// Fill inclusive FastJet jets from the pythia+bg event
+		for (unsigned int i = 0; i < full_jets.size(); i++)
+		{
+			// re-apply the pt cut
+			//if (subtracted_jets_full[i].perp2() >= pTMin*pTMin)
+			if (1) // take any! jet - see what happens?
+			{
+				if (verbosity > 9)
+				{
+					printf("%5u %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f\n", idx,
+					       full_jets[i].rap(), full_jets[i].phi(), full_jets[i].perp(),
+					       full_jets[i].area(),
+					       subtracted_jets_full[i].rap(), subtracted_jets_full[i].phi(),
+					       subtracted_jets_full[i].perp());
+				}
+
+				vector<fj::PseudoJet> constituents = subtracted_jets_full[i].constituents();
+				lead_pT = fj::SelectorNHardest(1)(constituents)[0].perp();
+				matched_pT = 0;
+				matched_pT_tmp = 0;
+				for (int j = 0; j < int(sorted_jets_hard.size()); ++j)
+				{
+					matched_pT_tmp = GenerUtil::pt_matched(sorted_jets_hard[j], subtracted_jets_full[i]);
+					if ((matched_pT_tmp > sorted_jets_hard[j].perp() / 2.) && (matched_pT_tmp > matched_pT))
+					{
+						matched_pT = sorted_jets_hard[j].perp();
+					}
+				}
+				double area  = full_jets[i].area();
+				double pTraw = full_jets[i].perp();
+
+				pt  = sorted_jets_hard[i].perp();
+				phi = full_jets[i].phi();
+				eta = full_jets[i].eta();
+
+				// note we do not use: - which are! different from inclusive!
+				// subtracted_jets_full[i].perp(),
+				// subtracted_jets_full[i].eta(),
+				// subtracted_jets_full[i].phi(),
+
+				if (subtracted_jets_full[i].perp2() <= pTMin * pTMin)
+				{
+					pt = 0.;
+					//cout << subtracted_jets_full[i].eta() << " " << full_jets[i].eta() << endl;
+				}
+
+				tnj_full->Fill(     -1, xsec,
+				                    pt, eta, phi,
+				                    lead_pT, matched_pT,
+				                    pTraw, area, rho, sigma);
+				idx++;
+			}
+		}
 
 		// Fill inclusive FastJet jet from the pythia event - hard event
 		for (int i = 0; i < int(sorted_jets_hard.size()); ++i)
