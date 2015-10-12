@@ -29,15 +29,25 @@ namespace py = Pythia8;
 
 #include "util.h"
 
+#include <TriggerMaker.h>
+
 int emctrig( int argc, char *argv[])
 {
+	int verbosity = 0;
+	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
+	cout << "[i] Verbosity : " << verbosity << endl;
+
+	GenerUtil::init_defaults();
 	Int_t 	 kCollider     = 1;
 	Double_t gmultCollider = GenerUtil::gmultLHC;
 	Int_t 	 gNbinCollider = GenerUtil::gNbinLHC;
 
-	int verbosity = 0;
-	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
-	cout << "[i] Verbosity : " << verbosity << endl;
+	Double_t multUser = atof(SysUtil::getArg("--mult", argc, argv));
+	if (multUser > 0)
+	{
+		gmultCollider = multUser;
+	}
+	cout << "[i] gmultCollider: " << gmultCollider << endl;
 
 	TString outputFname = SysUtil::getArg("-out", argc, argv);
 	if (outputFname.Length() == 0)
@@ -49,7 +59,6 @@ int emctrig( int argc, char *argv[])
 	// Select common parameters FastJet analyses.
 	int    power   = -1;     // -1 = anti-kT; 0 = C/A; 1 = kT.
 	double R       = 0.4;    // Jet size.
-	//double pTMin   = 1.0;    // Min jet pT.
 	double pTMin   = 0.0;    // Min jet pT.
 	double etaMax  = 1.1;    // Pseudorapidity range of detector.
 	int    select  = 2;      // Which particles are included?
@@ -71,17 +80,25 @@ int emctrig( int argc, char *argv[])
 	// PYTHIA INIT
 	// Generator. Shorthand for event.
 	py::Pythia pythia;
-	py::Info& info = pythia.info;
+	py::Info& info   = pythia.info;
 	py::Event& event = pythia.event;
 
 	// Read in commands from external file.
 	pythia.readFile("emctrig.cmnd");
 
 	// Extract settings to be used in the main program.
-	int nEvent = pythia.mode("Main:numberOfEvents");
-	int nAbort = pythia.mode("Main:timesAllowErrors");
+	int nEvent      = pythia.mode("Main:numberOfEvents");
+	int nAbort      = pythia.mode("Main:timesAllowErrors");
 	double minpThat = pythia.mode("PhaseSpace:pTHatMin");
 	double maxpThat = pythia.mode("PhaseSpace:pTHatMax");
+
+	int nEventUser = atoi(SysUtil::getArg("--nev", argc, argv));
+	if (nEventUser > 0)
+	{
+		nEvent = nEventUser;
+	}
+
+	cout << "[i] Run for " << nEvent << " events." << endl;
 
 	pythia.init();
 
@@ -89,13 +106,14 @@ int emctrig( int argc, char *argv[])
 	// for the root IO...
 	TFile *fout = new TFile (outputFname.Data(), "RECREATE");
 	fout->cd();
+
 	// remember to create the ntuples and histograms within the file
 	TNtuple *tnj_hard = new TNtuple("jets_hard", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
 	TNtuple *tnj_full = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
-	TNtuple *tnp = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+	TNtuple *tnp      = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
 
-	double lead_pT    = 0;
-	double matched_pT = 0;
+	double lead_pT        = 0;
+	double matched_pT     = 0;
 	double matched_pT_tmp = 0;
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
@@ -180,7 +198,13 @@ int emctrig( int argc, char *argv[])
 
 		if (iEvent % 100 == 0)
 		{
-			cout << iEvent << ": bg gen time: " << endl;
+			cout << "[info] event #" << iEvent << endl;
+		}
+
+		if (verbosity > 7)
+		{
+			cout << "[i] number of particles in hard event: " << py_hard_event.size() << endl;
+			cout << "[i] number of particles in bg   event: " << full_event.size() << endl;
 		}
 
 		// BACKGROUND AND SIGNAL IN THE BG+SIGNAL EVENTS
@@ -217,6 +241,7 @@ int emctrig( int argc, char *argv[])
 		bkgd_estimator.set_particles(full_event);
 		double rho   = bkgd_estimator.rho();
 		double sigma = bkgd_estimator.sigma();
+
 		if (verbosity > 7)
 		{
 			double particle_maxrap = etaMax;
@@ -267,6 +292,20 @@ int emctrig( int argc, char *argv[])
 
 		// get the subtracted jets
 		vector<fj::PseudoJet> subtracted_jets_full = subtractor(full_jets);
+
+		// run the trigger algorithms
+
+		TriggerSetup tsetup;
+		tsetup.SetThresholds(0., 0., 1., 1.);
+		tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
+
+		TriggerMaker tm;
+		tm.SetTriggerSetup(tsetup);
+		for (unsigned int ip = 0; ip < full_event.size(); ip++)
+		{
+			tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi(), full_event[ip].e());
+		}
+
 		// ----------------------------------------------------
 		//
 		// at this point we have everything to fill the output!
@@ -305,7 +344,8 @@ int emctrig( int argc, char *argv[])
 				double area  = full_jets[i].area();
 				double pTraw = full_jets[i].perp();
 
-				pt  = sorted_jets_hard[i].perp();
+				//pt  = sorted_jets_hard[i].perp();
+				pt  = full_jets[i].perp();
 				phi = full_jets[i].phi();
 				eta = full_jets[i].eta();
 
@@ -314,11 +354,11 @@ int emctrig( int argc, char *argv[])
 				// subtracted_jets_full[i].eta(),
 				// subtracted_jets_full[i].phi(),
 
-				if (subtracted_jets_full[i].perp2() <= pTMin * pTMin)
-				{
-					pt = 0.;
-					//cout << subtracted_jets_full[i].eta() << " " << full_jets[i].eta() << endl;
-				}
+				//if (subtracted_jets_full[i].perp2() <= pTMin * pTMin)
+				//{
+				//	pt = 0.;
+				//	//cout << subtracted_jets_full[i].eta() << " " << full_jets[i].eta() << endl;
+				//}
 
 				tnj_full->Fill(     -1, xsec,
 				                    pt, eta, phi,

@@ -55,10 +55,13 @@ string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
 #include_directories(${ROOT_INCLUDE_DIR})
 #link_libraries(${ROOT_LIBRARIES})
 
+set(R2LIBS "-L$ENV{RUN2EMCTRIGGER}/lib" -lEMCALTriggerFast)
+set(R2INCLUDES $ENV{RUN2EMCTRIGGER}/include)
+
 set(PROJECT_UTIL_LIB "${PROJECT_NAME}Util")
 add_library(${PROJECT_UTIL_LIB} SHARED ${SOURCES_LIB})
-target_include_directories(${PROJECT_UTIL_LIB} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" )  
-target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES})
+target_include_directories(${PROJECT_UTIL_LIB} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${R2INCLUDES})  
+target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${R2LIBS} ${ROOT_LIBRARIES} )
 
 add_executable(${PROJECT_NAME} ${SOURCES_EXE})
 target_link_libraries(${PROJECT_NAME} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES} ${PROJECT_UTIL_LIB} )

@@ -58,7 +58,7 @@ namespace GenerUtil
 		grnd              = new TRandom;
 		gpyParticleOffset = 10001;
 
-		cout << "init_defaults: " << gmultLHC << endl;
+		cout << "[i] GenerUtil::init_defaults() " << endl;
 	}
 
 	Double_t boltzmann(Double_t x[], Double_t par[])
