@@ -6,3 +6,5 @@ stdin-canvas.ps
 default_emctrig_out.root
 test_emc.log
 testETF
+channelmaptester
+channeltester.root
