@@ -108,13 +108,17 @@ int emctrig( int argc, char *argv[])
 	fout->cd();
 
 	// remember to create the ntuples and histograms within the file
-	TNtuple *tnj_hard = new TNtuple("jets_hard", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
-	TNtuple *tnj_full = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
-	TNtuple *tnp      = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+	TNtuple *tnj_hard_EMC = new TNtuple("jets_hard_EMC", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_DMC = new TNtuple("jets_hard_DMC", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnpatch      = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL");
+	TNtuple *tnj_full 	  = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
+	TNtuple *tnp      	  = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
 
 	double lead_pT        = 0;
 	double matched_pT     = 0;
 	double matched_pT_tmp = 0;
+
+	TriggerMappingEmcalSimple emcalmapping;
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
@@ -124,7 +128,8 @@ int emctrig( int argc, char *argv[])
 
 		double xsec = info.sigmaGen();
 
-		tnj_hard->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
+		tnj_hard_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
+		tnj_hard_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnp->Fill(iEvent, xsec, -1, -9.9, -99);
 
@@ -273,7 +278,11 @@ int emctrig( int argc, char *argv[])
 		tm.SetTriggerSetup(tsetup);
 		for (unsigned int ip = 0; ip < full_event.size(); ip++)
 		{
-			tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi(), full_event[ip].e());
+			if (emcalmapping.IsEMCAL(full_event[ip].eta(), full_event[ip].phi_02pi()) || 
+				emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
+			{
+				tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+			}
 		}
 		if (verbosity > 8)
 		{
@@ -297,6 +306,14 @@ int emctrig( int argc, char *argv[])
 			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		/ pjeA << std::endl;
 
 		}
+
+		//("triggers", "triggers", "nEv:xsec:
+		//maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:
+		//medjECAL:medjDCAL:medgECAL:medgDCAL");
+		tnpatch->Fill(iEvent, xsec,
+		              full_event.size(), rho,
+		              tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(),
+		              tm.GetMedianJetEMCAL(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaEMCAL(), tm.GetMedianGammaDCALPHOS() );
 
 		if (verbosity > 8)
 		{
@@ -385,7 +402,7 @@ int emctrig( int argc, char *argv[])
 				tnj_full->Fill(     -1, xsec,
 				                    pt, eta, phi,
 				                    lead_pT, matched_pT,
-				                    pTraw, area, rho, sigma);
+				                    area, rho, sigma);
 				idx++;
 			}
 		}
@@ -413,11 +430,18 @@ int emctrig( int argc, char *argv[])
 					matched_pTraw = full_jets[j].perp();
 				}
 			}
-
-			tnj_hard->Fill(     -1, xsec,
-			                    pt, eta, phi,
-			                    lead_pT, matched_pT,
-			                    matched_pTraw, matched_area, rho, sigma);
+			tnj_hard_EMC->Fill(     -1, xsec,
+			                        pt, eta, phi,
+			                        lead_pT,
+			                        matched_pTraw, matched_area, rho, sigma,
+			                        full_event.size(),
+			                        tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
+			tnj_hard_DMC->Fill(     -1, xsec,
+			                        pt, eta, phi,
+			                        lead_pT,
+			                        matched_pTraw, matched_area, rho, sigma,
+			                        full_event.size(),
+			                        tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
 		}
 
 	} // end of event loop

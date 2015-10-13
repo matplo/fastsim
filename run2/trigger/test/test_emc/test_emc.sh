@@ -9,5 +9,6 @@ if [ ! -f "$RUN2EMCTRIGGER/test/test_emc/emctrig.cmnd" ] ; then
 	cp -v $RUN2EMCTRIGGER/gener/config/emctrig.cmnd .
 fi
 #otool -L $RUN2EMCTRIGGER/bin/toymcpy8
-$RUN2EMCTRIGGER/bin/toymcpy8 -v 10 --nev 3 --emc --mult 1000. 2>&1 | tee test_emc.log
+#$RUN2EMCTRIGGER/bin/toymcpy8 -v 10 --nev 1000 --emc --mult 1000. 2>&1 | tee test_emc.log
+$RUN2EMCTRIGGER/bin/toymcpy8 --nev 2000 --emc --mult 1000. 2>&1 | tee test_emc.log
 
