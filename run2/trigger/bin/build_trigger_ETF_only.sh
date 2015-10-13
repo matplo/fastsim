@@ -2,6 +2,10 @@
 
 savedir=$PWD
 
+if [ -z $RUN2EMCTRIGGER ]; then
+  exit
+fi
+
 if [ -d $RUN2EMCTRIGGER ]; then
   cd $RUN2EMCTRIGGER
   for pack in EmcalTriggerFast
