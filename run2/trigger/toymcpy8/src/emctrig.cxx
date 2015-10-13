@@ -242,6 +242,9 @@ int emctrig( int argc, char *argv[])
 		double rho   = bkgd_estimator.rho();
 		double sigma = bkgd_estimator.sigma();
 
+		// get the subtracted jets
+		vector<fj::PseudoJet> subtracted_jets_full = subtractor(full_jets);
+
 		if (verbosity > 7)
 		{
 			double particle_maxrap = etaMax;
@@ -258,6 +261,41 @@ int emctrig( int argc, char *argv[])
 			cout << "    rho   = " << bkgd_estimator.rho()   << endl;
 			cout << "    sigma = " << bkgd_estimator.sigma() << endl;
 			cout << endl;
+		}
+
+		// run the trigger algorithms
+
+		TriggerSetup tsetup;
+		tsetup.SetThresholds(0., 0., 0., 0.);
+		tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
+
+		TriggerMaker tm;
+		tm.SetTriggerSetup(tsetup);
+		for (unsigned int ip = 0; ip < full_event.size(); ip++)
+		{
+			tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi(), full_event[ip].e());
+		}
+		if (verbosity > 8)
+		{
+			std::cout << "gam emcal max: " << tm.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
+			std::cout << "gam  dcal max: " << tm.GetMaxGammaDCALPHOS().GetADC() << std::endl;
+			std::cout << "jet emcal max: " << tm.GetMaxJetEMCAL().GetADC() 		<< std::endl;
+			std::cout << "jet  dcal max: " << tm.GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
+
+			std::cout << "gam emcal median: " << tm.GetMedianGammaEMCAL() 		<< std::endl;
+			std::cout << "gam  dcal median: " << tm.GetMedianGammaDCALPHOS() 	<< std::endl;
+			std::cout << "jet emcal median: " << tm.GetMedianJetEMCAL() 		<< std::endl;
+			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		<< std::endl;
+
+			double pgaA =  4 *  4 * 0.014 * 0.014;
+			double pjeA = 32 * 32 * 0.014 * 0.014;
+
+			std::cout << "per unit area... ga: " << pgaA << " je: " << pjeA << std::endl;
+			std::cout << "gam emcal median: " << tm.GetMedianGammaEMCAL() 		/ pgaA << std::endl;
+			std::cout << "gam  dcal median: " << tm.GetMedianGammaDCALPHOS() 	/ pgaA << std::endl;
+			std::cout << "jet emcal median: " << tm.GetMedianJetEMCAL() 		/ pjeA << std::endl;
+			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		/ pjeA << std::endl;
+
 		}
 
 		if (verbosity > 8)
@@ -288,22 +326,6 @@ int emctrig( int argc, char *argv[])
 			cout << "Full Event: Jets above " << pTMin << " GeV in the full event (" << full_event.size() << " particles)" << endl;
 			cout << "---------------------------------------\n";
 			printf("%5s %15s %15s %15s %15s %15s %15s %15s\n", "jet #", "rapidity", "phi", "pt", "area", "rap_sub", "phi_sub", "pt_sub");
-		}
-
-		// get the subtracted jets
-		vector<fj::PseudoJet> subtracted_jets_full = subtractor(full_jets);
-
-		// run the trigger algorithms
-
-		TriggerSetup tsetup;
-		tsetup.SetThresholds(0., 0., 1., 1.);
-		tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
-
-		TriggerMaker tm;
-		tm.SetTriggerSetup(tsetup);
-		for (unsigned int ip = 0; ip < full_event.size(); ip++)
-		{
-			tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi(), full_event[ip].e());
 		}
 
 		// ----------------------------------------------------
