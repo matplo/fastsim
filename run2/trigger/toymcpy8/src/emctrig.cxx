@@ -100,6 +100,9 @@ int emctrig( int argc, char *argv[])
 
 	cout << "[i] Run for " << nEvent << " events." << endl;
 
+	bool cutHardMidRap = SysUtil::isSet("--hardeta", argc, argv);
+	cout << "[i] Cut hard eta: " << cutHardMidRap << endl;
+
 	pythia.init();
 
 	//ROOT IO
@@ -108,18 +111,25 @@ int emctrig( int argc, char *argv[])
 	fout->cd();
 
 	// remember to create the ntuples and histograms within the file
-	TNtuple *tnj_hard_EMC = new TNtuple("jets_hard_EMC", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_DMC = new TNtuple("jets_hard_DMC", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnpatch      = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL");
-	TNtuple *tnj_full 	  = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
-	TNtuple *tnp      	  = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+	TNtuple *tnj_hard_EMC  = new TNtuple("jets_hard_EMC",  "jets_hard_EMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_DMC  = new TNtuple("jets_hard_DMC",  "jets_hard_DMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_EMCc = new TNtuple("jets_hard_EMCc", "jets_hard_EMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_DMCc = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+
+	TNtuple *tnpatch       = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL");
+	TNtuple *tnj_full      = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
+	TNtuple *tnp           = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+
+	TNtuple *tnj_photon_ALL    = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_photon_EMC    = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_photon_DMC    = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
 
 	double lead_pT        = 0;
 	double matched_pT     = 0;
 	double matched_pT_tmp = 0;
 
 	TriggerMappingEmcalSimple emcalmapping;
-
+	int nRejectedEvents = 0;
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
 		clock_t befGen = clock();
@@ -128,10 +138,36 @@ int emctrig( int argc, char *argv[])
 
 		double xsec = info.sigmaGen();
 
+		if (cutHardMidRap == true)
+		{
+			if ( fabs(event[5].eta()) > 1.2 && fabs(event[6].eta()) > 1.2 )
+			{
+				//iEvent--;
+				nRejectedEvents++;
+				continue;
+			}
+			//if ( (event[5].pT() < minpThat / 2.) && (event[6].pT() < minpThat / 2.) )
+			//{
+			//	iEvent--;
+			//	nRejectedEvents++;
+			//	continue;
+			//}
+
+		}
+
+		if (iEvent % 100 == 0)
+		{
+			cout << "[info] event #" << iEvent << " rejected #" << nRejectedEvents << endl;
+		}
+
 		tnj_hard_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_hard_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnp->Fill(iEvent, xsec, -1, -9.9, -99);
+
+		tnj_photon_ALL->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
+		tnj_photon_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
+		tnj_photon_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
 
 		// Begin FastJet analysis: extract particles from event record.
 
@@ -199,11 +235,6 @@ int emctrig( int argc, char *argv[])
 			full_event.push_back(ptmp);
 			// fill the ntuple for bg particles
 			tnp->Fill(     -1, xsec, bgparticle.Pt(), bgparticle.Eta(), bgparticle.Phi() );
-		}
-
-		if (iEvent % 100 == 0)
-		{
-			cout << "[info] event #" << iEvent << endl;
 		}
 
 		if (verbosity > 7)
@@ -278,8 +309,8 @@ int emctrig( int argc, char *argv[])
 		tm.SetTriggerSetup(tsetup);
 		for (unsigned int ip = 0; ip < full_event.size(); ip++)
 		{
-			if (emcalmapping.IsEMCAL(full_event[ip].eta(), full_event[ip].phi_02pi()) || 
-				emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
+			if (emcalmapping.IsEMCAL(full_event[ip].eta(), full_event[ip].phi_02pi()) ||
+			        emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
 			{
 				tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
 			}
@@ -315,6 +346,36 @@ int emctrig( int argc, char *argv[])
 		              tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(),
 		              tm.GetMedianJetEMCAL(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaEMCAL(), tm.GetMedianGammaDCALPHOS() );
 
+		// PHOTONS
+		vector<fj::PseudoJet> photons;
+		if (info.code() > 200)
+		{
+			for (int ig = 5; ig <= 6; ig++)
+			{
+				if (event[ig].id() == 22)
+				{
+					fj::PseudoJet particleTemp = event[ig];
+					photons.push_back(particleTemp);
+				}
+			}
+		}
+		//TNtuple *tnj_photon_ALL    = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+		//TNtuple *tnj_photon_EMC    = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+		//TNtuple *tnj_photon_DMC    = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+		for (int ig = 0; ig < photons.size(); ig++)
+		{
+			eta = photons[ig].eta();
+			phi = photons[ig].phi_02pi();
+			pt  = photons[ig].perp();
+			tnj_photon_ALL->Fill(-1, xsec, pt, eta, phi, rho, sigma, full_event.size(), tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), 0, 0);
+			if (emcalmapping.IsEMCAL(eta, phi))
+				tnj_photon_EMC->Fill(-1, xsec, pt, eta, phi, rho, sigma, full_event.size(), tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
+			if (emcalmapping.IsDCALPHOS(eta, phi))
+				tnj_photon_DMC->Fill(-1, xsec, pt, eta, phi, rho, sigma, full_event.size(), tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
+		}
+		// END PHOTONS
+
+
 		if (verbosity > 8)
 		{
 			cout << "Full Event: Jets above " << pTMin << " GeV in the hard event (" << full_event.size() << " particles)" << endl;
@@ -325,7 +386,7 @@ int emctrig( int argc, char *argv[])
 				for (unsigned int i = 0; i < full_jets.size(); i++)
 				{
 					printf("%5u %15.8f %15.8f %15.8f %15.8f\n", i,
-					       full_jets[i].rap(), full_jets[i].phi(), full_jets[i].perp(),
+					       full_jets[i].rap(), full_jets[i].phi_02pi(), full_jets[i].perp(),
 					       full_jets[i].area());
 				}
 			}
@@ -362,9 +423,9 @@ int emctrig( int argc, char *argv[])
 				if (verbosity > 9)
 				{
 					printf("%5u %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f\n", idx,
-					       full_jets[i].rap(), full_jets[i].phi(), full_jets[i].perp(),
+					       full_jets[i].rap(), full_jets[i].phi_02pi(), full_jets[i].perp(),
 					       full_jets[i].area(),
-					       subtracted_jets_full[i].rap(), subtracted_jets_full[i].phi(),
+					       subtracted_jets_full[i].rap(), subtracted_jets_full[i].phi_02pi(),
 					       subtracted_jets_full[i].perp());
 				}
 
@@ -385,7 +446,7 @@ int emctrig( int argc, char *argv[])
 
 				//pt  = sorted_jets_hard[i].perp();
 				pt  = full_jets[i].perp();
-				phi = full_jets[i].phi();
+				phi = full_jets[i].phi_02pi();
 				eta = full_jets[i].eta();
 
 				// note we do not use: - which are! different from inclusive!
@@ -411,7 +472,7 @@ int emctrig( int argc, char *argv[])
 		for (int i = 0; i < int(sorted_jets_hard.size()); ++i)
 		{
 			pt  = sorted_jets_hard[i].perp();
-			phi = sorted_jets_hard[i].phi();
+			phi = sorted_jets_hard[i].phi_02pi();
 			eta = sorted_jets_hard[i].eta();
 
 			vector<fj::PseudoJet> constituents = sorted_jets_hard[i].constituents();
@@ -436,12 +497,27 @@ int emctrig( int argc, char *argv[])
 			                        matched_pTraw, matched_area, rho, sigma,
 			                        full_event.size(),
 			                        tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
+			if (emcalmapping.IsEMCAL(eta, phi))
+				tnj_hard_EMCc->Fill(     -1, xsec,
+				                         pt, eta, phi,
+				                         lead_pT,
+				                         matched_pTraw, matched_area, rho, sigma,
+				                         full_event.size(),
+				                         tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
+
 			tnj_hard_DMC->Fill(     -1, xsec,
 			                        pt, eta, phi,
 			                        lead_pT,
 			                        matched_pTraw, matched_area, rho, sigma,
 			                        full_event.size(),
 			                        tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
+			if (emcalmapping.IsDCALPHOS(eta, phi))
+				tnj_hard_DMCc->Fill(     -1, xsec,
+				                         pt, eta, phi,
+				                         lead_pT,
+				                         matched_pTraw, matched_area, rho, sigma,
+				                         full_event.size(),
+				                         tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
 		}
 
 	} // end of event loop
