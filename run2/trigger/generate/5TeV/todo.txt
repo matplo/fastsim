@@ -1,0 +1,12 @@
+f = EMC/ALL energy
+
+0) generate with f = 0
+
+1) generate with f = 0.3 x charged + 1 x neutral&electrons
+
+2) generate just for photons (0&1)
+
+3) generate in multiplcity bins (4?)
+
+4) generate with holes (realistic detector acceptance)
+
