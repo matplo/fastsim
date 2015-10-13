@@ -42,7 +42,7 @@ int emctrig( int argc, char *argv[])
 	Double_t gmultCollider = GenerUtil::gmultLHC;
 	Int_t 	 gNbinCollider = GenerUtil::gNbinLHC;
 
-	if (SysUtil::isSet("--mult"))
+	if (SysUtil::isSet("--mult", argc, argv))
 	{	
 		Double_t multUser = atof(SysUtil::getArg("--mult", argc, argv));
 		if (multUser >= 0)
