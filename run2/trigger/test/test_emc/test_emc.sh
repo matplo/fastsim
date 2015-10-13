@@ -6,9 +6,12 @@ module list
 
 cd $RUN2EMCTRIGGER/test/test_emc
 if [ ! -f "$RUN2EMCTRIGGER/test/test_emc/emctrig.cmnd" ] ; then
-	cp -v $RUN2EMCTRIGGER/gener/config/emctrig.cmnd .
+	cp -v $RUN2EMCTRIGGER/toymcpy8/config/emctrig.cmnd .
 fi
 #otool -L $RUN2EMCTRIGGER/bin/toymcpy8
 #$RUN2EMCTRIGGER/bin/toymcpy8 -v 10 --nev 1000 --emc --mult 1000. 2>&1 | tee test_emc.log
-$RUN2EMCTRIGGER/bin/toymcpy8 --nev 2000 --emc --mult 1000. 2>&1 | tee test_emc.log
+
+#$RUN2EMCTRIGGER/bin/toymcpy8 --nev 2000 --emc --mult 1000. 2>&1 | tee test_emc.log
+$RUN2EMCTRIGGER/bin/toymcpy8 --nev 1000 --hardeta --emc --mult 1000. 2>&1 | tee test_emc.log
+#$RUN2EMCTRIGGER/bin/toymcpy8 --nev 1000 --emc --mult 1000. 2>&1 | tee test_emc.log
 
