@@ -4,7 +4,7 @@ savedir=$PWD
 
 if [ -d $RUN2EMCTRIGGER ]; then
   cd $RUN2EMCTRIGGER
-  for pack in toymcpy8
+  for pack in EmcalTriggerFast
   do
     bdir=$RUN2EMCTRIGGER/.build/$pack
     [ "$1" == "realclean" ] && rm -rf $bdir
