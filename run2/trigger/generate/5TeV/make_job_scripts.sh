@@ -33,8 +33,10 @@ function write_script
         newdir="./photons/mult-$4/bin-$1-$2"
     fi
     mkdir -p $newdir
-    echo "find . -name \"job.sh\" -exec {} \;" > $newdir/../run_all.sh
+    echo "find $PWD -name \"job.sh\" -exec {} \;" > $newdir/../run_all.sh
     chmod +x $newdir/../run_all.sh
+    echo "find $PWD -name \"submit.sh\" -exec {} \;" > $newdir/../submit_all.sh
+    chmod +x $newdir/../submit_all.sh
     cd $newdir
     spwd=$PWD
     cp -v $RUN2EMCTRIGGER/generate/5TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/5TeV/job.sh .
@@ -56,7 +58,8 @@ function write_script
 
     chmod +x ./job.sh
     echo "#!/bin/bash" > ./submit.sh
-    echo "qsub -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov job.sh" >> ./submit.sh
+    #echo "qsub -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov job.sh" >> ./submit.sh
+    echo "qsub -o $PWD -e $PWD $PWD/job.sh" >> ./submit.sh
     chmod +x ./submit.sh
     if is_arg_set "submit" ;
     then
