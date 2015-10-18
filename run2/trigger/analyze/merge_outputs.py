@@ -4,7 +4,7 @@ import pyutils as ut
 import os
 from pprint import pprint as pp
 
-def main(spath='.'):
+def main_old(spath='.'):
 
     valid_outputs = ['default_emctrig_out.root']
 
@@ -26,7 +26,7 @@ def main(spath='.'):
         files    = ut.find_files(prod_dir, '*.root')
         #pp(filesets[prod_idx])        
         for vo in valid_outputs:
-            outfname = os.path.join(v, vo).replace('/', '-')
+            outfname = os.path.join(v, vo).replace('/', '_')
             print '---', outfname,vo
             files_to_merge = []
             for f in files:
@@ -34,6 +34,22 @@ def main(spath='.'):
                     files_to_merge.append(f)
             cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
             ut.call_cmnd(cmnd, True)
+
+def main(spath='.'):
+
+    valid_outputs = ['default_emctrig_out.root']
+            
+    prod_dir = spath
+    files    = ut.find_files(prod_dir, '*.root')
+    for vo in valid_outputs:
+        outfname = os.path.join(prod_dir, vo).replace('/', '_')
+        print '---', outfname,vo
+        files_to_merge = []
+        for f in files:
+            if vo in f:
+                files_to_merge.append(f)
+        cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
+        ut.call_cmnd(cmnd, True)
 
 if __name__=="__main__":
     spath = ut.get_arg_with('--dir')
