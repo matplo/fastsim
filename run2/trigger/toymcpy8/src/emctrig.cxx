@@ -315,7 +315,8 @@ int emctrig( int argc, char *argv[])
 			if (emcalmapping.IsEMCAL(full_event[ip].eta(), full_event[ip].phi_02pi()) ||
 			        emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
 			{
-				tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+			  //tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+			  tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e() * 0.65);
 			}
 		}
 		if (verbosity > 8)
