@@ -73,6 +73,13 @@ int emctrig( int argc, char *argv[])
 	}
 	cout << "[i] R parameter set to : " << R << endl;
 
+	Double_t EMCalTotal2EMfactor = 1.0;
+	if (SysUtil::isSet("--femc", argc, argv))
+	{
+	        EMCalTotal2EMfactor = strtod(SysUtil::getArg("--femc", argc, argv), 0);
+	}
+	cout << "[i] EMCalTotal2EMfactor set to : " << EMCalTotal2EMfactor << endl;
+	
 	std::vector <fj::PseudoJet> py_hard_event; // signal from pythia
 	std::vector <fj::PseudoJet> bg_event; // boltzman background
 	std::vector <fj::PseudoJet> full_event; //signal+background
@@ -119,7 +126,7 @@ int emctrig( int argc, char *argv[])
 	TNtuple *tnj_hard_EMCc = new TNtuple("jets_hard_EMCc", "jets_hard_EMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
 	TNtuple *tnj_hard_DMCc = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
 
-	TNtuple *tnpatch       = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL");
+	TNtuple *tnpatch       = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL:medgECALbg:medgDCALbg");
 	TNtuple *tnj_full      = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
 	TNtuple *tnp           = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
 
@@ -175,6 +182,9 @@ int emctrig( int argc, char *argv[])
 		// Begin FastJet analysis: extract particles from event record.
 
 		py_hard_event.resize(0);
+		bg_event.resize(0);
+		full_event.resize(0);
+
 		py::Vec4   pTemp;
 		double mTemp;
 		int nAnalyze = 0;
@@ -236,6 +246,7 @@ int emctrig( int argc, char *argv[])
 			// particleTemp.reset_momentum( bgparticle.Px(), bgparticle.Py(),
 			//           bgparticle.Pz(), bgparticle.E() );
 			full_event.push_back(ptmp);
+			bg_event.push_back(ptmp);
 			// fill the ntuple for bg particles
 			tnp->Fill(     -1, xsec, bgparticle.Pt(), bgparticle.Eta(), bgparticle.Phi() );
 		}
@@ -316,9 +327,21 @@ int emctrig( int argc, char *argv[])
 			        emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
 			{
 			  //tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
-			  tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e() * 0.65);
+			  tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e() * EMCalTotal2EMfactor);
 			}
 		}
+
+		TriggerMaker tm_bg;
+		tm_bg.SetTriggerSetup(tsetup);
+		for (unsigned int ip = 0; ip < bg_event.size(); ip++)
+		  {
+			if (emcalmapping.IsEMCAL(bg_event[ip].eta(), bg_event[ip].phi_02pi()) ||
+			        emcalmapping.IsDCALPHOS(bg_event[ip].eta(), bg_event[ip].phi_02pi()) )
+			{
+			  tm_bg.FillChannelMap(bg_event[ip].eta(), bg_event[ip].phi_02pi(), bg_event[ip].e() * EMCalTotal2EMfactor);
+			}
+		}
+
 		if (verbosity > 8)
 		{
 			std::cout << "gam emcal max: " << tm.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
@@ -348,7 +371,8 @@ int emctrig( int argc, char *argv[])
 		tnpatch->Fill(iEvent, xsec,
 		              full_event.size(), rho,
 		              tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(),
-		              tm.GetMedianJetEMCAL(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaEMCAL(), tm.GetMedianGammaDCALPHOS() );
+		              tm.GetMedianJetEMCAL(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaEMCAL(), tm.GetMedianGammaDCALPHOS(),
+			      tm_bg.GetMedianGammaEMCAL(), tm_bg.GetMedianGammaDCALPHOS());
 
 		// PHOTONS
 		vector<fj::PseudoJet> photons;
