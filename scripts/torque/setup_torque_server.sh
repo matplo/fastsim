@@ -55,6 +55,5 @@ if [[ $1 == "setup" ]]; then
 
 fi
 
-#in /etc/hosts
-#127.0.0.1	lbnl3core.cern.ch
-#127.0.1.1	localhost
+#127.0.0.1	localhost.localdomain	localhost
+#127.0.1.1	lbnl3core.cern.ch	lbnl3core
