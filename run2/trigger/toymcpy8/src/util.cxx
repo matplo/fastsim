@@ -100,7 +100,7 @@ namespace GenerUtil
 
 	  Double_t pt =  gfunbg->GetRandom(0, 200);
 	  Double_t eta = grnd->Rndm() * 2.2 - 1.1;
-	  Double_t phi = grnd->Rndm() * TMath::Pi() * 2.;
+	  Double_t phi = grnd->Rndm() * TMath::Pi() * 2. - TMath::Pi();
 	  v.SetPtEtaPhiM(pt, eta, phi, 0.);
 	}
 
