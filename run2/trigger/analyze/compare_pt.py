@@ -27,9 +27,16 @@ def get_h_pT(fname, ntname,title=None):
 
 	return hltmp
 
+def make_hl_name(files = [], ntuples = []):
+	fs  = ut.remove_duplicates(files)
+	nts = ut.remove_duplicates(ntuples)
+	hlname = 'fs-' + '-'.join(f for f in fs) + 'nts-' + '-'.join(nt for nt in nts)
+	hlname = hlname.replace("default_emctrig_out", "").replace(".root", "")
+	return hlname
+
 def compare_jet_pt(files = [], ntuples=[], titles=[]):
 
-	hlname = '-'.join([files[0], ntuples[0]])
+	hlname = 'compare_jet_pt_' + make_hl_name(files, ntuples)
 
 	hl = dlist.dlist(hlname)
 
