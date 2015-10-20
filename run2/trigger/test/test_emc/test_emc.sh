@@ -12,6 +12,8 @@ fi
 #$RUN2EMCTRIGGER/bin/toymcpy8 -v 10 --nev 1000 --emc --mult 1000. 2>&1 | tee test_emc.log
 
 #$RUN2EMCTRIGGER/bin/toymcpy8 --nev 2000 --emc --mult 1000. 2>&1 | tee test_emc.log
-$RUN2EMCTRIGGER/bin/toymcpy8 --nev 1000 --hardeta --emc --mult 1000. 2>&1 | tee test_emc.log
+#$RUN2EMCTRIGGER/bin/toymcpy8 --nev 1000 --hardeta --emc --mult 1000. 2>&1 | tee test_emc.log
 #$RUN2EMCTRIGGER/bin/toymcpy8 --nev 1000 --emc --mult 1000. 2>&1 | tee test_emc.log
+
+$RUN2EMCTRIGGER/bin/toymcpy8 -v 0 --nev 100 --hardeta --emc --mult 1000. --femc 0.1 2>&1 | tee test_emc.log
 

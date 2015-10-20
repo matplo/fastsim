@@ -23,6 +23,7 @@ namespace fj = fastjet;
 #include <TLorentzVector.h>
 #include <TF1.h>
 #include <TRandom.h>
+#include <TH1F.h>
 
 //using namespace Pythia8; - conflicts with root
 namespace py = Pythia8;
@@ -43,7 +44,7 @@ int emctrig( int argc, char *argv[])
 	Int_t 	 gNbinCollider = GenerUtil::gNbinLHC;
 
 	if (SysUtil::isSet("--mult", argc, argv))
-	{	
+	{
 		Double_t multUser = atof(SysUtil::getArg("--mult", argc, argv));
 		if (multUser >= 0)
 		{
@@ -72,6 +73,14 @@ int emctrig( int argc, char *argv[])
 		R = strtod(SysUtil::getArg("-R", argc, argv), 0);
 	}
 	cout << "[i] R parameter set to : " << R << endl;
+
+	Double_t EMCalTotal2EMfactor = 1.0;
+	if (SysUtil::isSet("--femc", argc, argv))
+	{
+		EMCalTotal2EMfactor = strtod(SysUtil::getArg("--femc", argc, argv), 0);
+	}
+	cout << "[i] EMCalTotal2EMfactor set to : " << EMCalTotal2EMfactor << endl;
+	outputFname.ReplaceAll(".root", TString::Format("_femc_%1.1f.root", EMCalTotal2EMfactor));
 
 	std::vector <fj::PseudoJet> py_hard_event; // signal from pythia
 	std::vector <fj::PseudoJet> bg_event; // boltzman background
@@ -114,18 +123,22 @@ int emctrig( int argc, char *argv[])
 	fout->cd();
 
 	// remember to create the ntuples and histograms within the file
-	TNtuple *tnj_hard_EMC  = new TNtuple("jets_hard_EMC",  "jets_hard_EMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_DMC  = new TNtuple("jets_hard_DMC",  "jets_hard_DMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_EMCc = new TNtuple("jets_hard_EMCc", "jets_hard_EMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_DMCc = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_EMC   = new TNtuple("jets_hard_EMC",  "jets_hard_EMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_DMC   = new TNtuple("jets_hard_DMC",  "jets_hard_DMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_EMCc  = new TNtuple("jets_hard_EMCc", "jets_hard_EMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_hard_DMCc  = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
 
-	TNtuple *tnpatch       = new TNtuple("triggers", "triggers", "nEv:xsec:npart:rho:maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:medjECAL:medjDCAL:medgECAL:medgDCAL");
-	TNtuple *tnj_full      = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
-	TNtuple *tnp           = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+	TNtuple *tnpatch        = new TNtuple("triggers", "triggers", "xsec:npart:rho:JEmaxECAL:JEmaxDCAL:GAmaxECAL:GAmaxDCAL:JEmedECAL:JEmedDCAL:GAmedECAL:GAmedDCAL:JEmedECALbg:JEmedDCALbg:GAmedECALbg:GAmedDCALbg");
 
-	TNtuple *tnj_photon_ALL    = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_photon_EMC    = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_photon_DMC    = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_full       = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
+	TNtuple *tnp            = new TNtuple("p", "p", "nEv:xsec:ispy:pT:eta:phi");
+
+	TNtuple *tnj_photon_ALL = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_photon_EMC = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+	TNtuple *tnj_photon_DMC = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
+
+	TH1F *thnef             = new TH1F("thnef", "thnef;NEF;counts", 100, 0, 1);
+	TH1F *thnefw            = new TH1F("thnefw", "thnefw;NEF;counts x xsec", 100, 0, 1);
 
 	double lead_pT        = 0;
 	double matched_pT     = 0;
@@ -166,7 +179,7 @@ int emctrig( int argc, char *argv[])
 		tnj_hard_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_hard_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-		tnp->Fill(iEvent, xsec, -1, -9.9, -99);
+		tnp->Fill(iEvent, xsec, -1, -1, -9.9, -99);
 
 		tnj_photon_ALL->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
 		tnj_photon_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
@@ -175,6 +188,9 @@ int emctrig( int argc, char *argv[])
 		// Begin FastJet analysis: extract particles from event record.
 
 		py_hard_event.resize(0);
+		bg_event.resize(0);
+		full_event.resize(0);
+
 		py::Vec4   pTemp;
 		double mTemp;
 		int nAnalyze = 0;
@@ -183,15 +199,24 @@ int emctrig( int argc, char *argv[])
 		double phi = 0;
 		double pt  = 0;
 
+		unsigned int ncharged = 0;
+		unsigned int nneutral = 0;
+
 		for (int i = 0; i < event.size(); ++i)
 		{
 			if (event[i].isFinal())
 			{
 
 				// Require visible/charged particles inside detector.
-				if      (select > 2 &&  event[i].isNeutral() ) continue;
-				else if (select == 2 && !event[i].isVisible()) continue;
+				//if      (select > 2 &&  event[i].isNeutral() ) continue;
+				//else if (select == 2 && !event[i].isVisible()) continue;
+				//if (!event[i].isNeutral() || !event[i].isCharged()) continue;
+
 				if (etaMax < 20. && abs(event[i].eta()) > etaMax) continue;
+				if (!event[i].isVisible()) continue;
+
+				if (event[i].isCharged()) ncharged++;
+				if (event[i].isNeutral()) nneutral++;
 
 				pt  = event[i].pT();
 				phi = event[i].phi();
@@ -216,10 +241,19 @@ int emctrig( int argc, char *argv[])
 				// Conversion to PseudoJet is performed automatically
 				// with the help of the code in FastJet3.h.
 				py_hard_event.push_back( particleTemp );
+				tnp->Fill(     -1, xsec, 1, particleTemp.perp(), particleTemp.eta(), particleTemp.phi_02pi() );
 				++nAnalyze;
 			} // for the final particles
-
 		}// end particle loop within the event
+
+		thnef->Fill(1.* nneutral / py_hard_event.size());
+		thnefw->Fill(1.* nneutral / py_hard_event.size(), xsec);
+
+		if (verbosity > 6)
+		{
+			cout << "[i] charged/all: " << ncharged << "/" << py_hard_event.size() << "=" << 1.* ncharged / py_hard_event.size()
+			     << " neutral/all: " << nneutral << "/" << py_hard_event.size() << "=" << 1.* nneutral / py_hard_event.size() << endl;
+		}
 
 		// first set the full event with the pythia event
 		full_event = py_hard_event;
@@ -236,8 +270,10 @@ int emctrig( int argc, char *argv[])
 			// particleTemp.reset_momentum( bgparticle.Px(), bgparticle.Py(),
 			//           bgparticle.Pz(), bgparticle.E() );
 			full_event.push_back(ptmp);
+			bg_event.push_back(ptmp);
 			// fill the ntuple for bg particles
-			tnp->Fill(     -1, xsec, bgparticle.Pt(), bgparticle.Eta(), bgparticle.Phi() );
+			//tnp->Fill(     -1, xsec, 0, bgparticle.Pt(), bgparticle.Eta(), bgparticle.Phi() );
+			tnp->Fill(     -1, xsec, 0, ptmp.perp(), ptmp.eta(), ptmp.phi_02pi() );
 		}
 
 		if (verbosity > 7)
@@ -310,14 +346,56 @@ int emctrig( int argc, char *argv[])
 
 		TriggerMaker tm;
 		tm.SetTriggerSetup(tsetup);
-		for (unsigned int ip = 0; ip < full_event.size(); ip++)
+		for (unsigned int ip = 0; ip < py_hard_event.size(); ip++)
 		{
-			if (emcalmapping.IsEMCAL(full_event[ip].eta(), full_event[ip].phi_02pi()) ||
-			        emcalmapping.IsDCALPHOS(full_event[ip].eta(), full_event[ip].phi_02pi()) )
+			if (emcalmapping.IsEMCAL(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi()) ||
+			        emcalmapping.IsDCALPHOS(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi()) )
 			{
-				tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+				//tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+				unsigned int pyidx = py_hard_event[ip].user_index();
+				if ( event[pyidx].isCharged() )
+				{
+					if ( event[pyidx].id() == 11 || event[pyidx].id() == -11)
+					{
+						// electrons are special
+						tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e());
+					}
+					else
+					{
+						tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e() * EMCalTotal2EMfactor);
+					}
+				}
+				else
+				{
+					tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e());
+				}
 			}
 		}
+
+		TriggerSetup tsetup_bg;
+		tsetup_bg.SetThresholds(0., 0., 0., 0.);
+		tsetup_bg.SetTriggerBitConfig(TriggerBitConfigNew());
+
+		TriggerMaker tm_bg;
+		tm_bg.SetTriggerSetup(tsetup_bg);
+
+		Double_t chNEFfactorBG = EMCalTotal2EMfactor;
+		unsigned int npartbg   = bg_event.size();
+		for (unsigned int ip = 0; ip < npartbg; ip++)
+		{
+			if (emcalmapping.IsEMCAL(bg_event[ip].eta(), bg_event[ip].phi_02pi()) ||
+			        emcalmapping.IsDCALPHOS(bg_event[ip].eta(), bg_event[ip].phi_02pi()) )
+			{
+				if ( (ip * 1.) / (1. * npartbg) > 0.5 )
+				{
+					// part of the particles is e.m. neutral and visible...
+					chNEFfactorBG = 1.;
+				}
+				tm.FillChannelMap(bg_event[ip].eta(), bg_event[ip].phi_02pi(), bg_event[ip].e() * chNEFfactorBG);
+				tm_bg.FillChannelMap(bg_event[ip].eta(), bg_event[ip].phi_02pi(), bg_event[ip].e() * chNEFfactorBG);
+			}
+		}
+
 		if (verbosity > 8)
 		{
 			std::cout << "gam emcal max: " << tm.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
@@ -339,15 +417,33 @@ int emctrig( int argc, char *argv[])
 			std::cout << "jet emcal median: " << tm.GetMedianJetEMCAL() 		/ pjeA << std::endl;
 			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		/ pjeA << std::endl;
 
+			std::cout << "background only: " << std::endl;
+			std::cout << "gam emcal max: " << tm_bg.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
+			std::cout << "gam  dcal max: " << tm_bg.GetMaxGammaDCALPHOS().GetADC()  << std::endl;
+			std::cout << "jet emcal max: " << tm_bg.GetMaxJetEMCAL().GetADC() 		<< std::endl;
+			std::cout << "jet  dcal max: " << tm_bg.GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
+
+			std::cout << "gam emcal median: " << tm_bg.GetMedianGammaEMCAL() 		<< std::endl;
+			std::cout << "gam  dcal median: " << tm_bg.GetMedianGammaDCALPHOS() 	<< std::endl;
+			std::cout << "jet emcal median: " << tm_bg.GetMedianJetEMCAL() 			<< std::endl;
+			std::cout << "jet  dcal median: " << tm_bg.GetMedianJetDCALPHOS() 		<< std::endl;
+
 		}
 
 		//("triggers", "triggers", "nEv:xsec:
 		//maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:
 		//medjECAL:medjDCAL:medgECAL:medgDCAL");
-		tnpatch->Fill(iEvent, xsec,
+		tm.FindPatches();
+		tm_bg.FindPatches();
+
+		tnpatch->Fill(xsec,
 		              full_event.size(), rho,
-		              tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(),
-		              tm.GetMedianJetEMCAL(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaEMCAL(), tm.GetMedianGammaDCALPHOS() );
+		              tm.GetMaxJetEMCAL().GetADC(), 	tm.GetMaxJetDCALPHOS().GetADC(), 
+		              tm.GetMaxGammaEMCAL().GetADC(), 	tm.GetMaxGammaDCALPHOS().GetADC(),
+		              tm.GetMedianJetEMCAL(), 			tm.GetMedianJetDCALPHOS(), 
+		              tm.GetMedianGammaEMCAL(), 		tm.GetMedianGammaDCALPHOS(),
+		              tm_bg.GetMedianJetEMCAL(), 		tm_bg.GetMedianJetDCALPHOS(),		              
+		              tm_bg.GetMedianGammaEMCAL(), 		tm_bg.GetMedianGammaDCALPHOS());
 
 		// PHOTONS
 		vector<fj::PseudoJet> photons;
