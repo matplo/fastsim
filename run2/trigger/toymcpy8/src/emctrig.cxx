@@ -178,6 +178,9 @@ int emctrig( int argc, char *argv[])
 
 		tnj_hard_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnj_hard_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
+		tnj_hard_EMCc->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
+		tnj_hard_DMCc->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
+		
 		tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
 		tnp->Fill(iEvent, xsec, -1, -1, -9.9, -99);
 
