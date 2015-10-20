@@ -37,7 +37,11 @@ def main_old(spath='.'):
 
 def main(spath='.'):
 
-    valid_outputs = ['default_emctrig_out.root']
+    valid_outputs = [
+        'default_emctrig_out.root',
+        'default_emctrig_out_femc_1.0.root',
+        'default_emctrig_out_femc_0.1.root'
+        ]
             
     prod_dir = spath
     files    = ut.find_files(prod_dir, '*.root')
