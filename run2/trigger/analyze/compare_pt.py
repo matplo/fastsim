@@ -11,9 +11,9 @@ def get_h_pT(fname, ntname,title=None):
 	#draw_h1d_from_ntuple(fname, nntname, var, cuts, bwidth, xlow, xhigh, title=None, modname='')
 	var    = "pT"
 	cuts   = "(abs(eta)<1 && nEv==-1)*(xsec)"
-	bwidth = 20
+	bwidth = 10
 	xlow   = 20
-	xhigh  = 120
+	xhigh  = 150
 
 	if title == None:
 		title  = '-'.join([fname, ntname, var, cuts])
@@ -21,8 +21,16 @@ def get_h_pT(fname, ntname,title=None):
 
 	h 	   = tu.draw_h1d_from_ntuple(fname, ntname, var, cuts, bwidth, xlow, xhigh, title)
 
+
 	hltmp.add(h, title, 'p E1')
 	#hltmp.add(h, title, 'hist l E1')
+
+	nEv = tu.get_max_from_ntuple(fname, ntname, 'nEv')
+	if nEv<=0 or nEv==None:
+		nEv = 10000. - 1.
+	print '[i] scaling by nEv: ', nEv+1.
+	hltmp.scale(1./(nEv * 1. + 1.))
+
 	tu.gList.append(hltmp)
 
 	return hltmp
@@ -49,7 +57,6 @@ def compare_jet_pt(files = [], ntuples=[], titles=[]):
 
 	hl.reset_axis_titles('p_{T}', 'd#sigma/dp_{T} (mb/GeV)')
 	hl.scale_by_binwidth(True)
-	hl.scale(1./1000.)
 	hl.make_canvas()
 	ym = ut.get_arg_with('--ymin')
 	if ym != None:
