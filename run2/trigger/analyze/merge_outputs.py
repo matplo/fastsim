@@ -32,8 +32,11 @@ def main_old(spath='.'):
             for f in files:
                 if vo in f:
                     files_to_merge.append(f)
-            cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
-            ut.call_cmnd(cmnd, True)
+            if len(files_to_merge) > 1:
+                cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
+                ut.call_cmnd(cmnd, True)
+            else:
+                print '[i] no files to merge:',v
 
 def main(spath='.'):
 
@@ -52,8 +55,11 @@ def main(spath='.'):
         for f in files:
             if vo in f:
                 files_to_merge.append(f)
-        cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
-        ut.call_cmnd(cmnd, True)
+        if len(files_to_merge) > 1:
+            cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
+            ut.call_cmnd(cmnd, True)
+        else:
+            print '[i] no files to merge for:',vo
 
 if __name__=="__main__":
     spath = ut.get_arg_with('--dir')
