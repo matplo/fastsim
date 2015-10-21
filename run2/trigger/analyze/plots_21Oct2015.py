@@ -33,7 +33,7 @@ def DCalKeepOutFactor(R=0.4):
 
 class NTFiles(object):
 	def __init__(self):
-		self.basedir='/Volumes/SAMSUNG/data/run2/trigger/2015-10-20'
+		self.basedir=self._guess_dir()
 		self.files= [
 			'_data1_run2_trigger_2015-10-20_hardQCD_mult-0_default_emctrig_out_femc_1.0.root',
 			'_data1_run2_trigger_2015-10-20_hardQCD_mult-200_default_emctrig_out_femc_1.0.root',
@@ -43,6 +43,18 @@ class NTFiles(object):
 			'_data1_run2_trigger_2015-10-20_hardQCD_mult-2000_default_emctrig_out_femc_1.0.root',
 			'_data1_run2_trigger_2015-10-20_hardQCD_mult-4000_default_emctrig_out_femc_1.0.root',	
 		]
+
+	def _guess_dir(self):
+		sdirs = [ 
+			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-20',
+			'/Volumes/MP/data/run2/trigger/2015-10-20'
+			]
+		for s in sdirs:
+			if os.path.isdir(s):
+				print '[i] NTFiles: basedir guessed:',s
+				return s
+		print >> std.err, '[w] NTFiles: basedir not guessed. set :basedir manually. using os.getcwd()'
+		return os.getcwd()
 
 	def nfiles(self):
 		return len(self.files)
