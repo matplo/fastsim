@@ -7,13 +7,17 @@ import ROOT
 import os
 import IPython
 
-def get_h_pT(fname, ntname, title=None):
+def get_h_pT(fname, ntname, medjcut = None, title=None):
 	#draw_h1d_from_ntuple(fname, nntname, var, cuts, bwidth, xlow, xhigh, title=None, modname='')
-	var    = "pT"
-	cuts   = "(abs(eta)<1 && nEv==-1)*(xsec)"
-	bwidth = 10
-	xlow   = 20
-	xhigh  = 150
+	#var = 'maxj' 
+	var = 'pT'
+	cuts   = "(abs(eta)<1 && nEv==-1)*(xsec)".format(medjcut)
+	if medjcut != 'NA':
+		cuts   = "(abs(eta)<1 && nEv==-1 && (maxj - medj) > {})*(xsec)".format(medjcut)
+	print cuts
+	bwidth = 1
+	xlow   = 0
+	xhigh  = 250
 
 	if title == None:
 		title  = '-'.join([fname, ntname, var, cuts])
@@ -29,6 +33,7 @@ def get_h_pT(fname, ntname, title=None):
 		nEv = 10000. - 1.
 	print '[i] scaling by nEv: ', nEv+1.
 	hltmp.scale(1./(nEv * 1. + 1.))
+	hltmp.update()
 
 	tu.gList.append(hltmp)
 
@@ -49,10 +54,12 @@ def compare_jet_pt(files = [], ntuples=[], titles=[]):
 
 	for i,fname in enumerate(files):
 		print i, fname, ntuples[i]
-		hltmp = get_h_pT(fname, ntuples[i], titles[i])
-		#title = h.GetTitle()
-		#hl.add(h, title, 'p')
+		hltmp = get_h_pT(fname, ntuples[i], 'NA', titles[0])
 		hl.add_list(hltmp)
+		for medjcut in range(0, 40, 5):
+			newtitle = '{} max-median > {}'.format(titles[i], medjcut)
+			hltmp = get_h_pT(fname, ntuples[i], medjcut, newtitle)
+			hl.add_list(hltmp)
 
 	hl.reset_axis_titles('p_{T}', 'd#sigma/dp_{T} (mb/GeV)')
 	hl.scale_by_binwidth(True)
@@ -73,9 +80,10 @@ def compare_jet_pt(files = [], ntuples=[], titles=[]):
 
 	hlr = hl.ratio_to(0)
 	hlr.make_canvas()
-	hlr.draw(miny=0,maxy=6.5)
+	hlr.draw(miny=0,maxy=2.0)
 	hlr.self_legend(x1=0.3)
 	hlr.update()
+
 	tu.gList.append(hlr)
 
 	if ut.is_arg_set('--print'):
