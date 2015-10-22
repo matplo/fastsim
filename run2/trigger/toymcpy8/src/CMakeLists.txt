@@ -33,6 +33,7 @@ set(SOURCES_LIB
 	util.cxx
 	toymcpy8.cxx
 	emctrig.cxx
+	emctrig_par.cxx
 )
 
 set(SOURCES_EXE main.cxx)
@@ -55,7 +56,7 @@ string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
 #include_directories(${ROOT_INCLUDE_DIR})
 #link_libraries(${ROOT_LIBRARIES})
 
-set(R2LIBS "-L$ENV{RUN2EMCTRIGGER}/lib" -lEMCALTriggerFast)
+set(R2LIBS "-L$ENV{RUN2EMCTRIGGER}/lib" -lEMCALTriggerFast -lAliGenFME )
 set(R2INCLUDES $ENV{RUN2EMCTRIGGER}/include)
 
 set(PROJECT_UTIL_LIB "${PROJECT_NAME}Util")
