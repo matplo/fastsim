@@ -81,7 +81,7 @@ class NTFiles(object):
 #def get_pT(photons=False, femc=0.1, var='pT'):
 def get_pT(photons=False, femc=0.1, var='pT'):
 	ntfs  = NTFiles()
-	nfile = 0
+	nfile = 4 #0
 	fname = ntfs.get_file(nfile, femc, photons)
 
 	ntuples = ['jets_hard_EMC', 'jets_hard_EMCc', 'jets_hard_DMCc']
@@ -113,7 +113,7 @@ def get_pT(photons=False, femc=0.1, var='pT'):
 	hltmp.scale_by_binwidth(True)
 	hltmp.scale(1./(nEv * 1. + 1.))
 
-	hltmp.destroy_canvas()
+	#hltmp.destroy_canvas()
 
 	tu.gList.append(hltmp)
 
@@ -149,7 +149,7 @@ def draw_pT_yields(photons=False, var='pT'):
 	lstore = dlist.ListStorage(lname)
 	for ib,taa in enumerate(cent.TAAs()):
 		nEv   = 220. * 1.e6 * sigmaPbPb * cent.BinWidth(ib)
-		print ib, taa
+		#print ib, taa
 		scale = taa * nEv
 
 		hljtmp = dlist.dlist('hljtmp')
@@ -167,7 +167,7 @@ def draw_pT_yields(photons=False, var='pT'):
 		htitle = 'yat DMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
 		lstore.add_to_list('yats DMC', yats[2].obj, htitle, dopt)
 
-		yats.destroy_canvas()
+		#yats.destroy_canvas()
 
 	lstore.get('yields EMC').reset_axis_titles('p_{T}', 'dN/dp_{T} (c/GeV)')
 	lstore.get('yields DMC').reset_axis_titles('p_{T}', 'dN/dp_{T} (c/GeV)')
@@ -208,7 +208,7 @@ def draw_patch_yields(photons=False, var='pT'):
 	lstore = dlist.ListStorage(lname)
 	for ib,taa in enumerate(cent.TAAs()):
 		nEv   = 220. * 1.e6 * sigmaPbPb * cent.BinWidth(ib)
-		print ib, taa
+		#print ib, taa
 		scale = taa #* nEv
 
 		hljtmp = dlist.dlist('hljtmp')
@@ -242,10 +242,11 @@ if __name__ == '__main__':
 	#draw_pT_xsec()
 	#draw_pT_xsec(photons=True)
 
-	draw_pT_yields(False, 'pT')
-	draw_pT_yields(True, 'pT')
+	#draw_pT_yields(False, 'pT')
+	#draw_pT_yields(True, 'pT')
 
 	draw_patch_yields(False, 'maxj')
+	draw_patch_yields(False, 'maxj-medj')
 	draw_patch_yields(False, 'maxg')
 
 	if not ut.is_arg_set('-b'):
