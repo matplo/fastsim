@@ -2,6 +2,8 @@
 
 # set -x
 
+[ -z $RUN2EMCTRIGGER ] && echo "[e] RUN2EMCTRIGGER not set" && exit 1
+
 args=$@
 function is_arg_set
 {

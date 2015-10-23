@@ -19,6 +19,8 @@ def EMCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 
+	print '[i] using EMCalKeepOutFactor with R=', R, retval
+
 	return retval
 
 def DCalKeepOutFactor(R=0.4):
@@ -29,24 +31,29 @@ def DCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 
+	print '[i] using DCalKeepOutFactor with R=', R, retval
+
 	return retval
 
 class NTFiles(object):
 	def __init__(self):
 		self.basedir=self._guess_dir()
 		self.files= [
+		'default_emctrig_out_femc_1.0.root',
 		'_data1_run2_trigger_2015-10-22_5TeV_default_emctrig_out_femc_1.0.root'
 		]
 
 	def _guess_dir(self):
 		sdirs = [
-			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-22/5TeV' 
+			'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0',
+			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-22/5TeV',
+			'/Volumes/MP/data/run2/trigger/2015-10-22/5TeV' 
 			]
 		for s in sdirs:
 			if os.path.isdir(s):
 				print '[i] NTFiles: basedir guessed:',s
 				return s
-		print >> std.err, '[w] NTFiles: basedir not guessed. set :basedir manually. using os.getcwd()'
+		print >> sys.stderr, '[w] NTFiles: basedir not guessed. set :basedir manually. using os.getcwd()'
 		return os.getcwd()
 
 	def nfiles(self):
@@ -70,9 +77,8 @@ class NTFiles(object):
 		fn = self.files[im]
 		return float(fn.split('_mult-')[1].split('_default')[0])
 
-
 #def get_pT(photons=False, femc=0.1, var='pT'):
-def get_pT(photons=False, femc=0.1, var='pT', usercut='(1)'):
+def get_pT(photons=False, femc=0.1, var='pT', usercut='(1)', cal='all'):
 	ntfs  = NTFiles()
 	nfile = 0
 	fname = ntfs.get_file(nfile, femc, photons)
@@ -86,15 +92,23 @@ def get_pT(photons=False, femc=0.1, var='pT', usercut='(1)'):
 	#if medjcut != 'NA':
 	#	cuts   = "(abs(eta)<1 && nEv==-1 && (maxj - medj) > {})*(xsec)".format(medjcut)
 	#var    = 'pT'
-	bwidth = 10
+	bwidth = 5
 	xlow   = 0
-	xhigh  = 250
+	xhigh  = 300
 
 	title  = '-'.join(['pT', 'f', '{}'.format(nfile), '{}'.format(photons), var, cuts])
 	hltmp = dlist.dlist(title)
-	hltmp.make_canvas()
-	for ntname in ntuples:
+	tu.getTempCanvas().cd()
+	for i,ntname in enumerate(ntuples):
+		if cal=='EMC' and i!=1:
+			continue
+		if cal=='DMC' and i!=2:
+			continue
 		h 	   = tu.draw_h1d_from_ntuple(fname, ntname, var, cuts, bwidth, xlow, xhigh, title)
+		if i==1:
+			h.Scale(EMCalKeepOutFactor(0.2))
+		if i==2:
+			h.Scale(DCalKeepOutFactor(0.2))			
 		hltmp.add(h, ntname, 'p E1')
 		#hltmp.add(h, title, 'hist l E1')
 		nEv = tu.get_max_from_ntuple(fname, ntname, 'nEv')
@@ -106,74 +120,55 @@ def get_pT(photons=False, femc=0.1, var='pT', usercut='(1)'):
 	hltmp.scale_by_binwidth(True)
 	hltmp.scale(1./(nEv * 1. + 1.))
 
-	#hltmp.destroy_canvas()
-
-	tu.gList.append(hltmp)
-
 	return hltmp
 
 def draw_pT_xsec(photons=False, var='pT', usercut='(1)'):
 	hlj = get_pT(photons=photons, var=var, usercut='(1)')
-	hljc = get_pT(photons=photons, var=var, usercut=usercut)
-	hlj.add_list(hljc)
+	if usercut != '(1)':
+		hljc = get_pT(photons=photons, var=var, usercut=usercut)
+		hlj.add_list(hljc)
 	hlj.make_canvas()
 	hlj.draw()
 	hlj.self_legend()
 	ROOT.gPad.SetLogy()
 	hlj.update()
 
-	hlr = dlist.dlist('ratios')
-	for i in range(3):
-		ltmp = dlist.make_ratio(hljc[i].obj, hlj[i].obj)
-		hlr.add_list(ltmp)
-
-	hlr.make_canvas()
-	hlr.draw()
-	hlr.self_legend()
-
-	tu.gList.append(hlr)
+	tu.gList.append(hlj)
 
 	if '--print' in sys.argv:
 		hlj.pdf()
 
 def draw_pT_yields(photons=False, var='pT'):
-	hlj = get_pT(photons=photons, var=var)
-	hlj.name = hlj.name + '_yats'
-	hlj.make_canvas()
-	hlj.draw()
-	hlj.self_legend()
-	ROOT.gPad.SetLogy()
-	hlj.update()
 
 	dopt = 'p'
 	dopt = 'l hist'
 
-	sigmaPbPb = 7.7
+	intLumi = 220. * 1.e6
 
 	cent = centrality.Centrality()
 	lname = 'pT_yields_{}_{}'.format(photons, var)
 	lstore = dlist.ListStorage(lname)
 	for ib,taa in enumerate(cent.TAAs()):
-		nEv   = 220. * 1.e6 * sigmaPbPb * cent.BinWidth(ib)
-		#print ib, taa
-		scale = taa * nEv
+		centBins = cent.BinRange(ib)
+		centcut = "(npart >= {} && npart < {})".format(centBins[0], centBins[1])
+		nEv = cent.BinPbPbNEvents(ib, intLumi)
+		print ib, cent.Label(ib), centcut, nEv
 
-		hljtmp = dlist.dlist('hljtmp')
-		hljtmp.copy(hlj)
-		hljtmp.scale(scale)
+		hlj = get_pT(photons=photons, var=var, usercut=centcut, cal='all')
+		#hlj.scale(taa * nEv)
+		hlj.scale(taa * nEv / cent.BinWidth(ib))
+		print '[w] weighting depends how events were generated - xsection per cent bin...!'
 
 		htitle = 'EMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
-		lstore.add_to_list('yields EMC', hljtmp[1].obj, htitle, dopt)
+		lstore.add_to_list('yields EMC', hlj[1].obj, htitle, dopt)
 		htitle = 'DMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
-		lstore.add_to_list('yields DMC', hljtmp[2].obj, htitle, dopt)
+		lstore.add_to_list('yields DMC', hlj[2].obj, htitle, dopt)
 
-		yats = dlist.yats(hljtmp)
+		yats = dlist.yats(hlj)
 		htitle = 'yat EMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
 		lstore.add_to_list('yats EMC', yats[1].obj, htitle, dopt)
 		htitle = 'yat DMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
 		lstore.add_to_list('yats DMC', yats[2].obj, htitle, dopt)
-
-		#yats.destroy_canvas()
 
 	lstore.get('yields EMC').reset_axis_titles('p_{T}', 'dN/dp_{T} (c/GeV)')
 	lstore.get('yields DMC').reset_axis_titles('p_{T}', 'dN/dp_{T} (c/GeV)')
@@ -201,7 +196,7 @@ def draw_patch_yields(photons=False, var='pT'):
 	dopt = 'p'
 	dopt = 'l hist'
 
-	sigmaPbPb = 7.7
+	intLumi = 220. * 1.e6
 
 	cent = centrality.Centrality()
 	lname = 'patch_yields_{}_{}'.format(photons, var)
@@ -209,23 +204,21 @@ def draw_patch_yields(photons=False, var='pT'):
 	for ib,taa in enumerate(cent.TAAs()):
 		centBins = cent.BinRange(ib)
 		centcut = "(npart >= {} && npart < {})".format(centBins[0], centBins[1])
-		print ib, cent.Label(ib), centcut
+		nEv = cent.BinPbPbNEvents(ib, intLumi)
+		print ib, cent.Label(ib), centcut, nEv
 
 		hlj = get_pT(photons=photons, var=var, usercut=centcut)
 		hlj.name = hlj.name + '_cent_{}'.format(ib)
-		hlj.make_canvas()
-		hlj.draw()
-		hlj.self_legend()
-		ROOT.gPad.SetLogy()
-		hlj.update()
+		#hlj.make_canvas()
+		#hlj.draw()
+		#hlj.self_legend()
+		#ROOT.gPad.SetLogy()
+		#hlj.update()
 	
-		nEv   = 220. * 1.e6 * sigmaPbPb * cent.BinWidth(ib)
-		#print ib, taa
-		scale = taa #* nEv
-
 		hljtmp = dlist.dlist('hljtmp')
 		hljtmp.copy(hlj)
-		hljtmp.scale(scale)
+		hljtmp.scale(taa / cent.BinWidth(ib))
+		print '[w] weighting depends how events were generated - xsection per cent bin...!'
 
 		htitle = 'EMC {} (nEv={:.1f} M)'.format(cent.Label(ib), nEv/1.e6)
 		lstore.add_to_list('yields EMC', hljtmp[1].obj, htitle, dopt)
@@ -245,23 +238,97 @@ def draw_patch_yields(photons=False, var='pT'):
 		lstore.tcanvas.cd(ip)
 		ROOT.gPad.SetGridy()
 		ROOT.gPad.SetGridx()
+		lstore.update()
 
 	if '--print' in sys.argv:
 		lstore.pdf()
 
+def draw_pT_bias(photons=False, cal='EMC', varcut='maxj', thrs = [60, 50, 40, 30, 20, 10, 5]):
+	var     ='pT'
+	dopt    ='p'
+	doptr   ='l hist'
+	cent    = centrality.Centrality()
+	lname   = 'yields_bias_{}_{}_{}_{}'.format(cal, photons, var, varcut)	
+	lstore  = dlist.ListStorage(lname)
+	
+	lname   = 'ratio_bias_{}_{}_{}_{}'.format(cal, photons, var, varcut)	
+	lstorer = dlist.ListStorage(lname)
+
+	if cal!='EMC' and cal!='DMC':
+		print '[i]', draw_pT_bias, 'cal arg can be only EMC or DMC - stop here'
+		return None
+
+	intLumi = 220. * 1.e6
+	for ib,taa in enumerate(cent.TAAs()):
+		centBins = cent.BinRange(ib)
+		centcut = "(npart >= {} && npart < {})".format(centBins[0], centBins[1])
+		nEv = cent.BinPbPbNEvents(ib, intLumi)
+		print ib, cent.Label(ib), centcut, nEv
+
+		hlj = get_pT(photons=photons, var=var, usercut=centcut, cal=cal)
+		hlj.scale(taa * nEv)
+		#hlj.make_canvas()
+		#hlj.draw()
+		#hlj.self_legend()
+		#ROOT.gPad.SetLogy()
+		#hlj.update()
+
+		thrcut = '({} > {})'.format(varcut, thrs[ib])
+		sumcut = '{} && {}'.format(centcut, thrcut)
+
+		hljc = get_pT(photons=photons, var=var, usercut=sumcut, cal=cal)
+		hljc.scale(taa * nEv)
+		#hljc.make_canvas()
+		#hljc.draw()
+		#hljc.self_legend()
+		#ROOT.gPad.SetLogy()
+		#hljc.update()
+
+		htitle = '{} {} (nEv={:.1f} M)'.format(cal, cent.Label(ib), nEv/1.e6)
+		lstore.add_to_list('{} yields {}'.format(cal, cent.Label(ib)), hlj[0].obj, htitle, dopt)
+		htitle = '{} {} trig'.format(cal, cent.Label(ib))
+		lstore.add_to_list('{} yields {}'.format(cal, cent.Label(ib)), hljc[0].obj, htitle, dopt)
+
+		hlrtmp = dlist.make_ratio(hljc[0].obj, hlj[0].obj)
+		htitle = '{} {}'.format(cent.Label(ib), thrcut)
+		lstorer.add_to_list('{} bias'.format(cal), hlrtmp[0].obj, htitle, doptr)
+
+	lstore.legend_position(0.5, 0.5, 0.7, 0.85)
+	lstore.zoom_axis(0, 0, 150)
+	if photons==False:
+		lstore.draw_all(logy=True, miny=10);
+	else:
+		lstore.draw_all(logy=True, miny=0.1);		
+	for ip in range(1, len(lstore.lists) + 1):
+		lstore.tcanvas.cd(ip)
+		ROOT.gPad.SetGridy()
+		ROOT.gPad.SetGridx()
+		lstore.update()
+
+	lstorer.legend_position(0.3, 0.6, 0.7, 0.85)
+	lstorer.zoom_axis(0, 0, 150)
+	lstorer.draw_all(logy=False, miny=0., maxy=2.);
+
+	if '--print' in sys.argv:
+		lstore.pdf()
+		lstorer.pdf()
+
 if __name__ == '__main__':
 	tu.setup_basic_root()
-	#draw_pT_xsec()
+	draw_pT_xsec()
 	#draw_pT_xsec(photons=True)
 
-	#draw_pT_yields(False, 'pT')
+	draw_pT_yields(False, 'pT')
 	#draw_pT_yields(True, 'pT')
 
 	#draw_patch_yields(False, 'maxj')
-	draw_patch_yields(False, 'maxj-medj')
+	#draw_patch_yields(False, 'maxj-medj')
 	#draw_patch_yields(False, 'maxg')
 
-	draw_pT_xsec(photons=False, var='pT', usercut='((maxj-medj)>20)')
+	#draw_pT_xsec(photons=False, var='pT', usercut='((maxj-medj)>20)')
+
+	#draw_pT_bias(photons=False, cal='EMC', varcut='maxj', thrs = [60, 50, 40, 30, 20, 10, 5])
+	#draw_pT_bias(photons=False, cal='EMC', varcut='maxj-medj', thrs = [43.5, 43, 42.5, 40, 30, 25, 20])
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()

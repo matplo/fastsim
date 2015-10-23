@@ -50,6 +50,8 @@ def main(spath='.'):
     files    = ut.find_files(prod_dir, '*.root')
     for vo in valid_outputs:
         outfname = os.path.join(prod_dir, vo).replace('/', '_')
+        if outfname[:2] == '._':
+            outfname = outfname[2:]
         print '---', outfname,vo
         files_to_merge = []
         for f in files:
