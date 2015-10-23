@@ -14,13 +14,13 @@ def get_pT(fname):
 	ntuples = ['jets_hard_EMC']
 	usercut = 'abs(eta)<0.5'
 	var     = 'pT'
-	bwidth  = 1
+	bwidth  = 20
 	xlow    = 0
 	xhigh   = 500
 
 	title  = '7TeVjets-pythia'
 	hltmp = dlist.dlist(title)
-	hltmp.make_canvas()
+	tu.getTempCanvas()
 	for ntname in ntuples:
 		title  = '7TeVjets-pythia-href'
 		cuts    = "(nEv==-1 && {})".format(usercut)
@@ -29,7 +29,10 @@ def get_pT(fname):
 		cuts    = "(nEv==-1 && {})*(xsec)".format(usercut)
 		h 	   = tu.draw_h1d_from_ntuple(fname, ntname, var, cuts, bwidth, xlow, xhigh, title)
 		#tu.filter_single_entries(h, href, thr=10)
-		hltmp.add(h, ntname, 'p E1')
+		#hltmp.add(h, ntname, 'p E1')
+		hltmp.add(h, ntname, 'l hist')
+		#hltmp.add(h, ntname, 'serror noleg +k1')
+		#hltmp.add(h, ntname, 'serror noleg +k2')
 		#hltmp.add(h, title, 'hist l E1')
 
 
@@ -57,8 +60,9 @@ if __name__ == '__main__':
 	hl[1].obj.SetTitle('Pythia R=0.4')
 	atlas = atlas_jets.AtlasJets()
 	hl.add_list(atlas.get())
-	hl.make_canvas()
-	hl.draw(logy=True, miny=1e-1)
+	hl.make_canvas(w=700,h=700)
+	hl.zoom_axis(0, 100, 350)
+	hl.draw(logy=True, miny=5., maxy=8e3)
 	hl.self_legend()
 	ROOT.gPad.SetLogy()
 	hl.update()

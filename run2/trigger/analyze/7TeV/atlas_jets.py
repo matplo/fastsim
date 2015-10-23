@@ -56,8 +56,8 @@ class AtlasJets(object):
 		#self.p8881_d1x1y3.Draw("AP")
 
 		self.hl = dlist.dlist('AtlasJets7TeVabs(y)=0.5')
-		self.hl.add(self.p8881_d1x1y2, 'Atlas 7TeV pp R=0.4', 'p serror noleg +k2 +a10')
-		self.hl.add(self.p8881_d1x1y3, 'Atlas 7TeV pp R=0.4', 'p serror noleg +k3 +a10')
+		self.hl.add(self.p8881_d1x1y2, 'Atlas 7TeV pp R=0.4', 'p serror noleg +k3 +a30')
+		self.hl.add(self.p8881_d1x1y3, 'Atlas 7TeV pp R=0.4', 'p serror noleg +k5 +a50')
 		self.hl.add(self.p8881_d1x1y1, 'Atlas 7TeV pp R=0.4', 'p')
 		self.hl.reset_axis_titles('p_{T} (GeV/c)', 'd#sigma/dp_{T}/dy (pb c/GeV)')
 		tu.gList.append(self.hl)
