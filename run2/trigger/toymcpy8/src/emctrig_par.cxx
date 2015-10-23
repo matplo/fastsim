@@ -61,6 +61,7 @@ int emctrig_par( int argc, char *argv[])
 		R = strtod(SysUtil::getArg("-R", argc, argv), 0);
 	}
 	cout << "[i] R parameter set to : " << R << endl;
+	outputFname.ReplaceAll(".root", TString::Format("_R_%1.1f.root", R));
 
 	Double_t EMCalTotal2EMfactor = 1.0;
 	if (SysUtil::isSet("--femc", argc, argv))
