@@ -37,6 +37,7 @@ class Centrality(object):
 					['80-100%'	,13.97		,20.00		,5.604	,4.2	,0.14	,4.441	,4.4		,0.21		,0.06939	,0.068	,0.0055		,80.		,100.] ]
 
 		self.sigmaPbPb = 7.7 # barns
+
 	def nbins(self):
 		return len(self.table)
 
@@ -66,9 +67,9 @@ class Centrality(object):
 
 	def BinWidth(self, ibin):
 		if ibin < 2:
-			return 0.05
+			return 0.10 #0.05
 		if ibin == 2:
-			return 0.10;
+			return 0.20;
 		if ibin > 2:
 			return 0.20
 		return 0
