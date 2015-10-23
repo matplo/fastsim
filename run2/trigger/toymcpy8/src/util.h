@@ -51,7 +51,7 @@ enum
 	kAny     = 10000,
 	kTrack   = 10001,
 	kCluster = 10002
-} ParType;
+};
 
 AliGenFastModelingEvent*
 make_par_response(const Int_t dCentMin, const Int_t dCentMax,
