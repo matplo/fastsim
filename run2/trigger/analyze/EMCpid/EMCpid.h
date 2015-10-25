@@ -138,17 +138,6 @@ void EMCpid::Init(TTree *tree)
    Notify();
 }
 
-Bool_t EMCpid::Notify()
-{
-   // The Notify() function is called when a new file is opened. This
-   // can be either for a new TTree in a TChain or when when a new TTree
-   // is started when using PROOF. It is normally not necessary to make changes
-   // to the generated code, but the routine can be extended by the
-   // user if needed. The return value is currently not used.
-
-   return kTRUE;
-}
-
 void EMCpid::Show(Long64_t entry)
 {
 // Print contents of entry.
