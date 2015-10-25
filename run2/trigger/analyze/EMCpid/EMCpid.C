@@ -91,17 +91,37 @@ void EMCpid::Loop()
 		Long64_t ientry = LoadTree(jentry);
 		if (ientry < 0) break;
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
-		// if (Cut(ientry) < 0) continue;
-		TLorentzVector p;
-		p.SetPxPyPzE(pgx, pgy, pgz, energy);
-		TVector3 er(erx, ery, erz);
-		if (er.Mag() <= 1e-4)
+
+		if (isUnique < 1)
 			continue;
+		if (isPhysicalPrimary < 1)
+			continue;
+
+		// if (Cut(ientry) < 0) continue;
+		TVector3 pg(pgx, pgy, pgz);
+		Double_t m    = db.GetParticle(pdg)->Mass();
+		Double_t egen = TMath::Sqrt(pg.Mag2() + m*m);
+
+		TLorentzVector p;
+		p.SetPxPyPzE(pgx, pgy, pgz, egen);
+
+		TVector3 er(erx, ery, erz);
+		if (er.Mag() < 0.150)
+			continue;
+
+		if (p.P() < 0.150)
+			continue;
+
 		hepp->Fill(p.P(), er.Mag() / p.P());
 		for (Int_t i = 0; i < pids.GetSize(); i++)
 		{
 			if (pdg == pids[i])
 			{
+				//if (pdg == 22)
+				//	{
+				//		cout << "p.Mass():" << p.M() << endl;
+				//		cout << "p=" << p.P() << " e=" << p.E() << " recE=" << er.Mag() << endl;
+				//	}
 				heppid[i]->Fill(p.P(), er.Mag() / p.P());
 				hepid[i]->Fill(p.P(), er.Mag());
 			}
