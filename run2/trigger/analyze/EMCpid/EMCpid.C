@@ -64,7 +64,7 @@ void EMCpid::Loop()
 		}
 		TString hname  = TString::Format("hepp_pdg_%1.0f", pids.GetAt(i));
 		TString htitle = TString::Format("pdg %1.0f %s;p;E/p", pids.GetAt(i), pname.Data());
-		heppid[i]      = new TH2F(hname, htitle, 100, 0, 100, 100, 0, 2);
+		heppid[i]      = new TH2F(hname, htitle, 100, 0, 100, 30, 0, 3);
 	}
 	Long64_t nentries = fChain->GetEntriesFast();
 
@@ -77,6 +77,8 @@ void EMCpid::Loop()
 		TLorentzVector p;
 		p.SetPxPyPzE(pgx, pgy, pgz, energy);
 		TVector3 er(erx, ery, erz);
+		if (er.Mag() <= 1e-3)
+			continue;
 		hepp->Fill(p.P(), er.Mag() / p.P());
 		for (Int_t i = 0; i < pids.GetSize(); i++)
 		{

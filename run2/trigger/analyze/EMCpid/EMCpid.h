@@ -73,7 +73,7 @@ EMCpid::EMCpid(TTree *tree) : fChain(0)
    if (tree == 0) {
       TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("EMCalTree.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("EMCalTree.root");
+         f = new TFile("root_archive.zip#EMCalTree.root");
       }
       f->GetObject("EMCalTree",tree);
 
