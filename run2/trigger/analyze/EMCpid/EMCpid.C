@@ -112,6 +112,9 @@ void EMCpid::Loop()
 		if (p.P() < 0.150)
 			continue;
 
+		// energy is the reconstructed energy
+		// cout << er.Mag() - energy << endl; // this should be zero
+
 		hepp->Fill(p.P(), er.Mag() / p.P());
 		for (Int_t i = 0; i < pids.GetSize(); i++)
 		{
