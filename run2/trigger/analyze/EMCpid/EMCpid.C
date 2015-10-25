@@ -64,6 +64,7 @@ void EMCpid::Loop()
 
 	TArrayI pids(18, cpids);
 	TH2F *heppid[18];
+	TH2F *hepid[18];
 
 	TDatabasePDG db;
 
@@ -75,9 +76,13 @@ void EMCpid::Loop()
 		{
 			pname = ppdg->GetName();
 		}
-		TString hname  = TString::Format("hepp_pdg_%1.0f", pids.GetAt(i));
-		TString htitle = TString::Format("pdg %1.0f %s;p;E/p", pids.GetAt(i), pname.Data());
+		TString hname, htitle;
+		hname  = TString::Format("hepp_pdg_%1.0f", pids.GetAt(i));
+		htitle = TString::Format("pdg %1.0f %s;p;E/p", pids.GetAt(i), pname.Data());
 		heppid[i]      = new TH2F(hname, htitle, 100, 0, 100, 30, 0, 3);
+		hname  = TString::Format("hep_pdg_%1.0f", pids.GetAt(i));
+		htitle = TString::Format("pdg %1.0f %s;p;E", pids.GetAt(i), pname.Data());
+		hepid[i]       = new TH2F(hname, htitle, 100, 0, 100, 300, 0, 300);
 	}
 	Long64_t nentries = fChain->GetEntriesFast();
 
@@ -90,7 +95,7 @@ void EMCpid::Loop()
 		TLorentzVector p;
 		p.SetPxPyPzE(pgx, pgy, pgz, energy);
 		TVector3 er(erx, ery, erz);
-		if (er.Mag() <= 1e-3)
+		if (er.Mag() <= 1e-4)
 			continue;
 		hepp->Fill(p.P(), er.Mag() / p.P());
 		for (Int_t i = 0; i < pids.GetSize(); i++)
@@ -98,6 +103,7 @@ void EMCpid::Loop()
 			if (pdg == pids[i])
 			{
 				heppid[i]->Fill(p.P(), er.Mag() / p.P());
+				hepid[i]->Fill(p.P(), er.Mag());
 			}
 		}
 	}
