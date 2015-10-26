@@ -223,15 +223,16 @@ TChain *buildChainFromFileList(const char *clist,
 	return chain;
 }
 
-void runEMCpid(const char *clist = "./filelist.txt", Int_t nFiles = 3000, Int_t nSkipFiles = 0)
+void runEMCpid(const char *clist = "./filelist.txt", Int_t nFiles = 5000, Int_t nSkipFiles = 0)
 {
 	TString treeName = "EMCalTree";
 
 	//TChain *ch       = buildChainFromFileList(clist, treeName.Data(), nFiles, nSkipFiles);
 	TChain *ch       = buildRndChainFromFileList(clist, treeName.Data(), nFiles);
 	TString spath    = gSystem->ExpandPathName("$RUN2EMCTRIGGER/analyze/EMCpid");
-	TString execline = TString::Format(".L %s/EMCpid.C+", spath.Data());
-	gROOT->ProcessLine(execline.Data());
+	//TString execline = TString::Format(".L %s/EMCpid.C+", spath.Data());
+	//gROOT->ProcessLine(execline.Data());
+	gSystem->Load("libEMCpidPar");
 	EMCpid a(ch);
 	a.Loop();
 }
