@@ -19,7 +19,7 @@ def EMCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 
-	print '[i] using EMCalKeepOutFactor with R=', R, retval
+	#print '[i] using EMCalKeepOutFactor with R=', R, retval
 
 	return retval
 
@@ -31,7 +31,7 @@ def DCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 
-	print '[i] using DCalKeepOutFactor with R=', R, retval
+	#print '[i] using DCalKeepOutFactor with R=', R, retval
 
 	return retval
 
@@ -44,11 +44,13 @@ class NTFiles(object):
 		if os.path.isdir(self.basedir)==False:
 			print >> sys.stderr, '[w] basedir is not a directory:',self.basedir
 		self.files= [
+			#'default_emctrig_out_R_0.4_femc_0.3.root',
 			'default_emctrig_out_R_0.4_femc_1.0.root'
 			]
 
 	def _guess_dir(self):
 		sdirs = [
+			#'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Volumes/MP/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0',
@@ -89,7 +91,7 @@ def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R
 
 	cuts   = "(nEv==-1 && {})*(xsec)".format(usercut)
 
-	bwidth = 5
+	bwidth = 10
 	xlow   = 0
 	xhigh  = 300
 
@@ -123,7 +125,7 @@ def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R
 		#print '[i] scaling by nEv: ', nEv+1.
 
 	if len(hltmp) > 0:
-		hltmp.reset_axis_titles('p_{T}', 'd#sigma/dp_{T} (mb/cGeV)')
+		hltmp.reset_axis_titles(var, 'd#sigma/d{}'.format(var))
 		hltmp.scale_by_binwidth(True)
 		hltmp.scale(1./(nEv * 1. + 1.))
 
@@ -151,11 +153,14 @@ def draw_bias(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[
 		print '[w] draw_AA_yield works best for EMC or DMC... ;-)'
 		return 
 
+	print '[i] bias for:',var,'for:',cal
+
 	hljnc = get_pT(fname, photons=photons, femc=femc, var=var, usercut='(1)', cal=cal, R=R)
 	hljnc[0].obj.SetTitle('unbiased')
 	hljnc[0].obj.SetName('unbiased')
 	for thr in thrs:
-		usercut='({} > {})'.format(threxp, thr)
+		centcut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		usercut='({} > {}) && {}'.format(threxp, thr, centcut)
 		hljc  = get_pT(fname, photons=photons, femc=femc, var=var, usercut=usercut, cal=cal, R=R)
 		hljc[0].obj.SetTitle(usercut)
 		hljc[0].obj.SetName(to_file_name(usercut))
@@ -164,8 +169,9 @@ def draw_bias(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[
 	hlj = hljnc.ratio_to()
 	hlj.name = hlj.name + '-'.join(str(n) for n in thrs)
 	hlj.make_canvas(w=600,h=600)
-	hlj.draw()
-	hlj.self_legend(x1=0.25, x2=0.45)
+	hlj.draw('hist l')
+	#hlj.self_legend(x1=0.25, x2=0.45)
+	hlj.self_legend(x1=0.52,y1=0.4,x2=0.72,y2=0.6)
 	#ROOT.gPad.SetLogy()
 	hlj.update()
 	tu.gList.append(hlj)
@@ -191,7 +197,7 @@ def draw_AA_yield(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', us
 	hlj = dlist.dlist(title)
 	for ib,taa in enumerate(cent.TAAs()):
 		usercut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
-		print ib, cent.Label(ib), taa, usercut
+		#print ib, cent.Label(ib), taa, usercut
 		hl = get_pT(fname, photons=photons, femc=femc, var=var, usercut=usercut, cal=cal, R=R)
 		hl[0].obj.SetTitle(cal + ' ' + cent.Label(ib))
 		hl[0].obj.SetName(cal + '_' + cent.Label(ib))
@@ -217,9 +223,9 @@ def draw_AA_yield(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', us
 		#hlj.write_to_file(name_mod='modn:')
 		hlj.write_to_file()
 
-def get_trigger(fname, photons=False, femc=0.1, var='JEmaxECAL', usercut='(1)', R=0.4):
-	ntname = 'triggers'
-	print usercut
+def get_trigger(fname, photons=False, femc=0.1, var='JEmaxECAL', usercut='(1)', R=0.4, ntname='triggers'):
+
+	#print usercut
 	cuts   = "({})*(xsec)".format(usercut)
 
 	bwidth = 1
@@ -229,7 +235,7 @@ def get_trigger(fname, photons=False, femc=0.1, var='JEmaxECAL', usercut='(1)', 
 	what = 'jets'
 	if photons:
 		what = 'photons'
-	title = '{}-femc-{}-var-{}-usercut-{}-R-{}'.format(what, femc, var, usercut, R)
+	title = '{}-femc-{}-var-{}-usercut-{}-R-{}-ntname-{}'.format(what, femc, var, usercut, R, ntname)
 	title = to_file_name(title)
 	hltmp = dlist.dlist(title)
 	tu.getTempCanvas().cd()
@@ -248,23 +254,36 @@ def get_trigger(fname, photons=False, femc=0.1, var='JEmaxECAL', usercut='(1)', 
 		hltmp.scale(1./(nEv * 1. + 1.))
 	return hltmp
 
+def rejection_table(hl, rej = 1.e-3):
+	print '[i] rejections for', hl.name, 'rej:',rej
+	for o in hl.l:
+		h = o.obj
+		for ib in range(1, h.GetNbinsX()):
+			if h.GetBinContent(ib) <= rej:
+				print '    ', h.GetTitle(), h.GetBinLowEdge(ib), h.GetBinContent(ib)
+				newtitle = '{} [{:.0e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
+				h.SetTitle(newtitle)
+				break
+
 #def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R=0.4):
-def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL'):
+def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL', ntname='triggers'):
 	if cal=='all':
 		print '[w] draw_AA_yield works best for EMC or DMC... ;-)'
 		return 
+
+	print '[i] trigger rates for:',var,'from',ntname
 
 	cent = centrality.Centrality()
 
 	what = 'jets'
 	if photons:
 		what = 'photons'
-	title = to_file_name('trigger-{}-femc-{}-var-{}-R-{}'.format(what, femc, var, R))
+	title = to_file_name('trigger-{}-femc-{}-var-{}-R-{}-ntname-{}'.format(what, femc, var, R, ntname))
 	hlj = dlist.dlist(title)
 	for ib,taa in enumerate(cent.TAAs()):
 		usercut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
-		print ib, cent.Label(ib), taa, usercut
-		hl = get_trigger(fname, photons, femc, var, usercut, R)
+		#print ib, cent.Label(ib), taa, usercut
+		hl = get_trigger(fname, photons, femc, var, usercut, R, ntname)
 		hl[0].obj.SetTitle(cal + ' ' + cent.Label(ib))
 		hl[0].obj.SetName(cal + '_' + cent.Label(ib))
 		hl.scale(taa / cent.BinWidth(ib)) #correct for loss of stats when cutting on cent
@@ -281,13 +300,16 @@ def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL'):
 	tu.gList.append(hlj)
 
 	fyats = dlist.fractional_yats(hlj)
+	fyats.reset_axis_titles(yt='rejection factor')
+	rejection_table(fyats, 1e-3)
+	rejection_table(fyats, 1e-2)
 	fyats.make_canvas(w=600,h=600)
-	fyats.draw(miny=2.e-4, maxy=2.)
+	fyats.draw(miny=2.e-4, maxy=70.)
 	if 'GAmaxECAL' in var or 'GAmaxDCAL' in var:
 		fyats.zoom_axis(0, 0, 30)
 	else:		
 		fyats.zoom_axis(0, 0, 70)
-	fyats.self_legend(x1=0.65, x2=0.95)
+	fyats.self_legend(x1=0.25, x2=0.95)
 	ROOT.gPad.SetLogy()
 	ROOT.gPad.SetGridx()
 	ROOT.gPad.SetGridy()
@@ -311,7 +333,7 @@ if __name__ == '__main__':
 
 	ntfs  = NTFiles(bdir)
 	photons = False
-	#femc = 0.1
+	femc = 0.3
 	femc = 1.0
 	R=0.4
 	usercut='(1)'
@@ -321,14 +343,25 @@ if __name__ == '__main__':
 
 	if '--xsec' in sys.argv:
 		draw_pT_xsec(fname, photons, femc, R, usercut, cal, var)
+		draw_pT_xsec(fname, photons, femc, R, usercut, cal, var='medj')
 
 	if '--bias' in sys.argv:
-		jethr = [56, 44, 32.5, 22, 18, 17]
-		draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj')
+		var='pT'
+
+		jethr = [58.5, 43, 31, 19, 15, 14]
+		#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj')
 		#draw_bias(fname, photons, femc, R, usercut, 'DMC', var)
 
-		jethr = [33, 28, 22, 18, 17, 16] #made with femc=1.0
-		draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
+		#jethr = [36, 24.5, 16.5, 8, 4, 4]
+		jethr = [1, 2, 3, 4, 5, 6]
+		draw_bias(fname, photons, femc, R, 'EMC', var='maxj', thrs=jethr, threxp='medj')
+
+		#var = "(pT + rho * 0.5)"
+		#jethr = [33, 27, 21, 16, 14, 13] #made with femc=0.3
+		#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
+
+		#jethr = [28, 23, 18, 12,  8,  7] #made with femc=0.3
+		#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
 
 	if '--yields' in sys.argv:
 		intLumi = 220. * 1.e6
@@ -339,22 +372,35 @@ if __name__ == '__main__':
 		draw_AA_yield(fname, photons, femc, R, cal, var)
 		draw_AA_yield(fname, photons, femc, R, cal, var, intLumi)
 
+	##if '--centrality' in sys.argv:
+	##	var='npart'
+	##	jethr = [33, 28, 22, 16, 14, 12] #made with femc=0.3
+	##	draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
+
 	if '--trigger' in sys.argv:
 		cal='EMC'
 
-		var='JEmaxECAL'
-		draw_trigger_rates(fname, photons, femc, R, var)
+		#var='JEmaxECAL'
+		#draw_trigger_rates(fname, photons, femc, R, var)
 		var='JEmedDCAL'
 		draw_trigger_rates(fname, photons, femc, R, var)
+		var='medj'
+		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc')
+		var='maxj'
+		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc')
+		var='maxj-medj'
+		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc')
 		var='JEmaxECAL - JEmedDCAL'
 		draw_trigger_rates(fname, photons, femc, R, var)
-	
-		var='GAmaxECAL'
-		draw_trigger_rates(fname, photons, femc, R, var)	
+		var='JEmaxECAL'
+		draw_trigger_rates(fname, photons, femc, R, var)
+
+		#var='GAmaxECAL'
+		#draw_trigger_rates(fname, photons, femc, R, var)	
 		#var='GAmedDCAL'
 		#draw_trigger_rates(fname, photons, femc, R, var)	
-		var='GAmaxECAL - JEmedDCAL / 32.'
-		draw_trigger_rates(fname, photons, femc, R, var)
+		#var='GAmaxECAL - JEmedDCAL / 32.'
+		#draw_trigger_rates(fname, photons, femc, R, var)
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()
