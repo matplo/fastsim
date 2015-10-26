@@ -7,7 +7,7 @@ execute_process ( COMMAND root-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VAR
 execute_process ( COMMAND root-config --etcdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_ETCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
 set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
 #message ("[info] CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED EG)
 
 execute_process ( COMMAND root-config --libs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
 
