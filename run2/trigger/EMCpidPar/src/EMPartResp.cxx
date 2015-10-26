@@ -160,7 +160,14 @@ Double_t EMPartResp::GetEop(Int_t pdg, Double_t p, Bool_t noalter)
 				hproj = fhpEp[i]->ProjectionY(hname, pbin, pbin);
 				fLproj->Add(hproj);
 			}
-			retval = hproj->GetRandom();
+			if (hproj->ComputeIntegral() <= 0)
+				{
+					cout << "[w] ComputeIntegral is zero: " << hproj->GetName() << " " << p << endl;
+					cout << "[w] Reverting to pid=211 (pion) for p = " << p << endl; 
+					retval = GetEop(211, p, kTRUE);
+				}
+			else
+				retval = hproj->GetRandom();
 			//cout << "[i] return E =" << retval << " hist: " << hproj->GetName() << endl;
 			return retval;
 		}
