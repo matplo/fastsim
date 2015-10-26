@@ -25,6 +25,7 @@ namespace fj = fastjet;
 #include <TRandom.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TSystem.h>
 
 //using namespace Pythia8; - conflicts with root
 namespace py = Pythia8;
@@ -33,6 +34,8 @@ namespace py = Pythia8;
 #include <AliGenFastModelingEvent.h>
 
 #include <TriggerMaker.h>
+
+#include <EMPartResp.h>
 
 int emctrig_par( int argc, char *argv[])
 {
@@ -67,11 +70,35 @@ int emctrig_par( int argc, char *argv[])
 	if (SysUtil::isSet("--femc", argc, argv))
 	{
 		EMCalTotal2EMfactor = strtod(SysUtil::getArg("--femc", argc, argv), 0);
+		cout << "[i] EMCalTotal2EMfactor set to : " << EMCalTotal2EMfactor << endl;
+		outputFname.ReplaceAll(".root", TString::Format("_femc_%1.1f.root", EMCalTotal2EMfactor));
 	}
-	cout << "[i] EMCalTotal2EMfactor set to : " << EMCalTotal2EMfactor << endl;
-	outputFname.ReplaceAll(".root", TString::Format("_femc_%1.1f.root", EMCalTotal2EMfactor));
 
-	AliGenFastModelingEvent *pResp = GenerUtil::make_par_response(0, 1);
+	TString EMCparPIDfile = "";
+	EMPartResp *EMCresponse = 0;
+	if (SysUtil::isSet("--femcpar", argc, argv))
+	{
+		EMCparPIDfile = SysUtil::getArg("--femcpar", argc, argv);
+		if (gSystem->IsAbsoluteFileName(EMCparPIDfile))
+		{
+			cout << "[i] EMCparPIDfile set to: " << EMCparPIDfile << endl;
+		}
+		else
+		{
+			EMCparPIDfile = gSystem->ExpandPathName("$RUN2EMCTRIGGER/EMCpidPar/files/EMPartResp.root");
+			cout << "[i] EMCparPIDfile reset to: " << EMCparPIDfile << endl;
+		}
+		EMCresponse = new EMPartResp(EMCparPIDfile.Data());
+		outputFname.ReplaceAll(".root", "_femcpar.root");
+	}
+
+	if (SysUtil::isSet("--femc", argc, argv) && SysUtil::isSet("--femcpar", argc, argv))
+	{
+		cerr << "[e] only one --femc or --femcpar allowed" << endl;
+		return 1;
+	}
+
+	AliGenFastModelingEvent *pResp = GenerUtil::make_par_background(0, 100);
 	if (pResp == 0)
 	{
 		cerr << "[e] Response not initialized. Quit here." << endl;
@@ -133,6 +160,8 @@ int emctrig_par( int argc, char *argv[])
 	TH2F *hbgcl				= new TH2F("hbgcl", "hbgcl;#eta;#phi", 100, -1, 1, 360, 0, TMath::Pi() * 2.);
 
 	TH2F *hcentmult			= new TH2F("hcentmult", "hcentmult;cent;mult", 100, 0, 100, 5000, 0, 5000);
+
+	TH2F *heop              = new TH2F("heop", "heop;p;E/p", 100, 0, 100, 10, 0, 10);
 
 	double lead_pT        = 0;
 	double matched_pT     = 0;
@@ -388,22 +417,37 @@ int emctrig_par( int argc, char *argv[])
 			{
 				//tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
 				unsigned int pyidx = py_hard_event[ip].user_index();
+				Double_t emc = 0;
 				if ( event[pyidx].isCharged() )
 				{
-					if ( event[pyidx].id() == 11 || event[pyidx].id() == -11)
+					int ipid = event[pyidx].id();
+					TVector3 pvector(py_hard_event[ip].px(), py_hard_event[ip].py(), py_hard_event[ip].pz());
+					if (EMCresponse != 0)
 					{
-						// electrons are special
-						tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e());
+						// use the parametrized response
+						emc = pvector.Mag() * EMCresponse->GetEop(ipid, pvector.Mag());
 					}
 					else
 					{
-						tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e() * EMCalTotal2EMfactor);
+						if ( ipid == 11 || ipid == -11)
+						{
+							// electrons are special
+							emc = py_hard_event[ip].e();
+						}
+						else
+						{
+							// constant fraction of momentum
+							emc = pvector.Mag() * EMCalTotal2EMfactor;
+						}
 					}
+					heop->Fill(pvector.Mag(), emc);
 				}
 				else
 				{
-					tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), py_hard_event[ip].e());
+					// neutral particles deposit full energy
+					emc = py_hard_event[ip].e();
 				}
+				tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
 			}
 		}
 
@@ -657,6 +701,8 @@ int emctrig_par( int argc, char *argv[])
 
 	fout->Write();
 	fout->Close();
+
+	//delete EMCresponse;
 
 	return 0;
 }

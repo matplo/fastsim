@@ -226,9 +226,9 @@ bool add_pythia_particles(py::Pythia &pythia,
 	return true;
 }
 
-// PARAM response
+// PARAM background
 
-AliGenFastModelingEvent *make_par_response(
+AliGenFastModelingEvent *make_par_background(
     const Int_t dCentMin, const Int_t dCentMax,
     const TString sPath,
     const Bool_t bUseBoltzmann,

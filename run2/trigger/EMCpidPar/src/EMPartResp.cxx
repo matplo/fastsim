@@ -37,10 +37,10 @@ EMPartResp::EMPartResp()
 		}
 		hname    = TString::Format("hepp_pdg_%1.0f", fpids.GetAt(i));
 		htitle   = TString::Format("pdg %1.0f %s;p;E/p", fpids.GetAt(i), pname.Data());
-		fhpEp[i] = new TH2F(hname, htitle, fpBins.GetSize(), fpBins.GetArray(), 100, 0, 10);
+		fhpEp[i] = new TH2F(hname, htitle, fpBins.GetSize()-1, fpBins.GetArray(), 1000, 0, 10);
 		hname    = TString::Format("hep_pdg_%1.0f", fpids.GetAt(i));
 		htitle   = TString::Format("pdg %1.0f %s;p;E", fpids.GetAt(i), pname.Data());
-		fhpE[i]  = new TH2F(hname, htitle, fpBins.GetSize(), fpBins.GetArray(), fpBins.GetSize(), fpBins.GetArray());
+		fhpE[i]  = new TH2F(hname, htitle, fpBins.GetSize()-1, fpBins.GetArray(), fpBins.GetSize()-1, fpBins.GetArray());
 	}
 
 }
@@ -86,7 +86,7 @@ void EMPartResp::SetPids()
 {
 	Int_t cpids[] = 
 	{
-		11, 13, 22, 111, 211, 221, 321, 2212, 2112,
+		 11,  13,  22,  111,  211,  221,  321,  2212,  2112,
 		-11, -13, -22, -111, -211, -221, -321, -2212, -2112
 	};
 	fpids.Set(18, cpids);
@@ -95,13 +95,12 @@ void EMPartResp::SetPids()
 void EMPartResp::SetBins()
 {
 	const Int_t npbins = 14;
-	Double_t bins[npbins + 1] = {0., 0.5, 1.,  2.,  3.,
-	                             5., 10., 20., 40., 60.,
-	                             90., 120., 150., 200,
-	                             300.
+	Double_t bins[npbins + 1] = { 0.,   0.5,  1.,   2.,   3.,
+	                              5.,  10.,  20.,  40.,  60.,
+	                             90., 120., 150., 200., 300.
 	                            };
 
-	fpBins.Set(npbins, &bins[0]);
+	fpBins.Set(npbins + 1, &bins[0]);
 
 	//for (int i = 0; i < fpBins.GetSize() - 1; ++i)
 	//{

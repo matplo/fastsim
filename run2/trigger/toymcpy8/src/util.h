@@ -54,11 +54,11 @@ enum
 };
 
 AliGenFastModelingEvent*
-make_par_response(const Int_t dCentMin, const Int_t dCentMax,
-                  const TString sPath = "$RUN2EMCTRIGGER/AliGenFME/inputs",
-                  const Bool_t bUseBoltzmann = kTRUE,
-                  const Double_t dTrkMeanPt = 0.7,
-                  const Double_t dCluMeanPt = 0.7);
+make_par_background(const Int_t dCentMin, const Int_t dCentMax,
+                    const TString sPath = "$RUN2EMCTRIGGER/AliGenFME/inputs",
+                    const Bool_t bUseBoltzmann = kTRUE,
+                    const Double_t dTrkMeanPt = 0.7,
+                    const Double_t dCluMeanPt = 0.7);
 
 std::vector <fastjet::PseudoJet> param_vectors(AliGenFastModelingEvent *gen, Int_t select);
 
