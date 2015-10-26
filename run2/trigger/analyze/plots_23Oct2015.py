@@ -257,15 +257,17 @@ def draw_AA_yield(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', us
 		title = title.replace('AAyields', 'AAyieldsLint')
 	hlj = dlist.dlist(title)
 	for ib,taa in enumerate(cent.TAAs()):
-		usercut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		#usercut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		usercut='(pT>20)'
 		#print ib, cent.Label(ib), taa, usercut
 		hl = get_pT(fname, photons=photons, femc=femc, var=var, usercut=usercut, cal=cal, R=R)
 		hl[0].obj.SetTitle(cal + ' ' + cent.Label(ib))
 		hl[0].obj.SetName(cal + '_' + cent.Label(ib))
-		hl.scale(taa / cent.BinWidth(ib)) #correct for loss of stats when cutting on cent
+		#hl.scale(taa / cent.BinWidth(ib)) #correct for loss of stats when cutting on cent
+		hl.scale(taa) #do not correct for loss of stats when not cutting on cent
 		if useLint > 0:
-			hl.scale(cent.BinPbPbNEvents(ib, intLumi))
-			hl[0].obj.SetTitle(cal + ' ' + cent.Label(ib) + ' ({:.1f}M) '.format(cent.BinPbPbNEvents(ib, intLumi)/1.e6))
+			hl.scale(cent.BinPbPbNEvents(ib, useLint))
+			hl[0].obj.SetTitle(cal + ' ' + cent.Label(ib) + ' ({:.1f}M) '.format(cent.BinPbPbNEvents(ib, useLint)/1.e6))
 		hlj.add_list(hl)
 
 	if useLint > 0:
@@ -273,9 +275,15 @@ def draw_AA_yield(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', us
 	else:
 		hlj.reset_axis_titles('p_{T}', '1/N_{ev} dN/dp_{T} (c/GeV)')
 	hlj.make_canvas(w=600,h=600)
-	hlj.draw()
-	hlj.self_legend(x1=0.35, x2=0.45)
+	if useLint > 0:
+		hlj.draw(miny=5e-2, maxy=5e7)
+	else:
+		hlj.draw(miny=5e-11, maxy=9e-1)
+	hlj.self_legend(x1=0.55, x2=0.45)
 	ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()
+
 	hlj.update()
 	tu.gList.append(hlj)
 	if '--print' in sys.argv:
@@ -317,6 +325,7 @@ def get_trigger(fname, photons=False, femc=0.1, var='JEmaxECAL', usercut='(1)', 
 
 def rejection_table(hl, rej = 1.e-3):
 	print '[i] rejections for', hl.name, 'rej:',rej
+	retvals = []
 	for o in hl.l:
 		h = o.obj
 		for ib in range(1, h.GetNbinsX()):
@@ -324,10 +333,12 @@ def rejection_table(hl, rej = 1.e-3):
 				print '    ', h.GetTitle(), h.GetBinLowEdge(ib), h.GetBinContent(ib)
 				newtitle = '{} [{:.0e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
 				h.SetTitle(newtitle)
+				retvals.apepnd(h.GetBinLowEdge(ib))
 				break
+	return retvals
 
 #def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R=0.4):
-def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL', ntname='triggers'):
+def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL', ntname='triggers', cal='EMC'):
 	if cal=='all':
 		print '[w] draw_AA_yield works best for EMC or DMC... ;-)'
 		return 
@@ -362,15 +373,19 @@ def draw_trigger_rates(fname, photons=False, femc=0.1, R=0.4, var='JEmaxECAL', n
 
 	fyats = dlist.fractional_yats(hlj)
 	fyats.reset_axis_titles(yt='rejection factor')
-	rejection_table(fyats, 1e-3)
-	rejection_table(fyats, 1e-2)
+	rjt1 = rejection_table(fyats, 1e-3)
+	rjt2 = rejection_table(fyats, 1e-2)
 	fyats.make_canvas(w=600,h=600)
 	fyats.draw(miny=2.e-4, maxy=70.)
 	if 'GAmaxECAL' in var or 'GAmaxDCAL' in var:
 		fyats.zoom_axis(0, 0, 30)
 	else:		
 		fyats.zoom_axis(0, 0, 70)
-	fyats.self_legend(x1=0.25, x2=0.95)
+	if var=='maxg-medj/16.':
+		fyats.zoom_axis(0, 0, 20)
+	else:		
+		fyats.zoom_axis(0, 0, 70)		
+	fyats.self_legend(x1=0.2, x2=0.95)
 	ROOT.gPad.SetLogy()
 	ROOT.gPad.SetGridx()
 	ROOT.gPad.SetGridy()

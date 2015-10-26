@@ -195,14 +195,15 @@ if __name__ == '__main__':
 	var='pT'
 	fname = ntfs.get_file(femc, photons, R)
 
-	med_correl(fname, 'medj')
-	med_correl(fname, 'maxj')
-	#med_correl(fname, 'maxj-medj')
-	max_med_correl(fname, 'medj', 'maxj')
-	#max_med_correl(fname, 'medj', 'pT + medj')
-	#max_med_correl(fname, 'maxj', 'pT+rho*0.5')
+	#med_correl(fname, 'medj')
+	#med_correl(fname, 'maxj')
+	med_correl(fname, 'maxg')
+	##med_correl(fname, 'maxj-medj')
+	#max_med_correl(fname, 'medj', 'maxj')
+	##max_med_correl(fname, 'medj', 'pT + medj')
+	##max_med_correl(fname, 'maxj', 'pT+rho*0.5')
 
-	max_med_correl(fname, 'JEmedDCAL', 'JEmaxECAL', 'triggers')
+	#max_med_correl(fname, 'JEmedDCAL', 'JEmaxECAL', 'triggers')
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()
