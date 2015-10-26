@@ -232,6 +232,7 @@ void runEMCpid(const char *clist = "./filelist.txt", Int_t nFiles = 5000, Int_t 
 	TString spath    = gSystem->ExpandPathName("$RUN2EMCTRIGGER/analyze/EMCpid");
 	//TString execline = TString::Format(".L %s/EMCpid.C+", spath.Data());
 	//gROOT->ProcessLine(execline.Data());
+	gSystem->Load("libEG");
 	gSystem->Load("libEMCpidPar");
 	EMCpid a(ch);
 	a.Loop();
