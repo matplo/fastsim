@@ -145,6 +145,7 @@ int emctrig_par( int argc, char *argv[])
 	TNtuple *tnj_hard_DMCc  = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
 
 	TNtuple *tnpatch        = new TNtuple("triggers", "triggers", "xsec:npart:rho:JEmaxECAL:JEmaxDCAL:GAmaxECAL:GAmaxDCAL:JEmedECAL:JEmedDCAL:GAmedECAL:GAmedDCAL:JEmedECALbg:JEmedDCALbg:GAmedECALbg:GAmedDCALbg");
+	TNtuple *tnpatch_bg     = new TNtuple("triggers_bg", "triggers_bg", "xsec:npart:rho:JEmaxECAL:JEmaxDCAL:GAmaxECAL:GAmaxDCAL:JEmedECAL:JEmedDCAL:GAmedECAL:GAmedDCAL");
 
 	TNtuple *tnj_full       = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
 	TNtuple *tnp            = new TNtuple("p", "p", "nEv:xsec:ispy:pT:eta:phi");
@@ -518,6 +519,13 @@ int emctrig_par( int argc, char *argv[])
 		              tm.GetMedianGammaEMCAL(), 		tm.GetMedianGammaDCALPHOS(),
 		              tm_bg.GetMedianJetEMCAL(), 		tm_bg.GetMedianJetDCALPHOS(),
 		              tm_bg.GetMedianGammaEMCAL(), 		tm_bg.GetMedianGammaDCALPHOS());
+
+		tnpatch_bg->Fill(xsec,
+		                 bg_event_centrality, rho,
+		                 tm_bg.GetMaxJetEMCAL().GetADC(), 		tm_bg.GetMaxJetDCALPHOS().GetADC(),
+		                 tm_bg.GetMaxGammaEMCAL().GetADC(), 	tm_bg.GetMaxGammaDCALPHOS().GetADC(),
+		                 tm_bg.GetMedianJetEMCAL(), 			tm_bg.GetMedianJetDCALPHOS(),
+		                 tm_bg.GetMedianGammaEMCAL(), 			tm_bg.GetMedianGammaDCALPHOS());
 
 		// PHOTONS
 		vector<fj::PseudoJet> photons;
