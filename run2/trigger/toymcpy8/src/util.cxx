@@ -12,16 +12,22 @@
 namespace fj = fastjet;
 
 #include <iostream> // needed for io
+#include <string>
 using namespace std;
 
 namespace SysUtil
 {
 bool isSet(const char *what, int argc, char **argv)
 {
+	string swhat = what;
 	for (int i = 0; i < argc; i++)
 	{
-		if (strcmp(what, argv[i]) == 0)
-			return true;
+		string ar = argv[i];
+		//if (strcmp(what, argv[i]) == 0)
+		if (ar.compare(swhat) == 0 && swhat.compare(ar) == 0)
+			{
+				return true;
+			}
 	}
 	return false;
 }
