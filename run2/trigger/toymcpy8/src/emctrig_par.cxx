@@ -98,7 +98,21 @@ int emctrig_par( int argc, char *argv[])
 		return 1;
 	}
 
-	AliGenFastModelingEvent *pResp = GenerUtil::make_par_background(0, 100);
+	Bool_t boltzmanBG = kTRUE;
+	if (SysUtil::isSet("--realbg", argc, argv))
+	{
+		boltzmanBG = kFALSE;
+	}
+	if (boltzmanBG)
+	{
+		cout << "[i] boltzman background: " << boltzmanBG << endl;
+	}
+	else
+	{
+		cout << "[i] real data background: " << !boltzmanBG << endl;
+	}
+
+	AliGenFastModelingEvent *pResp = GenerUtil::make_par_background(0, 100, "$RUN2EMCTRIGGER/AliGenFME/inputs", boltzmanBG);
 	if (pResp == 0)
 	{
 		cerr << "[e] Response not initialized. Quit here." << endl;
