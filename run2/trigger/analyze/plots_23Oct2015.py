@@ -44,13 +44,13 @@ class NTFiles(object):
 		if os.path.isdir(self.basedir)==False:
 			print >> sys.stderr, '[w] basedir is not a directory:',self.basedir
 		self.files= [
-			#'default_emctrig_out_R_0.4_femc_0.3.root',
+			'default_emctrig_out_R_0.4_femc_1.0.root',
 			'default_emctrig_out_R_0.4_femc_1.0.root'
 			]
 
 	def _guess_dir(self):
 		sdirs = [
-			#'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
+			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Volumes/MP/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0',
@@ -79,6 +79,7 @@ class NTFiles(object):
 			print >> sys.stderr,'[e] not a file:',retval
 			raise IOError(retval)
 			retval = None
+		print "[i] using file:",retval
 		return retval
 
 def to_file_name(s):
@@ -155,31 +156,91 @@ def draw_bias(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[
 
 	print '[i] bias for:',var,'for:',cal
 
+	cent = centrality.Centrality()
+
+	what = 'jets'
+	if photons:
+		what = 'photons'
+	title = 'draw-bias-{}-femc-{}-var-{}-calo-{}-R-{}'.format(what, femc, var, cal, R)
+	title = title + '{}-'.format(threxp) + '-'.join(str(n) for n in thrs)
+	title = to_file_name(title)
+	hl = dlist.dlist(title)
+
 	hljnc = get_pT(fname, photons=photons, femc=femc, var=var, usercut='(1)', cal=cal, R=R)
 	hljnc[0].obj.SetTitle('unbiased')
 	hljnc[0].obj.SetName('unbiased')
-	for thr in thrs:
-		centcut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
-		usercut='({} > {}) && {}'.format(threxp, thr, centcut)
+	hl.add(hljnc[0].obj, 'unbiased', 'hist l')
+
+	for ib,thr in enumerate(thrs):
+		usercut='({} > {})'.format(threxp, thr)
 		hljc  = get_pT(fname, photons=photons, femc=femc, var=var, usercut=usercut, cal=cal, R=R)
 		hljc[0].obj.SetTitle(usercut)
 		hljc[0].obj.SetName(to_file_name(usercut))
-		hljnc.add_list(hljc)
+		#hljnc.add_list(hljc)
+		centcuts='{}-{}%'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		newtitle = '{} : {} > {}'.format(centcuts, threxp, thr)
+		hl.add(hljc[0].obj, newtitle, 'hist l')
 
-	hlj = hljnc.ratio_to()
-	hlj.name = hlj.name + '-'.join(str(n) for n in thrs)
-	hlj.make_canvas(w=600,h=600)
-	hlj.draw('hist l')
+	hlr = hl.ratio_to()
+	hlr.reset_axis_titles(var, 'ratio: {} cut / min. bias'.format(threxp))
+	hlr.make_canvas(w=600,h=600)
+	hlr.draw('hist l')
 	#hlj.self_legend(x1=0.25, x2=0.45)
-	hlj.self_legend(x1=0.52,y1=0.4,x2=0.72,y2=0.6)
+	hlr.self_legend(x1=0.48,y1=0.4,x2=0.72,y2=0.6)
 	#ROOT.gPad.SetLogy()
-	hlj.update()
-	tu.gList.append(hlj)
+	hlr.update()
+	tu.gList.append(hlr)
 	if '--print' in sys.argv:
-		hlj.pdf()
+		hlr.pdf()
 	if '--write' in sys.argv:
-		hlj.write_to_file()
+		hlr.write_to_file()
 
+def draw_bias_cent(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[0], threxp='maxj'):
+	if cal=='all':
+		print '[w] draw_AA_yield works best for EMC or DMC... ;-)'
+		return 
+
+	print '[i] bias for:',var,'for:',cal
+
+	cent = centrality.Centrality()
+
+	what = 'jets'
+	if photons:
+		what = 'photons'
+	title = 'draw-bias-{}-femc-{}-var-{}-calo-{}-R-{}'.format(what, femc, var, cal, R)
+	title = title + '{}-'.format(threxp) + '-'.join(str(n) for n in thrs)
+	title = to_file_name(title)
+	hl = dlist.dlist(title)
+	for ib,thr in enumerate(thrs):
+		centcut='(npart >= {} && npart < {})'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		centcuts='{}-{}%'.format(cent.BinLow(ib), cent.BinHigh(ib))
+		hljnc = get_pT(fname, photons=photons, femc=femc, var=var, usercut=centcut, cal=cal, R=R)
+		hljnc[0].obj.SetTitle('unbiased {}'.format(centcuts))
+		hljnc[0].obj.SetName('unbiased {}'.format(centcuts))
+		usercut='({} > {}) && ({})'.format(threxp, thr, centcut)
+		hljc  = get_pT(fname, photons=photons, femc=femc, var=var, usercut=usercut, cal=cal, R=R)
+		newtitle = '{} : {} > {}'.format(centcuts, threxp, thr)
+		hljc[0].obj.SetTitle(newtitle)
+		hljc[0].obj.SetName(to_file_name(newtitle))
+		hljnc.add_list(hljc)
+		hlj = hljnc.ratio_to()
+		#hl.add_list(hlj)
+		hl.add(hlj[0].obj, newtitle, 'hist l')
+
+	hl.reset_axis_titles(var, 'ratio: {} cut / min. bias'.format(threxp))
+	hl.make_canvas(w=600,h=600)
+	hl.draw('hist l')
+	#hl.self_legend(x1=0.25, x2=0.45)
+	hl.self_legend(x1=0.52,y1=0.4,x2=0.72,y2=0.6)
+	#ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()
+	hl.update()
+	tu.gList.append(hl)
+	if '--print' in sys.argv:
+		hl.pdf()
+	if '--write' in sys.argv:
+		hl.write_to_file()
 
 def draw_AA_yield(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', useLint=0):
 	if cal=='all':
@@ -334,7 +395,7 @@ if __name__ == '__main__':
 	ntfs  = NTFiles(bdir)
 	photons = False
 	femc = 0.3
-	femc = 1.0
+	#femc = 1.0
 	R=0.4
 	usercut='(1)'
 	cal='all'
@@ -353,12 +414,13 @@ if __name__ == '__main__':
 		#draw_bias(fname, photons, femc, R, usercut, 'DMC', var)
 
 		#jethr = [36, 24.5, 16.5, 8, 4, 4]
-		jethr = [1, 2, 3, 4, 5, 6]
-		draw_bias(fname, photons, femc, R, 'EMC', var='maxj', thrs=jethr, threxp='medj')
+		#jethr = [1, 2, 3, 4, 5, 6]
+		#draw_bias(fname, photons, femc, R, 'EMC', var='maxj', thrs=jethr, threxp='medj')
 
 		#var = "(pT + rho * 0.5)"
-		#jethr = [33, 27, 21, 16, 14, 13] #made with femc=0.3
-		#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
+		jethr = [33, 27, 21, 16, 14, 13] #made with femc=0.3
+		draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
+		#draw_bias_cent(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')
 
 		#jethr = [28, 23, 18, 12,  8,  7] #made with femc=0.3
 		#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp='maxj-medj')

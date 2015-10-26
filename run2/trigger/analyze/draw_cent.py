@@ -21,13 +21,13 @@ class NTFiles(object):
 		if os.path.isdir(self.basedir)==False:
 			print >> sys.stderr, '[w] basedir is not a directory:',self.basedir
 		self.files= [
-			#'default_emctrig_out_R_0.4_femc_0.3.root',
+			'default_emctrig_out_R_0.4_femc_0.3.root',
 			'default_emctrig_out_R_0.4_femc_1.0.root'
 			]
 
 	def _guess_dir(self):
 		sdirs = [
-			#'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
+			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Volumes/MP/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0',
@@ -79,10 +79,12 @@ def med_correl(fname, vary='medj', ntname = 'jets_hard_EMCc'):
 	    	        	    		ybwidth, ylow, yhigh,                          
             	    	        	title, modname)
 	tu.gList.append(h2all)
-	title = '{}_centrality: {}%-{}%'.format(var, 0, 100)
-	tc = du.canvas(title, title)
+	title = '{}_centrality: {}%-{}% {} {}'.format(var, 0, 100, ntname, vary)
+	tc = du.canvas(title, title, 600, 600)
 	tc.tcanvas.cd()
+	h2all.GetYaxis().SetTitleOffset(1.2)
 	h2all.Draw('colz')
+
 	du.draw_comment('centrality: {}%-{}%'.format(0, 100))
 	ROOT.gPad.SetLogz()
 	ROOT.gPad.Update()
@@ -102,9 +104,11 @@ def med_correl(fname, vary='medj', ntname = 'jets_hard_EMCc'):
             		    	        	title, modname)
 		h2allc.SetLineColor(2)
 		tu.gList.append(h2allc)
-		title = '{}_centrality: {}%-{}%'.format(var, cent.BinLow(ib), cent.BinHigh(ib))
-		tc = du.canvas(title, title)
+		title = '{}_centrality: {}%-{}% {} {}'.format(var, cent.BinLow(ib), cent.BinHigh(ib), ntname, vary)
+		title = to_file_name(title)
+		tc = du.canvas(title, title, 600, 600)
 		tc.tcanvas.cd()
+		h2all.GetYaxis().SetTitleOffset(1.2)
 		h2all.Draw('colz')
 		h2allc.Draw('cont2 same')
 		du.draw_comment('centrality: {}%-{}%'.format(cent.BinLow(ib), cent.BinHigh(ib)))
@@ -132,12 +136,14 @@ def max_med_correl(fname, varx='medj', vary='maxj', ntname = 'jets_hard_EMCc'):
     	       	        	      	xbwidth, xlow, xhigh, 
 	    	        	    		ybwidth, ylow, yhigh,                          
             	    	        	title, modname)
-	h2all.SetMinimum(1e-3)
+	#h2all.SetMinimum(1e-3)
 	tu.gList.append(h2all)
-	title = 'max_med_centrality: {}%-{}%'.format(0, 100)
-	tc = du.canvas(title, title)
+	title = 'max_med_centrality: {}%-{}% {} {}:{}'.format(0, 100, ntname, varx, vary)
+	tc = du.canvas(title, title, 600, 600)
 	tc.tcanvas.cd()
+	h2all.GetYaxis().SetTitleOffset(1.2)
 	h2all.Draw('colz')
+
 	du.draw_comment('centrality: {}%-{}%'.format(0, 100))
 	ROOT.gPad.SetLogz()
 	ROOT.gPad.Update()
@@ -156,12 +162,14 @@ def max_med_correl(fname, varx='medj', vary='maxj', ntname = 'jets_hard_EMCc'):
     		       	        	      	xbwidth, xlow, xhigh, 
 	    		        	    		ybwidth, ylow, yhigh,                          
             		    	        	title, modname)
-		h2allc.SetMinimum(1e-3)
+		#h2allc.SetMinimum(1e-3)
 		h2allc.SetLineColor(2)
 		tu.gList.append(h2allc)
-		title = 'max_med_centrality: {}%-{}%'.format(cent.BinLow(ib), cent.BinHigh(ib))
-		tc = du.canvas(title, title)
+		title = 'max_med_centrality: {}%-{}% {} {}:{}'.format(cent.BinLow(ib), cent.BinHigh(ib), ntname, varx, vary)
+		title = to_file_name(title)
+		tc = du.canvas(title, title, 600, 600)
 		tc.tcanvas.cd()
+		h2all.GetYaxis().SetTitleOffset(1.2)
 		h2all.Draw('colz')
 		h2allc.Draw('cont2 same')
 		du.draw_comment('centrality: {}%-{}%'.format(cent.BinLow(ib), cent.BinHigh(ib)))
@@ -180,15 +188,15 @@ if __name__ == '__main__':
 	ntfs  = NTFiles(bdir)
 	photons = False
 	femc = 0.3
-	femc = 1.0
+	#femc = 1.0
 	R=0.4
 	usercut='(1)'
 	cal='all'
 	var='pT'
 	fname = ntfs.get_file(femc, photons, R)
 
-	#med_correl(fname, 'medj')
-	#med_correl(fname, 'maxj')
+	med_correl(fname, 'medj')
+	med_correl(fname, 'maxj')
 	#med_correl(fname, 'maxj-medj')
 	max_med_correl(fname, 'medj', 'maxj')
 	#max_med_correl(fname, 'medj', 'pT + medj')
