@@ -254,6 +254,7 @@ AliGenFastModelingEvent *make_par_background(
 	//=============================================================================
 
 	TString sPathExpanded = gSystem->ExpandPathName(sPath);
+	cout << "[i] AliGenFME in path: " << sPathExpanded << endl;
 	if (gen->Init(sPathExpanded))
 	{
 		cerr << "[e] Init AliGenFastModelingEvent failed!" << endl
