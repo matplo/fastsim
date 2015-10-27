@@ -77,11 +77,32 @@ class Centrality(object):
 	def BinLow(self, ibin):
 		return self.table[ibin][-2]
 
+	def BinLowsE(self):
+		retval = []
+		for ibin in range(self.nbins()):
+			retval.append(self.BinCenter(ibin) - self.BinLow(ibin))
+		return retval
+
+	def BinHighsE(self):
+		retval = []
+		for ibin in range(self.nbins()):
+			retval.append(self.BinHigh(ibin) - self.BinCenter(ibin))
+		return retval
+
 	def BinHigh(self, ibin):
 		return self.table[ibin][-1]
 
 	def BinRange(self, ibin):
 		return [self.BinLow(ibin), self.BinHigh(ibin)]
+
+	def BinCenter(self, i):
+		return self.BinLow(i) + (self.BinHigh(i) - self.BinLow(i))/2.
+
+	def BinCenters(self):
+		retval = []
+		for i in range(self.nbins()):
+			retval.append(self.BinLow(i) + (self.BinHigh(i) - self.BinLow(i))/2.)
+		return retval
 
 	def BinPbPbNEvents(self, ibin, intLumi = 220. * 1.e6):
 		return intLumi * self.sigmaPbPb * self.BinWidth(ibin)

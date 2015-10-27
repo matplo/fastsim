@@ -44,12 +44,16 @@ class NTFiles(object):
 		if os.path.isdir(self.basedir)==False:
 			print >> sys.stderr, '[w] basedir is not a directory:',self.basedir
 		self.files= [
+			#'merged_R02.root',
 			'default_emctrig_out_R_0.4_femc_1.0.root',
 			'default_emctrig_out_R_0.4_femc_1.0.root'
 			]
 
 	def _guess_dir(self):
 		sdirs = [
+			#'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0/minbias',
+			#'/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc0.3',
+			'/Volumes/MP/data/run2/trigger/2015-10-26',
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Volumes/MP/data/run2/trigger/2015-10-23/5TeV/hardQCD',
@@ -85,6 +89,14 @@ class NTFiles(object):
 def to_file_name(s):
 	return "".join([x if x.isalnum() else "_" for x in s])
 
+class BinSetupPt(object):
+	def __init__(self):
+		self.bwidth = 10
+		self.xlow   = 0
+		self.xhigh  = 200
+
+gBinSetupPt = BinSetupPt()
+
 def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R=0.4):
 	ntuples = ['jets_hard_EMC', 'jets_hard_EMCc', 'jets_hard_DMCc']
 	if photons:
@@ -92,9 +104,9 @@ def get_pT(fname, photons=False, femc=0.1, var='pT', usercut='(1)', cal='all', R
 
 	cuts   = "(nEv==-1 && {})*(xsec)".format(usercut)
 
-	bwidth = 10
-	xlow   = 0
-	xhigh  = 300
+	bwidth = gBinSetupPt.bwidth
+	xlow   = gBinSetupPt.xlow
+	xhigh  = gBinSetupPt.xhigh
 
 	what = 'jets'
 	if photons:
@@ -181,19 +193,26 @@ def draw_bias(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[
 		newtitle = '{} : {} > {}'.format(centcuts, threxp, thr)
 		hl.add(hljc[0].obj, newtitle, 'hist l')
 
-	hlr = hl.ratio_to()
+	hlr = hl.ratio_to(0, 'l')
 	hlr.reset_axis_titles(var, 'ratio: {} cut / min. bias'.format(threxp))
 	hlr.make_canvas(w=600,h=600)
-	hlr.draw('hist l')
-	#hlj.self_legend(x1=0.25, x2=0.45)
-	hlr.self_legend(x1=0.48,y1=0.4,x2=0.72,y2=0.6)
+	hlr.draw(maxy=1.5)
+	hlr.self_legend(x1=0.35, x2=0.45)
+	if threxp=='maxg-medj/16.':
+		hlr.zoom_axis(0, 0, 200)
+	else:		
+		hlr.zoom_axis(0, 0, 200)		
+	#hlr.self_legend(x1=0.48,y1=0.4,x2=0.72,y2=0.6)
 	#ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()
 	hlr.update()
 	tu.gList.append(hlr)
 	if '--print' in sys.argv:
 		hlr.pdf()
 	if '--write' in sys.argv:
 		hlr.write_to_file()
+	return hlr
 
 def draw_bias_cent(fname, photons=False, femc=0.1, R=0.4, cal='all', var='pT', thrs=[0], threxp='maxj'):
 	if cal=='all':
@@ -333,7 +352,7 @@ def rejection_table(hl, rej = 1.e-3):
 				print '    ', h.GetTitle(), h.GetBinLowEdge(ib), h.GetBinContent(ib)
 				newtitle = '{} [{:.0e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
 				h.SetTitle(newtitle)
-				retvals.apepnd(h.GetBinLowEdge(ib))
+				retvals.append(h.GetBinLowEdge(ib))
 				break
 	return retvals
 
