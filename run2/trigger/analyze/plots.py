@@ -123,11 +123,16 @@ if __name__ == '__main__':
 
 		if '--je' in sys.argv:
 			var='maxj-medj'
-			draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
-			#var='JEmaxECAL-JEmedDCAL'
-			#draw_trigger_rates(fname, photons, femc, R, var, 'triggers', 'EMC')
+			#draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
+			##var='JEmaxECAL-JEmedDCAL'
+			##draw_trigger_rates(fname, photons, femc, R, var, 'triggers', 'EMC')
 			var='maxj-medj'
-			draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_DMCc', 'DMC')
+			#draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_DMCc', 'DMC')
+
+			var='medj'
+			draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
+			var='maxj'
+			draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
 
 		if '--ga' in sys.argv:
 			var='maxg-medj/16.'
@@ -142,29 +147,48 @@ if __name__ == '__main__':
 		femc = 0.3
 		fname = ntfs.get_file(femc, photons, R)
 
+		hls = dlist.ListStorage('biases')
+
 		if '--je' in sys.argv:
 			threxp = 'maxj-medj'
 			jethr = [33, 27, 21, 16, 14, 13] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
-			jethr = [28, 23, 18, 12, 8, 7] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
+			hl = draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
+			hls.append(hl)
+			#jethr = [28, 23, 18, 12, 8, 7] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
 
-			jethr = [32, 28, 21, 15, 12, 12] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
-			jethr = [27, 22, 17, 11, 8, 6] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
+			#jethr = [32, 28, 21, 15, 12, 12] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
+			#jethr = [27, 22, 17, 11, 8, 6] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
 
 		if '--ga' in sys.argv:
 			threxp = 'maxg-medj/16.'
 			jethr = [8, 8, 8, 8, 8, 8] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
-			jethr = [7, 6, 6, 5, 5, 5] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
+			hl = draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
+			hls.append(hl)
+			#jethr = [7, 6, 6, 5, 5, 5] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
 
-			jethr = [8, 8, 7, 7, 7, 7] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
-			jethr = [7, 6, 6, 5, 4, 4] #made with femc=0.3
-			draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
+			#jethr = [8, 8, 7, 7, 7, 7] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
+			#jethr = [7, 6, 6, 5, 4, 4] #made with femc=0.3
+			#draw_bias(fname, photons, femc, R, 'DMC', var, thrs=jethr, threxp=threxp)
+
+		hlc = dlist.dlist('compare_rej_{}'.format(R))
+		hlc.add(hls.lists[0].l[0].obj, 'central JE {}'.format(R), 'hist  l')
+		hlc.add(hls.lists[0].l[-1].obj,'periph. JE {}'.format(R), 'hist  l')
+		hlc.add(hls.lists[1].l[0].obj, 'central GA {}'.format(R), 'hist  l')
+		hlc.add(hls.lists[1].l[-1].obj,'periph. GA {}'.format(R), 'hist  l')
+
+		hlc.make_canvas(w=600,h=600)
+		hlc.draw(maxy=1.5)
+		hlc.self_legend(x1=0.35, x2=0.45)
+		ROOT.gPad.SetGridx()
+		ROOT.gPad.SetGridy()
+		hlc.update()
+		tu.gList.append(hlc)
+		hlc.pdf()
 
 	if '--thresholds' in sys.argv:
 			draw_thresholds('JE', True, noxe=True, dopt='l')

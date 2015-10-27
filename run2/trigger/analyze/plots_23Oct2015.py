@@ -53,8 +53,8 @@ class NTFiles(object):
 		sdirs = [
 			#'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0/minbias',
 			#'/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc0.3',
-			'/Volumes/MP/data/run2/trigger/2015-10-26',
-			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26',
+			#'/Volumes/MP/data/run2/trigger/2015-10-26',
+			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-26', #for the meeting on 27th
 			'/Volumes/SAMSUNG/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Volumes/MP/data/run2/trigger/2015-10-23/5TeV/hardQCD',
 			'/Users/ploskon/devel/sandbox/run2/trigger/generate/5TeV/hardQCD/mult-0',
@@ -428,6 +428,8 @@ if __name__ == '__main__':
 
 	ntfs  = NTFiles(bdir)
 	photons = False
+	if '--photons' in sys.argv:
+		photons=True
 	femc = 0.3
 	#femc = 1.0
 	R=0.4

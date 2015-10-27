@@ -83,10 +83,10 @@ def max_med_correl(fname, varx='medj', vary='maxj', ntname = 'jets_hard_EMCc'):
 	var = '{}:{}'.format(vary,varx)
 	xbwidth = 1
 	xlow = 0
-	xhigh = 100
+	xhigh = 50 #100
 	ybwidth = 1
 	ylow = 0
-	yhigh = 100
+	yhigh = 50 #100
 	cuts = '(1)*(xsec)'
 	#title = cuts + ';median {JE_{DCal_{i}}}; max {JE_{EMCal_{i}}}'
 	title = cuts + ';{};{}'.format(varx, vary)
@@ -200,7 +200,7 @@ if __name__ == '__main__':
 	##max_med_correl(fname, 'medj', 'pT + medj')
 	##max_med_correl(fname, 'maxj', 'pT+rho*0.5')
 
-	#max_med_correl(fname, 'JEmedDCAL', 'JEmaxECAL', 'triggers')
+	max_med_correl(fname, 'JEmedDCAL', 'JEmedECAL', 'triggers')
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()

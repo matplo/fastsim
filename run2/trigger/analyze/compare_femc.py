@@ -28,32 +28,53 @@ if __name__ == '__main__':
 	gBinSetupPt.bwidth = 15
 	gBinSetupPt.xhigh  = 210
 
+	localdir = '/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc-x'
+	localdir = '/Volumes/SAMSUNG/data/run2/trigger/2015-10-27/hardQCD'
+
 	if '--femc' in sys.argv:
 		hl = dlist.dlist('compare_femc')
-		for femc in [1.0, 0.7, 0.3]:
-			fname = '/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc-x/default_emctrig_out_R_0.4_femc_0.3.root'.replace('femc_0.3', 'femc_{:.1f}'.format(femc))
+		for femc in [1.0, 0.7, 0.3, -99]:
+			if femc > 0:
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femc_{:.1f}'.format(femc))
+			else:
+				femcs = 'E/DCal par. response'
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femcpar')
 			print fname
 			hlr = draw_bias(fname, photons, femc, R, 'EMC', var, thrs=jethr, threxp=threxp)
-			hl.add(hlr[0].obj, 'E/p={:.1f}'.format(femc), 'hist l')
+			if femc > 0:
+				hl.add(hlr[0].obj, 'E/p={:.1f}'.format(femc), 'hist l')
+			else:
+				hl.add(hlr[0].obj, 'E/p = EMCal param. response (GEANT)', 'hist l')
+				#hl.add(hlr[0].obj, 'E/p = EMCal param. response (GEANT)', 'serror noleg -k')
 		hl.make_canvas(600, 600)
 		hl.draw(maxy=1.2, miny=0)
-		hl.self_legend()
+		hl.reset_axis_titles('a-k_{T} R=0.4 jet p_{T}^{gen && visible} (GeV/c)')
+		hl.self_legend(1, 'maxj-medj > 33 GeV (10% central)', 0.47, 0.48, 0.7, 0.65)
 		ROOT.gPad.SetGridx()
 		ROOT.gPad.SetGridy()
 		hl.update()
+		if '--print' in sys.argv:
+			hl.pdf()
 
-	for femc in [1.0, 0.7, 0.3]:
-		fname = '/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc-x/default_emctrig_out_R_0.4_femc_0.3.root'.replace('femc_0.3', 'femc_{:.1f}'.format(femc))
-		med_correl(fname, 'maxj', maxy=50, centbins=False, modname='compare_femc-{:.1f}'.format(femc))
+	if '--rejections' in sys.argv:
+		for femc in [1.0, 0.7, 0.3, -99]:
+			if femc > 0:
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femc_{:.1f}'.format(femc))
+			else:
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femcpar')
+			med_correl(fname, 'maxj', maxy=50, centbins=False, modname='compare_femc-{:.1f}'.format(femc))
 
-	for femc in [1.0, 0.7, 0.3]:
-		fname = '/Users/ploskon/data/run2/2015-10-27/withmb-realbg-femc-x/default_emctrig_out_R_0.4_femc_0.3.root'.replace('femc_0.3', 'femc_{:.1f}'.format(femc))
-		var='medj'
-		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
-		var='maxj'
-		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
-		var='maxj-medj'
-		draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
+		for femc in [1.0, 0.7, 0.3, -99]:
+			if femc > 0:
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femc_{:.1f}'.format(femc))
+			else:
+				fname = '{}/default_emctrig_out_R_0.4_femc_0.3.root'.format(localdir).replace('femc_0.3', 'femcpar')
+			var='medj'
+			#draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
+			var='maxj'
+			#draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
+			var='maxj-medj'
+			draw_trigger_rates(fname, photons, femc, R, var, 'jets_hard_EMCc', 'EMC')
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()
