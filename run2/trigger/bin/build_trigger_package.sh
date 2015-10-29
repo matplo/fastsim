@@ -8,7 +8,7 @@ fi
 
 if [ -d $RUN2EMCTRIGGER ]; then
   cd $RUN2EMCTRIGGER
-  for pack in EmcalTriggerFast AliGenFME/src EMCpidPar/src toymcpy8/src 
+  for pack in EmcalTriggerFast AliGenFME/src EMCpidPar/src R2Util/src toymcpy8/src 
   do
     bdir=$RUN2EMCTRIGGER/.build/$pack
     [ "$1" == "realclean" ] && rm -rf $bdir
