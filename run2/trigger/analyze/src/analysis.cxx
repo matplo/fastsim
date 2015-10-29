@@ -85,14 +85,14 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname)
 	std::vector<TLorentzVector> &jets = *pjets;
 
 	Long64_t nbytes = 0, nb = 0;
-	for (Long64_t jentry = 0; jentry < 10; jentry++)
+	for (Long64_t jentry = 0; jentry < nentries; jentry++)
 	{
 		Long64_t ientry = LoadTree(jentry);
 		if (ientry < 0) break;
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
 		// if (Cut(ientry) < 0) continue;
 
-		cout << jets.size() << endl;
+		//cout << jets.size() << endl;
 
 		if (ientry % 1000 == 0)
 			cout << ientry << " of " << nentries << endl;
