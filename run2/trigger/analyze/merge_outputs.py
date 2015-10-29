@@ -47,7 +47,12 @@ def main(spath='.'):
         'default_emctrig_out_R_0.2_femc_1.0.root',
         'default_emctrig_out_R_0.2_femc_0.1.root',
         'default_emctrig_out_R_0.4_femc_1.0.root',
-        'default_emctrig_out_R_0.4_femc_0.1.root'
+        'default_emctrig_out_R_0.4_femc_0.1.root',
+        'default_emctrig_out_R_0.2_femc_0.3.root',
+        'default_emctrig_out_R_0.4_femc_0.3.root',
+        'default_emctrig_out_R_0.2_femc_0.7.root',
+        'default_emctrig_out_R_0.4_femc_0.7.root',
+        'default_emctrig_out_R_0.4_femcpar.root'
         ]
             
     prod_dir = spath

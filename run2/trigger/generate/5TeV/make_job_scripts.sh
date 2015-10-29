@@ -35,7 +35,7 @@ function write_script
         newdir="./photons/mult-$4/bin-$1-$2"
     fi
     minbias=false
-    if [ $1=="0" ]; then
+    if [ $1 == "0" ]; then
         minbias=true
         newdir="./hardQCD/mult-$4/minbias"
     fi
