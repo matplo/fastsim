@@ -52,7 +52,8 @@ def main(spath='.'):
         'default_emctrig_out_R_0.4_femc_0.3.root',
         'default_emctrig_out_R_0.2_femc_0.7.root',
         'default_emctrig_out_R_0.4_femc_0.7.root',
-        'default_emctrig_out_R_0.4_femcpar.root'
+        'default_emctrig_out_R_0.4_femcpar.root',
+        'tree-default_emctrig_out_R_0.4_femcpar.root'
         ]
             
     prod_dir = spath
@@ -64,7 +65,7 @@ def main(spath='.'):
         print '---', outfname,vo
         files_to_merge = []
         for f in files:
-            if vo in f:
+            if vo == os.path.basename(f):
                 files_to_merge.append(f)
         if len(files_to_merge) > 1:
             cmnd = 'hadd -f {} {}'.format(outfname, ' '.join(files_to_merge))
