@@ -6,6 +6,8 @@
 
 #include <Rtypes.h>
 
+#include "rstructures.h"
+
 class TFile;
 class TTree;
 class EMPartResp;
@@ -13,20 +15,6 @@ class AliGenFastModelingEvent;
 //class Pythia8::Pythia;
 class TriggerMaker;
 class RawPatch;
-
-struct TriggerInfo
-{
-	Double_t maxjECAL, maxjDCAL, maxgECAL, maxgDCAL;
-	Double_t medjECAL, medjDCAL, medgECAL, medgDCAL;
-};
-
-struct Header
-{
-	Double_t xsec;
-	Double_t cent;
-	Double_t rho;
-	Double_t sigma;
-};
 
 class REvent
 {
