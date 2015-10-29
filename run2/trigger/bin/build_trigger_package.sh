@@ -28,7 +28,7 @@ if [ -d $RUN2EMCTRIGGER ]; then
     fi
     mkdir -p $bdir
     cd $bdir
-    debug="Release"
+    debug="-DCMAKE_BUILD_TYPE=Release"
     #cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
     is_arg_set "debug" && debug=-DCMAKE_BUILD_TYPE=Debug
     cmake -DCMAKE_INSTALL_PREFIX=$RUN2EMCTRIGGER $debug $RUN2EMCTRIGGER/$pack

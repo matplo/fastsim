@@ -41,7 +41,7 @@ namespace py = Pythia8;
 
 int emctrig_par_revent( int argc, char *argv[])
 {
-        gSystem->Load("libR2Util"); // this is needed on ubuntu but not on mac os x (?)
+	gSystem->Load("libR2Util"); // this is needed on ubuntu but not on mac os x (?)
 	cout << "[i] This is emctrig_par ." << endl;
 	int verbosity = 0;
 	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
@@ -66,7 +66,7 @@ int emctrig_par_revent( int argc, char *argv[])
 	{
 		R = strtod(SysUtil::getArg("-R", argc, argv), 0);
 	}
-	cout << "[i] Primary R parameter set to : " << R << " and the secondary : " << R/2. << endl;
+	cout << "[i] Primary R parameter set to : " << R << " and the secondary : " << R / 2. << endl;
 	outputFname.ReplaceAll(".root", TString::Format("_R_%1.1f.root", R));
 
 	Double_t EMCalTotal2EMfactor = 1.0;
@@ -342,7 +342,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		vector <fj::PseudoJet> inclusive_jets_hard = clust_seq_hard.inclusive_jets(pTMin);
 		vector <fj::PseudoJet> sorted_jets_hard    = fj::sorted_by_pt(inclusive_jets_hard);
 
-		fj::JetDefinition jet_def_hard_r(fj::genkt_algorithm, R/2., power); // this is for signal - anti-kT
+		fj::JetDefinition jet_def_hard_r(fj::genkt_algorithm, R / 2., power); // this is for signal - anti-kT
 		fj::ClusterSequence clust_seq_hard_r(py_hard_event, jet_def_hard_r);
 		vector <fj::PseudoJet> inclusive_jets_hard_r = clust_seq_hard_r.inclusive_jets(pTMin);
 		vector <fj::PseudoJet> sorted_jets_hard_r    = fj::sorted_by_pt(inclusive_jets_hard_r);
@@ -500,7 +500,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		tm_bg.FindPatches();
 
 		std::vector <fj::PseudoJet> ej;
-		std::vector <fj::PseudoJet> dj;		
+		std::vector <fj::PseudoJet> dj;
 		for (unsigned int i = 0; i < sorted_jets_hard.size(); i++)
 		{
 			phi = sorted_jets_hard[i].phi_02pi();
@@ -512,7 +512,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		}
 
 		std::vector <fj::PseudoJet> ej_r;
-		std::vector <fj::PseudoJet> dj_r;		
+		std::vector <fj::PseudoJet> dj_r;
 		for (unsigned int i = 0; i < sorted_jets_hard_r.size(); i++)
 		{
 			phi = sorted_jets_hard_r[i].phi_02pi();
@@ -538,7 +538,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		}
 
 		std::vector <fj::PseudoJet> eg;
-		std::vector <fj::PseudoJet> dg;		
+		std::vector <fj::PseudoJet> dg;
 		for (unsigned int i = 0; i < photons.size(); i++)
 		{
 			phi = photons[i].phi_02pi();
