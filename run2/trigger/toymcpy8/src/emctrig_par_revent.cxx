@@ -65,7 +65,7 @@ int emctrig_par_revent( int argc, char *argv[])
 	{
 		R = strtod(SysUtil::getArg("-R", argc, argv), 0);
 	}
-	cout << "[i] R parameter set to : " << R << endl;
+	cout << "[i] Primary R parameter set to : " << R << " and the secondary : " << R/2. << endl;
 	outputFname.ReplaceAll(".root", TString::Format("_R_%1.1f.root", R));
 
 	Double_t EMCalTotal2EMfactor = 1.0;
@@ -152,7 +152,9 @@ int emctrig_par_revent( int argc, char *argv[])
 	//ROOT IO
 	// for the root IO...
 	REvent revent;
-	revent.Init("tree_output.root");
+	TString outputFnameTree = "tree-";
+	outputFnameTree += outputFname;
+	revent.Init(outputFnameTree.Data());
 
 	TFile *fout = new TFile (outputFname.Data(), "RECREATE");
 	fout->cd();
@@ -339,6 +341,11 @@ int emctrig_par_revent( int argc, char *argv[])
 		vector <fj::PseudoJet> inclusive_jets_hard = clust_seq_hard.inclusive_jets(pTMin);
 		vector <fj::PseudoJet> sorted_jets_hard    = fj::sorted_by_pt(inclusive_jets_hard);
 
+		fj::JetDefinition jet_def_hard_r(fj::genkt_algorithm, R/2., power); // this is for signal - anti-kT
+		fj::ClusterSequence clust_seq_hard_r(py_hard_event, jet_def_hard_r);
+		vector <fj::PseudoJet> inclusive_jets_hard_r = clust_seq_hard_r.inclusive_jets(pTMin);
+		vector <fj::PseudoJet> sorted_jets_hard_r    = fj::sorted_by_pt(inclusive_jets_hard_r);
+
 		// ------------- now with background
 		fj::JetDefinition jet_def_full(fj::antikt_algorithm, R);
 		fj::GhostedAreaSpec area_spec(ghost_maxrap);
@@ -503,6 +510,18 @@ int emctrig_par_revent( int argc, char *argv[])
 				dj.push_back(sorted_jets_hard[i]);
 		}
 
+		std::vector <fj::PseudoJet> ej_r;
+		std::vector <fj::PseudoJet> dj_r;		
+		for (unsigned int i = 0; i < sorted_jets_hard_r.size(); i++)
+		{
+			phi = sorted_jets_hard_r[i].phi_02pi();
+			eta = sorted_jets_hard_r[i].eta();
+			if (emcalmapping.IsEMCAL(eta, phi))
+				ej_r.push_back(sorted_jets_hard_r[i]);
+			if (emcalmapping.IsDCALPHOS(eta, phi))
+				dj_r.push_back(sorted_jets_hard_r[i]);
+		}
+
 		// PHOTONS
 		vector<fj::PseudoJet> photons;
 		if (info.code() > 200)
@@ -588,6 +607,10 @@ int emctrig_par_revent( int argc, char *argv[])
 		revent.FillBranch("jf", full_jets);
 		revent.FillBranch("jE", ej);
 		revent.FillBranch("jD", dj);
+
+		revent.FillBranch("jr",  sorted_jets_hard_r);
+		revent.FillBranch("jEr", ej_r);
+		revent.FillBranch("jDr", dj_r);
 
 		revent.FillBranch("g",  photons);
 		revent.FillBranch("gE", eg);
