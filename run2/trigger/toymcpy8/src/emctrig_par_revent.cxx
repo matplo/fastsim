@@ -39,7 +39,7 @@ namespace py = Pythia8;
 
 #include "revent.h"
 
-int emctrig_par( int argc, char *argv[])
+int emctrig_par_revent( int argc, char *argv[])
 {
 	cout << "[i] This is emctrig_par ." << endl;
 	int verbosity = 0;
@@ -158,29 +158,10 @@ int emctrig_par( int argc, char *argv[])
 	fout->cd();
 
 	// remember to create the ntuples and histograms within the file
-	TNtuple *tnj_hard_EMC   = new TNtuple("jets_hard_EMC",  "jets_hard_EMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_DMC   = new TNtuple("jets_hard_DMC",  "jets_hard_DMC",  "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_EMCc  = new TNtuple("jets_hard_EMCc", "jets_hard_EMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_hard_DMCc  = new TNtuple("jets_hard_DMCc", "jets_hard_DMCc", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart:maxj:maxg:medj:medg");
-
-	TNtuple *tnpatch        = new TNtuple("triggers", "triggers", "xsec:npart:rho:JEmaxECAL:JEmaxDCAL:GAmaxECAL:GAmaxDCAL:JEmedECAL:JEmedDCAL:GAmedECAL:GAmedDCAL:JEmedECALbg:JEmedDCALbg:GAmedECALbg:GAmedDCALbg");
-	TNtuple *tnpatch_bg     = new TNtuple("triggers_bg", "triggers_bg", "xsec:npart:rho:JEmaxECAL:JEmaxDCAL:GAmaxECAL:GAmaxDCAL:JEmedECAL:JEmedDCAL:GAmedECAL:GAmedDCAL");
-
-	TNtuple *tnj_full       = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
-	TNtuple *tnp            = new TNtuple("p", "p", "nEv:xsec:ispy:pT:eta:phi");
-	TNtuple *tncl           = new TNtuple("cl", "cl", "nEv:xsec:ispy:pT:eta:phi");
-
-	TNtuple *tnj_photon_ALL = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_photon_EMC = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-	TNtuple *tnj_photon_DMC = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-
 	TH1F *thnef             = new TH1F("thnef", "thnef;NEF;counts", 100, 0, 1);
 	TH1F *thnefw            = new TH1F("thnefw", "thnefw;NEF;counts x xsec", 100, 0, 1);
-
 	TH2F *hbgcl				= new TH2F("hbgcl", "hbgcl;#eta;#phi", 100, -1, 1, 360, 0, TMath::Pi() * 2.);
-
 	TH2F *hcentmult			= new TH2F("hcentmult", "hcentmult;cent;mult", 100, 0, 100, 5000, 0, 5000);
-
 	TH2F *heop              = new TH2F("heop", "heop;p;E/p", 100, 0, 100, 10, 0, 10);
 
 	double lead_pT        = 0;
@@ -189,6 +170,15 @@ int emctrig_par( int argc, char *argv[])
 
 	TriggerMappingEmcalSimple emcalmapping;
 	int nRejectedEvents = 0;
+
+	std::vector <fj::PseudoJet> py_hard_event; // signal from pythia
+	std::vector <fj::PseudoJet> bg_event_all; // boltzman background
+	std::vector <fj::PseudoJet> bg_event_tracks; // boltzman background
+	std::vector <fj::PseudoJet> bg_event_clusters; // boltzman background
+	std::vector <fj::PseudoJet> bg_event_clusters_ecal; // boltzman background
+	std::vector <fj::PseudoJet> bg_event_clusters_dcal; // boltzman background
+	std::vector <fj::PseudoJet> full_event; //signal+background
+
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
 		clock_t befGen = clock();
@@ -205,13 +195,6 @@ int emctrig_par( int argc, char *argv[])
 				nRejectedEvents++;
 				continue;
 			}
-			//if ( (event[5].pT() < minpThat / 2.) && (event[6].pT() < minpThat / 2.) )
-			//{
-			//	iEvent--;
-			//	nRejectedEvents++;
-			//	continue;
-			//}
-
 		}
 
 		if (iEvent % 100 == 0)
@@ -219,28 +202,14 @@ int emctrig_par( int argc, char *argv[])
 			cout << "[info] event #" << iEvent << " rejected #" << nRejectedEvents << endl;
 		}
 
-		tnj_hard_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-		tnj_hard_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-		tnj_hard_EMCc->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-		tnj_hard_DMCc->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-
-		tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
-		tnp->Fill(iEvent, xsec, -1, -1, -9.9, -99);
-		tncl->Fill(iEvent, xsec, -1, -1, -9.9, -99);
-
-		tnj_photon_ALL->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
-		tnj_photon_EMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
-		tnj_photon_DMC->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1);
-
 		// Begin FastJet analysis: extract particles from event record.
-
-		std::vector <fj::PseudoJet> py_hard_event; // signal from pythia
-		std::vector <fj::PseudoJet> bg_event_all; // boltzman background
-		std::vector <fj::PseudoJet> bg_event_tracks; // boltzman background
-		std::vector <fj::PseudoJet> bg_event_clusters; // boltzman background
-		std::vector <fj::PseudoJet> bg_event_clusters_ecal; // boltzman background
-		std::vector <fj::PseudoJet> bg_event_clusters_dcal; // boltzman background
-		std::vector <fj::PseudoJet> full_event; //signal+background
+		py_hard_event.clear(); // signal from pythia
+		bg_event_all.clear(); // boltzman background
+		bg_event_tracks.clear(); // boltzman background
+		bg_event_clusters.clear(); // boltzman background
+		bg_event_clusters_ecal.clear(); // boltzman background
+		bg_event_clusters_dcal.clear(); // boltzman background
+		full_event.clear(); //signal+background
 
 		py::Vec4   pTemp;
 		double mTemp;
@@ -292,12 +261,9 @@ int emctrig_par( int argc, char *argv[])
 				// Conversion to PseudoJet is performed automatically
 				// with the help of the code in FastJet3.h.
 				py_hard_event.push_back( particleTemp );
-				tnp->Fill(     -1, xsec, 1, particleTemp.perp(), particleTemp.eta(), particleTemp.phi_02pi() );
 				++nAnalyze;
 			} // for the final particles
 		}// end particle loop within the event
-
-		revent.FillBranch("p",  py_hard_event);
 
 		thnef->Fill(1.* nneutral / py_hard_event.size());
 		thnefw->Fill(1.* nneutral / py_hard_event.size(), xsec);
@@ -354,13 +320,6 @@ int emctrig_par( int argc, char *argv[])
 			fj::PseudoJet v = bg_event_tracks[ibg];
 			v.set_user_index(GenerUtil::gpyParticleOffset + ibg);
 			full_event.push_back(v); //adding only charged tracks to the jet
-			tnp->Fill(     -1, xsec, 0, v.perp(), v.eta(), v.phi_02pi() );
-		}
-
-		for (unsigned int ibg = 0; ibg < bg_event_clusters.size(); ibg++)
-		{
-			fj::PseudoJet v = bg_event_clusters[ibg];
-			tncl->Fill(     -1, xsec, 0, v.perp(), v.eta(), v.phi_02pi() );
 		}
 
 		if (verbosity > 7)
@@ -532,10 +491,6 @@ int emctrig_par( int argc, char *argv[])
 		tm.FindPatches();
 		tm_bg.FindPatches();
 
-		revent.SetPythia(&pythia);
-		revent.SetBackground(pResp);
-		revent.SetEMCresponse(EMCresponse);
-
 		std::vector <fj::PseudoJet> ej;
 		std::vector <fj::PseudoJet> dj;		
 		for (unsigned int i = 0; i < sorted_jets_hard.size(); i++)
@@ -547,33 +502,6 @@ int emctrig_par( int argc, char *argv[])
 			if (emcalmapping.IsDCALPHOS(eta, phi))
 				dj.push_back(sorted_jets_hard[i]);
 		}
-
-		Header head;
-		head.rho   = bkgd_estimator.rho();
-		head.sigma = bkgd_estimator.sigma();
-		revent.FillTrigger("tg", &tm);
-		revent.FillTrigger("tgbg", &tm_bg);
-		revent.FillHeader("hd", &head);
-		revent.FillBranch("j",  sorted_jets_hard);
-		revent.FillBranch("jf", full_jets);
-		revent.FillBranch("jE", ej);
-		revent.FillBranch("jD", dj);
-
-		tnpatch->Fill(xsec,
-		              bg_event_centrality, rho,
-		              tm.GetMaxJetEMCAL().GetADC(), 	tm.GetMaxJetDCALPHOS().GetADC(),
-		              tm.GetMaxGammaEMCAL().GetADC(), 	tm.GetMaxGammaDCALPHOS().GetADC(),
-		              tm.GetMedianJetEMCAL(), 			tm.GetMedianJetDCALPHOS(),
-		              tm.GetMedianGammaEMCAL(), 		tm.GetMedianGammaDCALPHOS(),
-		              tm_bg.GetMedianJetEMCAL(), 		tm_bg.GetMedianJetDCALPHOS(),
-		              tm_bg.GetMedianGammaEMCAL(), 		tm_bg.GetMedianGammaDCALPHOS());
-
-		tnpatch_bg->Fill(xsec,
-		                 bg_event_centrality, rho,
-		                 tm_bg.GetMaxJetEMCAL().GetADC(), 		tm_bg.GetMaxJetDCALPHOS().GetADC(),
-		                 tm_bg.GetMaxGammaEMCAL().GetADC(), 	tm_bg.GetMaxGammaDCALPHOS().GetADC(),
-		                 tm_bg.GetMedianJetEMCAL(), 			tm_bg.GetMedianJetDCALPHOS(),
-		                 tm_bg.GetMedianGammaEMCAL(), 			tm_bg.GetMedianGammaDCALPHOS());
 
 		// PHOTONS
 		vector<fj::PseudoJet> photons;
@@ -588,21 +516,6 @@ int emctrig_par( int argc, char *argv[])
 				}
 			}
 		}
-		//TNtuple *tnj_photon_ALL    = new TNtuple("tnj_photon_ALL",  "tnj_photon_ALL",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-		//TNtuple *tnj_photon_EMC    = new TNtuple("tnj_photon_EMC",  "tnj_photon_EMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-		//TNtuple *tnj_photon_DMC    = new TNtuple("tnj_photon_DMC",  "tnj_photon_DMC",  "nEv:xsec:pT:eta:phi:rho:sigma:npart:maxj:maxg:medj:medg");
-		for (int ig = 0; ig < photons.size(); ig++)
-		{
-			eta = photons[ig].eta();
-			phi = photons[ig].phi_02pi();
-			pt  = photons[ig].perp();
-			tnj_photon_ALL->Fill(-1, xsec, pt, eta, phi, rho, sigma, bg_event_centrality, tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), 0, 0);
-			if (emcalmapping.IsEMCAL(eta, phi))
-				tnj_photon_EMC->Fill(-1, xsec, pt, eta, phi, rho, sigma, bg_event_centrality, tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
-			if (emcalmapping.IsDCALPHOS(eta, phi))
-				tnj_photon_DMC->Fill(-1, xsec, pt, eta, phi, rho, sigma, bg_event_centrality, tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
-		}
-		// END PHOTONS
 
 		std::vector <fj::PseudoJet> eg;
 		std::vector <fj::PseudoJet> dg;		
@@ -616,9 +529,7 @@ int emctrig_par( int argc, char *argv[])
 				dg.push_back(photons[i]);
 		}
 
-		revent.FillBranch("g",  photons);
-		revent.FillBranch("gE", eg);
-		revent.FillBranch("gD", dg);
+		// END PHOTONS
 
 
 		if (verbosity > 8)
@@ -657,114 +568,30 @@ int emctrig_par( int argc, char *argv[])
 		//
 		// ----------------------------------------------------
 
-		unsigned int idx = 0;
-		// Fill inclusive FastJet jets from the pythia+bg event
-		for (unsigned int i = 0; i < full_jets.size(); i++)
-		{
-			// re-apply the pt cut
-			//if (subtracted_jets_full[i].perp2() >= pTMin*pTMin)
-			if (1) // take any! jet - see what happens?
-			{
-				if (verbosity > 9)
-				{
-					printf("%5u %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f %15.8f\n", idx,
-					       full_jets[i].rap(), full_jets[i].phi_02pi(), full_jets[i].perp(),
-					       full_jets[i].area(),
-					       subtracted_jets_full[i].rap(), subtracted_jets_full[i].phi_02pi(),
-					       subtracted_jets_full[i].perp());
-				}
+		Header head;
+		head.rho   = bkgd_estimator.rho();
+		head.sigma = bkgd_estimator.sigma();
 
-				vector<fj::PseudoJet> constituents = subtracted_jets_full[i].constituents();
-				lead_pT = fj::SelectorNHardest(1)(constituents)[0].perp();
-				matched_pT = 0;
-				matched_pT_tmp = 0;
-				for (int j = 0; j < int(sorted_jets_hard.size()); ++j)
-				{
-					matched_pT_tmp = GenerUtil::pt_matched(sorted_jets_hard[j], subtracted_jets_full[i]);
-					if ((matched_pT_tmp > sorted_jets_hard[j].perp() / 2.) && (matched_pT_tmp > matched_pT))
-					{
-						matched_pT = sorted_jets_hard[j].perp();
-					}
-				}
-				double area  = full_jets[i].area();
-				double pTraw = full_jets[i].perp();
+		revent.SetPythia(&pythia);
+		revent.SetBackground(pResp);
+		revent.SetEMCresponse(EMCresponse);
+		revent.FillHeader("hd", &head);
 
-				//pt  = sorted_jets_hard[i].perp();
-				pt  = full_jets[i].perp();
-				phi = full_jets[i].phi_02pi();
-				eta = full_jets[i].eta();
+		revent.FillBranch("p",  py_hard_event);
+		revent.FillBranch("bgcl", bg_event_clusters);
+		revent.FillBranch("bgtrk", bg_event_tracks);
 
-				// note we do not use: - which are! different from inclusive!
-				// subtracted_jets_full[i].perp(),
-				// subtracted_jets_full[i].eta(),
-				// subtracted_jets_full[i].phi(),
+		revent.FillTrigger("tg", &tm);
+		revent.FillTrigger("tgbg", &tm_bg);
 
-				//if (subtracted_jets_full[i].perp2() <= pTMin * pTMin)
-				//{
-				//	pt = 0.;
-				//	//cout << subtracted_jets_full[i].eta() << " " << full_jets[i].eta() << endl;
-				//}
+		revent.FillBranch("j",  sorted_jets_hard);
+		revent.FillBranch("jf", full_jets);
+		revent.FillBranch("jE", ej);
+		revent.FillBranch("jD", dj);
 
-				//"nEv:xsec:pT:eta:phi:lead:pTmatched:area:rho:sigma:npart");
-				tnj_full->Fill(     -1, xsec,
-				                    pt, eta, phi,
-				                    lead_pT, matched_pT,
-				                    area, rho, sigma, bg_event_centrality);
-				idx++;
-			}
-		}
-
-		// Fill inclusive FastJet jet from the pythia event - hard event
-		for (unsigned int i = 0; i < sorted_jets_hard.size(); i++)
-		{
-			pt  = sorted_jets_hard[i].perp();
-			phi = sorted_jets_hard[i].phi_02pi();
-			eta = sorted_jets_hard[i].eta();
-
-			vector<fj::PseudoJet> constituents = sorted_jets_hard[i].constituents();
-			lead_pT = fj::SelectorNHardest(1)(constituents)[0].perp();
-			matched_pT = 0;
-			matched_pT_tmp = 0;
-			double matched_area  = -1;
-			double matched_pTraw = -1;
-			for (int j = 0; j < int(subtracted_jets_full.size()); ++j)
-			{
-				matched_pT_tmp = GenerUtil::pt_matched(sorted_jets_hard[i], subtracted_jets_full[j]);
-				if ((matched_pT_tmp > sorted_jets_hard[i].perp() / 2.) && (matched_pT_tmp > matched_pT))
-				{
-					matched_pT    = subtracted_jets_full[j].perp();
-					matched_area  = full_jets[j].area();
-					matched_pTraw = full_jets[j].perp();
-				}
-			}
-			tnj_hard_EMC->Fill(     -1, xsec,
-			                        pt, eta, phi,
-			                        lead_pT,
-			                        matched_pTraw, matched_area, rho, sigma,
-			                        bg_event_centrality,
-			                        tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
-			if (emcalmapping.IsEMCAL(eta, phi))
-				tnj_hard_EMCc->Fill(     -1, xsec,
-				                         pt, eta, phi,
-				                         lead_pT,
-				                         matched_pTraw, matched_area, rho, sigma,
-				                         bg_event_centrality,
-				                         tm.GetMaxJetEMCAL().GetADC(), tm.GetMaxGammaEMCAL().GetADC(), tm.GetMedianJetDCALPHOS(), tm.GetMedianGammaDCALPHOS());
-
-			tnj_hard_DMC->Fill(     -1, xsec,
-			                        pt, eta, phi,
-			                        lead_pT,
-			                        matched_pTraw, matched_area, rho, sigma,
-			                        bg_event_centrality,
-			                        tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
-			if (emcalmapping.IsDCALPHOS(eta, phi))
-				tnj_hard_DMCc->Fill(     -1, xsec,
-				                         pt, eta, phi,
-				                         lead_pT,
-				                         matched_pTraw, matched_area, rho, sigma,
-				                         bg_event_centrality,
-				                         tm.GetMaxJetDCALPHOS().GetADC(), tm.GetMaxGammaDCALPHOS().GetADC(), tm.GetMedianJetEMCAL(), tm.GetMedianGammaEMCAL());
-		}
+		revent.FillBranch("g",  photons);
+		revent.FillBranch("gE", eg);
+		revent.FillBranch("gD", dg);
 
 		revent.FinishEvent();
 	} // end of event loop
