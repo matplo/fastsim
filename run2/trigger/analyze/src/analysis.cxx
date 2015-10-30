@@ -5,6 +5,7 @@
 #include <TTree.h>
 #include <TBranch.h>
 #include <TH2F.h>
+#include <TH3F.h>
 
 #include <iostream>
 using namespace std;
@@ -78,8 +79,50 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 {
 	TFile *fout = new TFile(foutname, "RECREATE");
 	fout->cd();
-	TH2F *hptcentn = new TH2F("hptcentn", "hptcentn", 300, 0, 300, 100, 0, 100);
-	TH2F *hptcentw = new TH2F("hptcentw", "hptcentw", 300, 0, 300, 100, 0, 100);
+
+	Double_t maxpt   	= 300;
+	Int_t    nptbins 	= 300;
+	
+	TH1F *hNev          = new TH1F("hNev",   "hNev", 	10, 0, 10);
+	TH1F *hCentn        = new TH1F("hCentn", "hCentn", 100, 0, 100);
+	TH1F *hCentw        = new TH1F("hCentw", "hCentw", 100, 0, 100);
+	
+	TH1F *hEptn         = new TH1F("hEptn", 			"hEptn", nptbins, 0, maxpt);
+	TH1F *hEptw         = new TH1F("hEptw", 			"hEptw", nptbins, 0, maxpt);	
+	TH2F *hEptcentn     = new TH2F("hEptcentn", 		"hEptcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEptcentw     = new TH2F("hEptcentw", 		"hEptcentw", nptbins, 0, maxpt, 100, 0, 100);	
+	TH3F *hEptcentmedjn = new TH3F("hEptcentmedjn", 	"hEptcentmedjn;pt;cent;med JE DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmedjw = new TH3F("hEptcentmedjw", 	"hEptcentmedjw;pt;cent;med JE DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmaxjn = new TH3F("hEptcentmaxjn", 	"hEptcentmaxjn;pt;cent;max JE DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmaxjw = new TH3F("hEptcentmaxjw", 	"hEptcentmaxjw;pt;cent;max JE DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmedgn = new TH3F("hEptcentmedgn", 	"hEptcentmedgn;pt;cent;med GA DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmedgw = new TH3F("hEptcentmedgw", 	"hEptcentmedgw;pt;cent;med GA DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmaxgn = new TH3F("hEptcentmaxgn", 	"hEptcentmaxgn;pt;cent;max GA DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hEptcentmaxgw = new TH3F("hEptcentmaxgw", 	"hEptcentmaxgw;pt;cent;max GA DCAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	
+	TH1F *hDptn         = new TH1F("hDptn", 			"hDptn", nptbins, 0, maxpt);
+	TH1F *hDptw         = new TH1F("hDptw", 			"hDptw", nptbins, 0, maxpt);	
+	TH2F *hDptcentn     = new TH2F("hDptcentn", 		"hDptcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDptcentw     = new TH2F("hDptcentw", 		"hDptcentw", nptbins, 0, maxpt, 100, 0, 100);	
+	TH3F *hDptcentmedjn = new TH3F("hDptcentmedjn", 	"hDptcentmedjn;pt;cent;med JE ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmedjw = new TH3F("hDptcentmedjw", 	"hDptcentmedjw;pt;cent;med JE ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmaxjn = new TH3F("hDptcentmaxjn", 	"hDptcentmaxjn;pt;cent;max JE ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmaxjw = new TH3F("hDptcentmaxjw", 	"hDptcentmaxjw;pt;cent;max JE ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmedgn = new TH3F("hDptcentmedgn", 	"hDptcentmedgn;pt;cent;med GA ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmedgw = new TH3F("hDptcentmedgw", 	"hDptcentmedgw;pt;cent;med GA ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmaxgn = new TH3F("hDptcentmaxgn", 	"hDptcentmaxgn;pt;cent;max GA ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	TH3F *hDptcentmaxgw = new TH3F("hDptcentmaxgw", 	"hDptcentmaxgw;pt;cent;max GA ECAL", nptbins, 0, maxpt, 100, 0, 100, nptbins, 0, maxpt);
+	
+	TH2F *hEJEcentn     = new TH2F("hEJEcentn", "hEJEcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEJEcentw     = new TH2F("hEJEcentw", "hEJEcentw", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEGAcentn     = new TH2F("hEGAcentn", "hEGAcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEGAcentw     = new TH2F("hEGAcentw", "hEGAcentw", nptbins, 0, maxpt, 100, 0, 100);
+	
+	TH2F *hDJEcentn     = new TH2F("hDJEcentn", "hDJEcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDJEcentw     = new TH2F("hDJEcentw", "hDJEcentw", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDGAcentn     = new TH2F("hDGAcentn", "hDGAcentn", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDGAcentw     = new TH2F("hDGAcentw", "hDGAcentw", nptbins, 0, maxpt, 100, 0, 100);
+
 
 	TFile *fin = new TFile(fname);
 	cout << "[i] Open file: " << fname << " at " << fin << endl;
@@ -106,6 +149,11 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	std::vector<TLorentzVector> *ptgDGA = 0;
 
 	//fChain->SetBranchStatus("*", kFALSE);
+	fChain->SetBranchStatus("p", kFALSE);
+	fChain->SetBranchStatus("bgcl", kFALSE);
+	fChain->SetBranchStatus("bgtrk", kFALSE);
+	fChain->SetBranchStatus("j", kFALSE);
+	fChain->SetBranchStatus("jf", kFALSE);
 
 	GetBranch("hd", 	&hd.xsec);
 	GetBranch("tg", 	&tg.maxjECAL);
@@ -130,23 +178,69 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		nb = fChain->GetEntry(jentry);   nbytes += nb;
 		// if (Cut(ientry) < 0) continue;
 		if (jentry % 1000 == 0 && jentry > 0)
-		{
-			//printf("    %lld of %lld \n", jentry, nentries);
 			cout << "    " << jentry << " of " << nentries << endl;
-		}
+
+		hNev->Fill(0.1);
+		hNev->Fill(1.1, hd.xsec);
+
+		hCentn->Fill(hd.cent);
+		hCentw->Fill(hd.cent, hd.xsec);
+
+		// jE
 		for (std::vector<TLorentzVector>::iterator i = pjE->begin(); i != pjE->end(); ++i)
 		{
-			cout << "    " << " " << i->Pt() << " " << hd.cent << endl;
-			hptcentn->Fill(i->Pt(), hd.cent);
-			hptcentw->Fill(i->Pt(), hd.cent, hd.xsec);
+			hEptn->Fill(i->Pt());
+			hEptw->Fill(i->Pt(), hd.xsec);
+			hEptcentn->Fill(i->Pt(), hd.cent);
+			hEptcentw->Fill(i->Pt(), hd.cent, hd.xsec);
+			hEptcentmedjn->Fill(i->Pt(), hd.cent, tg.medjDCAL);
+			hEptcentmedjw->Fill(i->Pt(), hd.cent, tg.medjDCAL, hd.xsec);
+			hEptcentmaxjn->Fill(i->Pt(), hd.cent, tg.maxjDCAL);
+			hEptcentmaxjw->Fill(i->Pt(), hd.cent, tg.maxjDCAL, hd.xsec);
+			hEptcentmedgn->Fill(i->Pt(), hd.cent, tg.medgDCAL);
+			hEptcentmedgw->Fill(i->Pt(), hd.cent, tg.medgDCAL, hd.xsec);
+			hEptcentmaxgn->Fill(i->Pt(), hd.cent, tg.maxgDCAL);
+			hEptcentmaxgw->Fill(i->Pt(), hd.cent, tg.maxgDCAL, hd.xsec);
 		}
-		cout << "    "
-		     << jE.size() << " \t"
-		     << hd.xsec 	<< " \t"
-		     << hd.cent 	<< " \t"
-		     << tg.maxjECAL << " \t"
-		     << tg.maxgDCAL
-		     << endl;
+
+		// jD
+		for (std::vector<TLorentzVector>::iterator i = pjD->begin(); i != pjD->end(); ++i)
+		{
+			hDptn->Fill(i->Pt());
+			hDptw->Fill(i->Pt(), hd.xsec);
+			hDptcentn->Fill(i->Pt(), hd.cent);
+			hDptcentw->Fill(i->Pt(), hd.cent, hd.xsec);
+			hDptcentmedjn->Fill(i->Pt(), hd.cent, tg.medjECAL);
+			hDptcentmedjw->Fill(i->Pt(), hd.cent, tg.medjECAL, hd.xsec);
+			hDptcentmaxjn->Fill(i->Pt(), hd.cent, tg.maxjECAL);
+			hDptcentmaxjw->Fill(i->Pt(), hd.cent, tg.maxjECAL, hd.xsec);
+			hDptcentmedgn->Fill(i->Pt(), hd.cent, tg.medgECAL);
+			hDptcentmedgw->Fill(i->Pt(), hd.cent, tg.medgECAL, hd.xsec);
+			hDptcentmaxgn->Fill(i->Pt(), hd.cent, tg.maxgECAL);
+			hDptcentmaxgw->Fill(i->Pt(), hd.cent, tg.maxgECAL, hd.xsec);
+		}
+
+		// patches
+		for (std::vector<TLorentzVector>::iterator i = ptgEJE->begin(); i != ptgEJE->end(); ++i)
+		{
+			hEJEcentn->Fill(i->E(), hd.cent);
+			hEJEcentw->Fill(i->E(), hd.cent, hd.xsec);
+		}
+		for (std::vector<TLorentzVector>::iterator i = ptgEGA->begin(); i != ptgEGA->end(); ++i)
+		{
+			hEGAcentn->Fill(i->E(), hd.cent);
+			hEGAcentw->Fill(i->E(), hd.cent, hd.xsec);
+		}
+		for (std::vector<TLorentzVector>::iterator i = ptgDJE->begin(); i != ptgDJE->end(); ++i)
+		{
+			hDJEcentn->Fill(i->E(), hd.cent);
+			hDJEcentw->Fill(i->E(), hd.cent, hd.xsec);
+		}
+		for (std::vector<TLorentzVector>::iterator i = ptgDGA->begin(); i != ptgDGA->end(); ++i)
+		{
+			hDGAcentn->Fill(i->E(), hd.cent);
+			hDGAcentw->Fill(i->E(), hd.cent, hd.xsec);
+		}
 	}
 	fin->Close();
 	fout->Write();

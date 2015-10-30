@@ -12,6 +12,11 @@ def getFiles(ftxt='hardQCDfiles.txt'):
 		print '[w] unable to read from',ftxt
 	return files
 
+def is_out_dir_ok(outdir):
+	if not os.path.isdir(outdir):
+		os.makedirs(outdir)
+	return os.path.isdir(outdir)
+
 def main():
 	libs = ['libR2Util', 'libAnalyze']
 	sdir = os.getenv('RUN2EMCTRIGGER')
@@ -22,17 +27,22 @@ def main():
 		ROOT.gSystem.Load(l)
 	ROOT.gSystem.Load('libAnalyze')
 
-	nev = 10
+	nev = 100
 	infiles = './hardQCDfiles.txt'
 	files   = getFiles(infiles)
+	outdir  = os.path.basename(infiles).replace('.txt', '.outputs')
+	if not is_out_dir_ok(outdir):
+		print '[e] unable to access outdir:',outdir
+		return
+
+	threads = []
 	for i,fname in enumerate(files):
-		if i>0:
-			break
 		if not os.path.isfile(fname):
 			print '[w] file not found:',fname
 			continue
+		foutname = '{}/out-{}.root'.format(outdir, i)
 		a = ROOT.Analysis()
-		foutname = '{}-out-{}.root'.format(os.path.basename(infiles), i)
 		a.AnalyzeFile(fname, foutname, nev)
+
 if __name__ == '__main__':
 	main()
