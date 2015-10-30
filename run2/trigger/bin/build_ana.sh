@@ -19,12 +19,13 @@ fi
 
 if [ -d $RUN2EMCTRIGGER ]; then
   cd $RUN2EMCTRIGGER
+  rm $RUN2EMCTRIGGER/include/analysis.h
   for pack in analyze/src
   do
     bdir=$RUN2EMCTRIGGER/.build/$pack
     if is_arg_set "realclean" ;
     then
-	rm -rf $bdir
+    	rm -rf $bdir
     fi
     mkdir -p $bdir
     cd $bdir

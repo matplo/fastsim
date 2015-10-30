@@ -5,8 +5,15 @@
 
 struct TriggerInfo
 {
-	Double_t maxjECAL, maxjDCAL, maxgECAL, maxgDCAL;
-	Double_t medjECAL, medjDCAL, medgECAL, medgDCAL;
+	Double_t maxjECAL;
+	Double_t maxjDCAL;
+	Double_t maxgECAL;
+	Double_t maxgDCAL;
+
+	Double_t medjECAL;
+	Double_t medjDCAL;
+	Double_t medgECAL;
+	Double_t medgDCAL;
 };
 
 struct Header

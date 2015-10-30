@@ -10,5 +10,4 @@
 #pragma link C++ struct TriggerInfo++;
 #pragma link C++ struct Header++;
 
-
 #endif

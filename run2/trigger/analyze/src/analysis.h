@@ -12,16 +12,19 @@ class TBranch;
 class Analysis : public TObject
 {
 public:
-	Analysis();
-	virtual ~Analysis();
-	TBranch *GetBranch(const char *name, std::vector<TLorentzVector> **p);
-	TBranch *GetBranch(const char *name, TriggerInfo **p);
-	TBranch *GetBranch(const char *name, Header **p);
-	virtual Int_t    GetEntry(Long64_t entry);
-   	virtual Long64_t LoadTree(Long64_t entry);
-	virtual Bool_t   Notify();
-	void AnalyzeFile(const char *fname, const char *foutname);
+						Analysis();
+	virtual 			~Analysis();
+	TBranch 			*GetBranch(const char *, std::vector<TLorentzVector> **);
+	//TBranch 			*GetBranch(const char *name, TriggerInfo &p);
+	//TBranch 			*GetBranch(const char *name, Header &p);
+	TBranch 			*GetBranch(const char *, Double_t *);
+	virtual Int_t    	GetEntry(Long64_t);
+   	virtual Long64_t 	LoadTree(Long64_t);
+	virtual Bool_t   	Notify();
+	void 				AnalyzeFile(const char *fname, const char *foutname, Long64_t nev = -1);
+
 private:
+
 	TTree 		*fChain;//!
 	Int_t        fCurrent; //!current Tree number in a TChain
 
