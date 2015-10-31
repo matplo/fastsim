@@ -35,6 +35,7 @@ set(SOURCES_LIB
 	emctrig.cxx
 	emctrig_par.cxx
 	emctrig_par_revent.cxx
+	rstructures.cxx
 	revent.cxx
 )
 
