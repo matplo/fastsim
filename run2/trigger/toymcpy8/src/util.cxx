@@ -50,7 +50,8 @@ double getArgD(const char *what, int argc, char **argv, double defret = 0.0)
 	{
 		if (strcmp(what, argv[i]) == 0)
 			if ( i + 1 < argc)
-				return std::stod(argv[i + 1]);
+			  return strtod(argv[i + 1], 0);
+			  //return std::stod(argv[i + 1]);
 	}
 	return defret;
 }
