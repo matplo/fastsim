@@ -161,10 +161,12 @@ Double_t EMPartResp::GetEop(Int_t pdg, Double_t p, Bool_t noalter)
 				hproj = fhpEp[i]->ProjectionY(hname, pbin, pbin);
 				fLproj->Add(hproj);
 			}
-			if (hproj->ComputeIntegral() <= 0)
+			//if (hproj->ComputeIntegral() <= 0)
+			if (hproj->GetEntries() <= 0)
 				{
-					cout << "[w] ComputeIntegral is zero: " << hproj->GetName() << " " << p << endl;
-					cout << "[w] Reverting to pid=211 (pion) for p = " << p << endl; 
+					//cout << "[w] number of entries: " << hproj->GetEntries() << endl;
+					//cout << "[w] ComputeIntegral is zero: " << hproj->GetName() << " " << p << endl;
+					//cout << "[w] Reverting to pid=211 (pion) for p = " << p << endl; 
 					retval = GetEop(211, p, kTRUE);
 				}
 			else

@@ -18,8 +18,9 @@ namespace py = Pythia8;
 
 namespace SysUtil
 {
-bool isSet(const char *what, int argc, char **argv);
+bool 		isSet(const char *what, int argc, char **argv);
 const char *getArg(const char *what, int argc, char **argv);
+double 		getArgD(const char *what, int argc, char **argv, double defret);
 };
 
 class AliGenFastModelingEvent;
@@ -59,6 +60,15 @@ make_par_background(const Int_t dCentMin, const Int_t dCentMax,
                     const Bool_t bUseBoltzmann = kTRUE,
                     const Double_t dTrkMeanPt = 0.7,
                     const Double_t dCluMeanPt = 0.7);
+
+AliGenFastModelingEvent *
+make_par_background_mtune(
+    				const Double_t dTrkMultMin, const Double_t dTrkMultMax,
+    				const Double_t dCluMultMin, const Double_t dCluMultMax,
+    				const TString sPath,
+    				const Bool_t bUseBoltzmann,
+    				const Double_t dTrkMeanPt,
+    				const Double_t dCluMeanPt);
 
 std::vector <fastjet::PseudoJet> param_vectors(AliGenFastModelingEvent *gen, Int_t select);
 

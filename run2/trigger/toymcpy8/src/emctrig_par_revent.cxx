@@ -47,7 +47,7 @@ int emctrig_par_revent( int argc, char *argv[])
 	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
 	cout << "[i] Verbosity : " << verbosity << endl;
 
-	TString outputFname = SysUtil::getArg("-out", argc, argv);
+	TString outputFname = SysUtil::getArg("--out", argc, argv);
 	if (outputFname.Length() == 0)
 	{
 		outputFname = "default_emctrig_out.root";
@@ -115,11 +115,28 @@ int emctrig_par_revent( int argc, char *argv[])
 		cout << "[i] real data background: " << !boltzmanBG << endl;
 	}
 
-	AliGenFastModelingEvent *pResp = GenerUtil::make_par_background(0, 100, "$RUN2EMCTRIGGER/AliGenFME/inputs", boltzmanBG);
-	if (pResp == 0)
+	Double_t multTune = 1.;
+	if (SysUtil::isSet("--mtune", argc, argv))
+	{
+		multTune = SysUtil::getArgD("--mtune", argc, argv, 1.);
+		if (multTune != 1.)
+		{
+			outputFname.ReplaceAll(".root", TString::Format("_mtune_%1.1f.root", multTune));
+		}
+	}
+	cout << "[i] tune multiplicity factor: " << multTune << endl;
+
+	TString sPathFME = "$RUN2EMCTRIGGER/AliGenFME/inputs";
+	AliGenFastModelingEvent *pFME = GenerUtil::make_par_background(0, 100, sPathFME, boltzmanBG);
+	if (pFME == 0)
 	{
 		cerr << "[e] Response not initialized. Quit here." << endl;
 		return 1;
+	}
+	if (multTune != 1.0)
+	{
+		pFME->SetTuneMeanPt(multTune);
+		pFME->SetTuneMult(multTune);
 	}
 
 	// PYTHIA INIT
@@ -279,30 +296,32 @@ int emctrig_par_revent( int argc, char *argv[])
 
 		// generate background particiles
 		Double_t centRandom = gRandom->Rndm() * 99.;
-		pResp->SetCentralityRange(centRandom, centRandom + 1.);
+		pFME->SetCentralityRange(centRandom, centRandom + 1.);
 
-		if (!pResp->InitEvent())
+		if (!pFME->InitEvent())
 		{
+			// we do this here just to get the multiplicity
 			cerr << "[e] ::InitEvent failed." << endl;
 			return 1;
 		}
 
-		Double_t bg_event_centrality = pResp->GetCentrality();
+		Double_t bg_event_centrality = pFME->GetCentrality();
 
-		bg_event_tracks        = GenerUtil::param_vectors(pResp, GenerUtil::kTrack);
-		bg_event_clusters_ecal = GenerUtil::param_vectors(pResp, GenerUtil::kCluster);
-		bg_event_all           = GenerUtil::param_vectors(pResp, GenerUtil::kAny);
+		bg_event_tracks        = GenerUtil::param_vectors(pFME, GenerUtil::kTrack);
+		bg_event_clusters_ecal = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
+		bg_event_all           = GenerUtil::param_vectors(pFME, GenerUtil::kAny);
 
 		// now for DCal
-		if (!pResp->InitEvent())
+		if (!pFME->InitEvent())
 		{
 			cerr << "[e] ::InitEvent failed." << endl;
-			return 1;
+			//return 1;
+			continue;
 		}
-		bg_event_clusters_dcal = GenerUtil::param_vectors(pResp, GenerUtil::kCluster);
+		bg_event_clusters_dcal = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
 
 		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_ecal, 0);
-		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8);
+		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
 
 		if (verbosity > 7)
 		{
@@ -593,7 +612,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		head.sigma = bkgd_estimator.sigma();
 
 		revent.SetPythia(&pythia);
-		revent.SetBackground(pResp);
+		revent.SetBackground(pFME);
 		revent.SetEMCresponse(EMCresponse);
 		revent.FillHeader("hd", &head);
 

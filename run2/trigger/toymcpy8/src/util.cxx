@@ -25,9 +25,9 @@ bool isSet(const char *what, int argc, char **argv)
 		string ar = argv[i];
 		//if (strcmp(what, argv[i]) == 0)
 		if (ar.compare(swhat) == 0 && swhat.compare(ar) == 0)
-			{
-				return true;
-			}
+		{
+			return true;
+		}
 	}
 	return false;
 }
@@ -41,6 +41,18 @@ const char *getArg(const char *what, int argc, char **argv)
 				return argv[i + 1];
 	}
 	return "";
+}
+
+double getArgD(const char *what, int argc, char **argv, double defret = 0.0)
+{
+	double retval = defret;
+	for (int i = 0; i < argc; i++)
+	{
+		if (strcmp(what, argv[i]) == 0)
+			if ( i + 1 < argc)
+				return std::stod(argv[i + 1]);
+	}
+	return defret;
 }
 };
 
@@ -264,9 +276,45 @@ AliGenFastModelingEvent *make_par_background(
 	if (gen->Init(sPathExpanded))
 	{
 		cerr << "[e] Init AliGenFastModelingEvent failed!" << endl
-			<< "     path was    : " << sPath << endl
-			<< "     expanded to : " << sPathExpanded 
-			<< endl;
+		     << "     path was    : " << sPath << endl
+		     << "     expanded to : " << sPathExpanded
+		     << endl;
+		delete gen;
+		gen = 0;
+	}
+
+	return gen;
+}
+
+AliGenFastModelingEvent *make_par_background_mtune(
+	const Double_t dTrkMultMin, const Double_t dTrkMultMax,
+	const Double_t dCluMultMin, const Double_t dCluMultMax,
+    const TString sPath,
+    const Bool_t bUseBoltzmann,
+    const Double_t dTrkMeanPt,
+    const Double_t dCluMeanPt)
+{
+	TString name = TString::Format("pResponse-bmann%d-mult%1.1f-%1.1f-meanpT%1.1f-meancl%1.1f",
+	                               bUseBoltzmann, dTrkMultMin, dTrkMultMax, dTrkMeanPt, dCluMeanPt);
+	AliGenFastModelingEvent * gen = new AliGenFastModelingEvent(name.Data());
+
+	gen->SetMultiplicityUser(kTRUE);
+	gen->SetTrackMultiplicityRangeUser  (dTrkMultMin, dTrkMultMax);
+	gen->SetClusterMultiplicityRangeUser(dCluMultMin, dCluMultMax);
+
+	gen->SetUseBoltzmann(bUseBoltzmann);  // sample track/cluster pT from bUseBoltzmann, otherwise it will be sampled from data
+	gen->SetTrackMeanPt(dTrkMeanPt);      // mean pT of tracks
+	gen->SetClusterMeanPt(dCluMeanPt);    // mean pT of clusters
+	//=============================================================================
+
+	TString sPathExpanded = gSystem->ExpandPathName(sPath);
+	//cout << "[i] AliGenFME in path: " << sPathExpanded << endl;
+	if (gen->Init(sPathExpanded))
+	{
+		cerr << "[e] Init AliGenFastModelingEvent failed!" << endl
+		     << "     path was    : " << sPath << endl
+		     << "     expanded to : " << sPathExpanded
+		     << endl;
 		delete gen;
 		gen = 0;
 	}
