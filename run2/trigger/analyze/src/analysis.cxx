@@ -125,6 +125,10 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	TH2F *hEptCmedjw[6];
 	TH2F *hEptCmaxjn[6];
 	TH2F *hEptCmaxjw[6];
+
+	TH2F *hEptCdiffjn[6];
+	TH2F *hEptCdiffjw[6];
+
 	for (unsigned int i = 0; i < cent.size() / 2; i++)
 	{
 		hEptCmedjn[i] = new TH2F(TString::Format("hEptC%dmedjn", i).Data(),
@@ -134,11 +138,19 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		                         TString::Format("hEptC%1.1f%1.1fmedjw;pt;med JE DCAL", cent[i*2], cent[i*2+1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEptCmaxjn[i] = new TH2F(TString::Format("hEptC%dmaxjn", i).Data(),
-		                         TString::Format("hEptC%1.1f%1.1fmaxjn;pt;cent;max JE DCAL", cent[i*2], cent[i*2+1]).Data(),
+		                         TString::Format("hEptC%1.1f%1.1fmaxjn;pt;cent;max JE ECAL", cent[i*2], cent[i*2+1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEptCmaxjw[i] = new TH2F(TString::Format("hEptC%dmaxjw", i).Data(),
-		                         TString::Format("hEptC%1.1f%1.1fmaxjw;pt;max JE DCAL", cent[i*2], cent[i*2+1]).Data(),
+		                         TString::Format("hEptC%1.1f%1.1fmaxjw;pt;max JE ECAL", cent[i*2], cent[i*2+1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+
+		hEptCdiffjn[i] = new TH2F(TString::Format("hEptC%ddiffjn", i).Data(),
+		                         TString::Format("hEptC%1.1f%1.1fdiffjn;pt;cent;max JE ECAL - med DCAL", cent[i*2], cent[i*2+1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, -maxpt, maxpt);
+		hEptCdiffjw[i] = new TH2F(TString::Format("hEptC%ddiffjw", i).Data(),
+		                         TString::Format("hEptC%1.1f%1.1fdiffjw;pt;max JE ECal - med DCAL", cent[i*2], cent[i*2+1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, -maxpt, maxpt);
+
 	}
 
 	TH2F *hEJEcentn     = new TH2F("hEJEcentn", "hEJEcentn", nptbins, 0, maxpt, 100, 0, 100);
@@ -150,7 +162,6 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	TH2F *hDJEcentw     = new TH2F("hDJEcentw", "hDJEcentw", nptbins, 0, maxpt, 100, 0, 100);
 	TH2F *hDGAcentn     = new TH2F("hDGAcentn", "hDGAcentn", nptbins, 0, maxpt, 100, 0, 100);
 	TH2F *hDGAcentw     = new TH2F("hDGAcentw", "hDGAcentw", nptbins, 0, maxpt, 100, 0, 100);
-
 
 	TFile *fin = new TFile(fname);
 	cout << "[i] Open file: " << fname << " at " << fin << endl;
@@ -236,8 +247,11 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 				{
 					hEptCmedjn[ic]->Fill(i->Pt(), tg.medjDCAL);
 					hEptCmedjw[ic]->Fill(i->Pt(), tg.medjDCAL, hd.xsec);
-					hEptCmaxjn[ic]->Fill(i->Pt(), tg.maxjDCAL);
-					hEptCmaxjw[ic]->Fill(i->Pt(), tg.maxjDCAL, hd.xsec);
+					hEptCmaxjn[ic]->Fill(i->Pt(), tg.maxjECAL);
+					hEptCmaxjw[ic]->Fill(i->Pt(), tg.maxjECAL, hd.xsec);
+
+					hEptCdiffjn[ic]->Fill(i->Pt(), tg.maxjECAL - tg.medjDCAL);
+					hEptCdiffjw[ic]->Fill(i->Pt(), tg.maxjECAL - tg.medjDCAL, hd.xsec);
 				}
 			}
 		}
