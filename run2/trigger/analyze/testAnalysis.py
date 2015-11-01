@@ -3,6 +3,13 @@
 import os
 import sys
 import ROOT
+import fnmatch
+
+def find_files(rootdir='.', pattern='*'):
+    return [os.path.join(rootdir, filename)
+            for rootdir, dirnames, filenames in os.walk(rootdir)
+            for filename in filenames
+            if fnmatch.fnmatch(filename, pattern)]
 
 def is_arg_set(arg=''):
     for a in sys.argv:
@@ -45,13 +52,17 @@ def write_script(fname, foutname):
     print '[i] script generated:',fsh
     return fsh
 
-def write_scripts():
+def write_scripts(infiles=None):
     scripts = []
-    infiles = ['hardQCDfiles.txt', 'photonfiles.txt']
+    if infiles == None:
+        infiles = ['hardQCDfiles.txt', 'photonfiles.txt']
+        subm_script = 'submit_ana.sh'
+    else:
+        subm_script = 'submit-' + infiles[0] + '.sh'
     for fn in infiles:
         infile = os.path.join(os.getcwd(), fn)
         files   = getFiles(infile)
-        outdir  = os.path.basename(infile).replace('.txt', '.outputs')
+        outdir  = os.path.basename(infile).replace('.txt', '') + '.outputs'
         outdir  = os.path.join(os.getcwd(), outdir)
         if not is_out_dir_ok(outdir):
             print '[e] unable to access outdir:',outdir
@@ -63,7 +74,7 @@ def write_scripts():
                 foutname = '{}/out-{}.root'.format(outdir, i)
                 script = write_script(fname, foutname)
                 scripts.append(script)
-    with open('submit_ana.sh', 'w') as fs:
+    with open(subm_script, 'w') as fs:
         for sc in scripts:
             print >> fs,'qsub -d',os.path.dirname(sc),sc
 
@@ -106,6 +117,22 @@ def main():
             a.AnalyzeFile(fname, foutname, nev)
 
 if __name__ == '__main__':
+        if is_arg_set('--dir'):
+            cdir = get_arg_with('--dir')
+            if cdir==None:
+                cdir='<missing arg>'
+            sname = get_arg_with('--name') + '-list'
+            if sname == None:
+                sname = 'defaultout-list'
+            if os.path.isdir(cdir):
+                files = find_files(cdir, 'tree-*.root')
+                with open(sname,'w') as f:
+                    for fn in files:
+                        print >> f,fn
+                write_scripts([sname])
+            else:
+                print '[e]',cdir,'is not a dir'
+            exit(0)
         if is_arg_set('--in') and is_arg_set('--out'):
             analyze()
         elif is_arg_set('--test'):
