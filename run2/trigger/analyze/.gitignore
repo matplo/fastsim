@@ -3,3 +3,5 @@
 *.pyc
 *.outputs/
 submit_ana.sh
+*-list
+*-list.sh
