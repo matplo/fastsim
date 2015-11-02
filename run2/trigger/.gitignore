@@ -7,4 +7,5 @@ setenv.sh
 *install.log
 /.build
 /bin/toymcpy8
+/bin/filter_single_entries
 /modules

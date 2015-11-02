@@ -56,7 +56,16 @@ set(R2LIBS "-L$ENV{RUN2EMCTRIGGER}/lib" -lR2Util )
 link_libraries(${ROOT_LIBRARIES} ${R2LIBS})
 add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS} ${DICT}.cxx)
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+set(EXEC1 filter_single_entries)
+set(SOURCES_EXE "${EXEC1}.cxx")
+add_executable(${EXEC1} ${SOURCES_EXE})
+target_include_directories(${EXEC1} PUBLIC "${ROOT_INCLUDE_DIR}")  
+target_link_libraries(${EXEC1} ${ROOT_LIBRARIES})
+
+#install(TARGETS ${PROJECT_NAME}
+#        RUNTIME DESTINATION bin)
+
+install(TARGETS ${PROJECT_NAME} ${EXEC1}
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 install(FILES ${HDRS} DESTINATION include)
