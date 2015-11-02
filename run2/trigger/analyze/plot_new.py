@@ -13,6 +13,20 @@ import centrality
 import tutils as tu
 import hnutil
 
+def rejection_table(hl, rej = 1.e-3):
+        print '[i] rejections for', hl.name, 'rej:',rej
+        retvals = []
+        for o in hl.l:
+                h = o.obj
+                for ib in range(1, h.GetNbinsX()):
+                        if h.GetBinContent(ib) <= rej:
+                                print '    ', h.GetTitle(), h.GetBinLowEdge(ib), h.GetBinContent(ib)
+                                newtitle = '{} [{:.0e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
+                                h.SetTitle(newtitle)
+                                retvals.append(h.GetBinLowEdge(ib))
+                                break
+        return retvals
+
 def get_nev(fname):
 	h = tu.get_object_from_file('hNev', fname)
 	return h.GetBinContent(1)
@@ -34,7 +48,7 @@ def make_cent_slices(h2d):
 			ixmax = cent.BinRange(ic-1)[1]
 			htitle = 'centrality: {} {}'.format(ixmin, ixmax)
 		proj = hnutil.get_projection_axis(hname, h2d, axis, ixmin, ixmax)
-		hl.add(proj, htitle, 'p')
+		hl.add(proj, htitle, 'hist l')
 	return hl
 
 def get_cent_slices(fname, hname):
@@ -56,29 +70,133 @@ def show_cent_slices_noyats(fname, hname, logy=False, xmin=None, xmax=None, ymin
 def show_cent_slices(fname, hname, logy=False, xmin=None, xmax=None, ymin=None, ymax=None):
 	lstore = dlist.ListStorage(fname+hname+'store')
 	hl = get_cent_slices(fname, hname)
+	hl.adjust_maxima(1e-5, 1e4, logy=True)
+	#hl.rebin(2)
 	hly = dlist.fractional_yats(hl)
+	hly.adjust_maxima(1e-5, 2., logy=True)
 	lstore.append(hl)
 	lstore.append(hly)
 	lstore.draw_all(logy=True)
 	lstore.zoom_axis(0, xmin, xmax)
 	lstore.set_grid_x()
 	lstore.set_grid_y()
-	lstore.update(logy=True)
-	
-def show_patches(fname):
+	lstore.set_log_axis('y')
+
+def show_patches(fname, hnames, xmin=0, xmax=80):
+	ls 	= dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames))
+	lsy = dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames) + 'y')
+	for hn in hnames:
+		hl = get_cent_slices(fname, hn)
+		ls.append(hl)	
+		hly = dlist.fractional_yats(hl)
+		lsy.append(hly)
+		rejection_table(hly, rej=1e-3)
+		#rejection_table(hly, rej=1e-2)
+
+	if '--show-all' in sys.argv:
+		ls.draw_all(logy=True)
+		ls.zoom_axis(0, 0, 150)
+		ls.set_grid_x()
+		ls.set_grid_y()
+		ls.set_log_axis('y')
+
+	lsy.legend_position(x1=0.4,y1=0.5,x2=0.8,y2=0.87)
+	lsy.draw_all(logy=True, miny=5e-5, maxy=5)
+	lsy.zoom_axis(0, xmin, xmax)
+	lsy.set_grid_x()
+	lsy.set_grid_y()
+	lsy.set_log_axis('y')
+
+def show_2d(fname, hnames, thr=[18,14,11,8,7,10]):
+	cent = [5,15,30,50,70,90]
+	gr = dlist.make_graph_xy('thresholds'+fname, thr, cent)
+	for hn in hnames:
+		h = tu.get_object_from_file(hn, fname)
+		hl = dlist.dlist(fname+hn)
+		hl.make_canvas()
+		hl.add(h, hn, 'colz')
+		hl.zoom_axis(0, -25, 30)
+		hl.draw(miny=1e-3, maxy=1e8)
+		ROOT.gPad.SetLogz()
+		ROOT.gPad.Update()
+		tu.gList.append(hl)
+		gr.SetLineColor(2)
+		gr.SetLineWidth(2)
+		gr.Draw('L')
+		tu.gList.append(gr)
+		ROOT.gPad.Update()
+
+def show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
+	cent = centrality.Centrality()
+	hl = dlist.dlist(fname+'biases')
+	for i in range(0, 7):
+		hname = 'hEptC{}diffjw'.format(i)
+		print hname
+		h2d = tu.get_object_from_file(hname, fname)
+		ixmin = thr[i]
+		ixmax = 300
+		axis  = 0
+		hname1 = '{}-{}-cut'.format(hname, i)
+		proj1 = hnutil.get_projection_axis(hname1, h2d, axis, ixmin, ixmax)
+		proj1.Rebin(10)
+		hname2 = '{}-{}-uncut'.format(hname, i)
+		proj2 = hnutil.get_projection_axis(hname2, h2d, axis, h2d.GetYaxis().GetXmin(), h2d.GetYaxis().GetXmax())
+		proj2.Rebin(10)
+		hlr   = dlist.make_ratio(proj1, proj2)
+		if i == 0:
+			cs = 'min. bias [{}]'.format(ixmin)
+		else:
+			cs = cent.Label(i-1) + ' [{}]'.format(ixmin)
+		hl.add(hlr[0].obj, cs, 'l')
+
+	hl.make_canvas(600,600)
+	hl.zoom_axis(0, 0, 120)
+	#hl.draw(miny=1e-5, maxy=1e8)
+	hl.draw(miny=0, maxy=1.2)
+	#ROOT.gPad.SetLogy()
+	hl.reset_axis_titles('jet p_{T}', 'cut / unbiased')
+	hl.self_legend(y1=0.35, y2=0.6)
+	ROOT.gPad.SetGridy()
+	ROOT.gPad.SetGridx()	
+	ROOT.gPad.Update()
+	tu.gList.append(hl)
+
+def show_some_patches(fname):
 	hnames = [
-		'hEJEcentw',
-		'hEJEmedw',
-		'hEJEdiffcentw',
-		'hEJEdiffmaxmedw',
-		'hEGAcentw',
-		'hEGAdiffcentw']
+		'hEJEcentw', # all patches
+		#'hEJEdiffcentw', # all patches: Ei-median
+		#'hEJEmaxw', # max - single per event
+		'hEJEmedw', # median - single per event
+		'hDJEmedw', # median - single per event		
+		#'hEJEdiffmaxmedw' # max-median - single per event
+		]
 	for i, hn in enumerate(hnames):
-		show_cent_slices(fname, hn, logy=True, xmin=0, xmax=None)
+		show_cent_slices(fname, hn, logy=True, xmin=-20, xmax=60)
 
 if __name__ == '__main__':
-	fname = './test-list.outputs/out-0.root'
-	show_patches(fname)
+	tu.setup_basic_root()
+	fname = tu.get_arg_with('--in')
+	if fname == None:
+		#fname = './test-list.outputs/out-0.root'
+		print "usage:",__file__,'--in <file.root>'
+		exit(1)
+	print fname
+	hnames = [ 	'hEJEcentw', 'hDJEcentw', 
+				'hEGAcentw', 'hDGAcentw']
+	show_patches(fname, hnames, 0., 150)
+	hnames = [	'hEJEmedw', 'hDJEmedw',
+				'hEJEmaxw', 'hDJEmaxw']
+	show_patches(fname, hnames)				
+
+	hnames = [ 	'hEJEdiffcentw', 'hDJEdiffcentw',
+				'hEJEdiffmaxmedw', 'hDJEdiffmaxmedw']
+	show_patches(fname, hnames, -10., 150)
+
+	hnames = [ 'hEJEdiffcentw' ]
+	show_2d(fname, hnames)
+
+	show_bias(fname)
+
 	#show_cent_slices(fname, 'hEJEcentw', logy=True, xmin=0, xmax=70, ymin=1e-1, ymax=1e6)
 	#show_cent_slices(fname, 'hEJEcentn', logy=True, xmin=0, xmax=70, ymin=1e-2, ymax=1e4)
 
