@@ -155,25 +155,25 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	}
 
 	//patches
-	TH2F *hEJEcentn     = new TH2F("hEJEcentn", "hEJEcentn", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hEJEcentw     = new TH2F("hEJEcentw", "hEJEcentw", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hEGAcentn     = new TH2F("hEGAcentn", "hEGAcentn", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hEGAcentw     = new TH2F("hEGAcentw", "hEGAcentw", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEJEcentn     = new TH2F("hEJEcentn", "hEJEcentn;EJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEJEcentw     = new TH2F("hEJEcentw", "hEJEcentw;EJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEGAcentn     = new TH2F("hEGAcentn", "hEGAcentn;EGA patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hEGAcentw     = new TH2F("hEGAcentw", "hEGAcentw;EGA patch;cent", nptbins, 0, maxpt, 100, 0, 100);
 
-	TH2F *hEJEdiffcentn     = new TH2F("hEJEdiffcentn", "hEJEdiffcentn", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hEJEdiffcentw     = new TH2F("hEJEdiffcentw", "hEJEdiffcentw", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hEGAdiffcentn     = new TH2F("hEGAdiffcentn", "hEGAdiffcentn", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hEGAdiffcentw     = new TH2F("hEGAdiffcentw", "hEGAdiffcentw", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEJEdiffcentn     = new TH2F("hEJEdiffcentn", "hEJEdiffcentn;EJE patch - median DCAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEJEdiffcentw     = new TH2F("hEJEdiffcentw", "hEJEdiffcentw;EJE patch - median DCAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEGAdiffcentn     = new TH2F("hEGAdiffcentn", "hEGAdiffcentn;EGA patch - median DCAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEGAdiffcentw     = new TH2F("hEGAdiffcentw", "hEGAdiffcentw;EGA patch - median DCAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
 
-	TH2F *hDJEcentn     = new TH2F("hDJEcentn", "hDJEcentn", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hDJEcentw     = new TH2F("hDJEcentw", "hDJEcentw", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hDGAcentn     = new TH2F("hDGAcentn", "hDGAcentn", nptbins, 0, maxpt, 100, 0, 100);
-	TH2F *hDGAcentw     = new TH2F("hDGAcentw", "hDGAcentw", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDJEcentn     = new TH2F("hDJEcentn", "hDJEcentn;DJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDJEcentw     = new TH2F("hDJEcentw", "hDJEcentw;DJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDGAcentn     = new TH2F("hDGAcentn", "hDGAcentn;DGA patch;cent", nptbins, 0, maxpt, 100, 0, 100);
+	TH2F *hDGAcentw     = new TH2F("hDGAcentw", "hDGAcentw;DGA patch;cent", nptbins, 0, maxpt, 100, 0, 100);
 
-	TH2F *hDJEdiffcentn     = new TH2F("hDJEdiffcentn", "hDJEdiffcentn", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hDJEdiffcentw     = new TH2F("hDJEdiffcentw", "hDJEdiffcentw", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hDGAdiffcentn     = new TH2F("hDGAdiffcentn", "hDGAdiffcentn", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hDGAdiffcentw     = new TH2F("hDGAdiffcentw", "hDGAdiffcentw", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDJEdiffcentn     = new TH2F("hDJEdiffcentn", "hDJEdiffcentn;DJE patch - median ECAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDJEdiffcentw     = new TH2F("hDJEdiffcentw", "hDJEdiffcentw;DJE patch - median ECAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDGAdiffcentn     = new TH2F("hDGAdiffcentn", "hDGAdiffcentn;DGA patch - median ECAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDGAdiffcentw     = new TH2F("hDGAdiffcentw", "hDGAdiffcentw;DGA patch - median ECAL;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
 
 	// event wise trigger info
 	//med
@@ -198,9 +198,24 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 
 	//diff
 	TH2F *hEJEdiffmedn		= new TH2F("hEJEdiffmedn", "hEJEdiffmedn;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
-	TH2F *hDJEdiffmedw		= new TH2F("hDJEdiffmedw", "hDJEdiffmedw;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEJEdiffmedw		= new TH2F("hEJEdiffmedw", "hEJEdiffmedw;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
 	TH2F *hEGAdiffmedn		= new TH2F("hEGAdiffmedn", "hEGAdiffmedn;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEGAdiffmedw		= new TH2F("hEGAdiffmedw", "hEGAdiffmedw;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+
+	TH2F *hDJEdiffmedn		= new TH2F("hDJEdiffmedn", "hDJEdiffmedn;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDJEdiffmedw		= new TH2F("hDJEdiffmedw", "hDJEdiffmedw;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDGAdiffmedn		= new TH2F("hDGAdiffmedn", "hDGAdiffmedn;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
 	TH2F *hDGAdiffmedw		= new TH2F("hDGAdiffmedw", "hDGAdiffmedw;s+bg - bg;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+
+	TH2F *hEJEdiffmaxmedn		= new TH2F("hEJEdiffmaxmedn", "hEJEdiffmaxmedn;EJE max - DJE med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEJEdiffmaxmedw		= new TH2F("hEJEdiffmaxmedw", "hEJEdiffmaxmedw;EJE max - DJE med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEGAdiffmaxmedn		= new TH2F("hEGAdiffmaxmedn", "hEGAdiffmaxmedn;EGA max - DGA med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hEGAdiffmaxmedw		= new TH2F("hEGAdiffmaxmedw", "hEGAdiffmaxmedw;EGA max - DGA med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+
+	TH2F *hDJEdiffmaxmedn		= new TH2F("hDJEdiffmaxmedn", "hDJEdiffmaxmedn;DJE max - EJE med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDJEdiffmaxmedw		= new TH2F("hDJEdiffmaxmedw", "hDJEdiffmaxmedw;DJE max - EJE med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDGAdiffmaxmedn		= new TH2F("hDGAdiffmaxmedn", "hDGAdiffmaxmedn;DGA max - EGA med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
+	TH2F *hDGAdiffmaxmedw		= new TH2F("hDGAdiffmaxmedw", "hDGAdiffmaxmedw;DGA max - EGA med;cent", nptbins * 2, -maxpt, maxpt, 100, 0, 100);
 
 	TH2F *hEGAEJEmedw[7];
 	TH2F *hDGADJEmedw[7];
@@ -325,9 +340,22 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		hDGAmaxw->Fill(tg.maxgDCAL, hd.cent, hd.xsec);
 
 		hEJEdiffmedn->Fill(tg.medjECAL - tgbg.medjECAL, hd.cent);
+		hEJEdiffmedw->Fill(tg.medjECAL - tgbg.medjECAL, hd.cent, hd.xsec);
+		hDJEdiffmedn->Fill(tg.medjDCAL - tgbg.medjDCAL, hd.cent);
 		hDJEdiffmedw->Fill(tg.medjDCAL - tgbg.medjDCAL, hd.cent, hd.xsec);
 		hEGAdiffmedn->Fill(tg.medgECAL - tgbg.medgECAL, hd.cent);
+		hEGAdiffmedw->Fill(tg.medgECAL - tgbg.medgECAL, hd.cent, hd.xsec);
+		hDGAdiffmedn->Fill(tg.medgDCAL - tgbg.medgDCAL, hd.cent);
 		hDGAdiffmedw->Fill(tg.medgDCAL - tgbg.medgDCAL, hd.cent, hd.xsec);
+
+		hEJEdiffmaxmedn->Fill(tg.maxjECAL - tgbg.medjDCAL, hd.cent);
+		hEJEdiffmaxmedw->Fill(tg.maxjECAL - tgbg.medjDCAL, hd.cent, hd.xsec);
+		hDJEdiffmaxmedn->Fill(tg.maxjDCAL - tgbg.medjECAL, hd.cent);
+		hDJEdiffmaxmedw->Fill(tg.maxjDCAL - tgbg.medjECAL, hd.cent, hd.xsec);
+		hEGAdiffmaxmedn->Fill(tg.maxgECAL - tgbg.medgDCAL, hd.cent);
+		hEGAdiffmaxmedw->Fill(tg.maxgECAL - tgbg.medgDCAL, hd.cent, hd.xsec);
+		hDGAdiffmaxmedn->Fill(tg.maxgDCAL - tgbg.medgECAL, hd.cent);
+		hDGAdiffmaxmedw->Fill(tg.maxgDCAL - tgbg.medgECAL, hd.cent, hd.xsec);
 
 		for (unsigned int i = 0; i < cent.size() / 2; i++)
 		{
