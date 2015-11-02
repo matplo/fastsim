@@ -191,8 +191,8 @@ int main ( int argc, char *argv[] )
 
 	if (gSystem->AccessPathName(infname.Data()) == kFALSE)
 	{
-		Double_t thr = getArgD("--thr", argc, argv, 10.);
-		filter_singles_entries_file(infname, outfname);
+		Double_t thr = getArgD("--thr", argc, argv, 1.);
+		filter_singles_entries_file(infname, outfname, thr);
 	}
 	else
 	{
