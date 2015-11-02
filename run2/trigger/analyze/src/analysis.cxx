@@ -14,6 +14,8 @@ ClassImp(Analysis);
 
 Analysis::Analysis()
 	: TObject()
+	, fCurrent(0)
+	, frflag(kFALSE)
 {
 	;
 }
@@ -154,6 +156,38 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 
 	}
 
+	TH2F *hErptCmedjn[7];
+	TH2F *hErptCmedjw[7];
+	TH2F *hErptCmaxjn[7];
+	TH2F *hErptCmaxjw[7];
+
+	TH2F *hErptCdiffjn[7];
+	TH2F *hErptCdiffjw[7];
+
+	for (unsigned int i = 0; i < cent.size() / 2; i++)
+	{
+		hErptCmedjn[i] = new TH2F(TString::Format("hErptC%dmedjn", i).Data(),
+		                         TString::Format("hErptC_%1.1f_%1.1fmedjn;pt;med JE DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		hErptCmedjw[i] = new TH2F(TString::Format("hErptC%dmedjw", i).Data(),
+		                         TString::Format("hErptC_%1.1f_%1.1fmedjw;pt;med JE DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		hErptCmaxjn[i] = new TH2F(TString::Format("hErptC%dmaxjn", i).Data(),
+		                         TString::Format("hErptC_%1.1f_%1.1fmaxjn;pt;max JE ECAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		hErptCmaxjw[i] = new TH2F(TString::Format("hErptC%dmaxjw", i).Data(),
+		                         TString::Format("hErptC_%1.1f_%1.1fmaxjw;pt;max JE ECAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+
+		hErptCdiffjn[i] = new TH2F(TString::Format("hErptC%ddiffjn", i).Data(),
+		                          TString::Format("hErptC%1.1f%1.1fdiffjn;pt;max JE ECAL - med DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                          nptbins, 0, maxpt, nptbins, -maxpt, maxpt);
+		hErptCdiffjw[i] = new TH2F(TString::Format("hErptC%ddiffjw", i).Data(),
+		                          TString::Format("hErptC%1.1f%1.1fdiffjw;pt;max JE ECal - med DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                          nptbins, 0, maxpt, nptbins, -maxpt, maxpt);
+
+	}
+
 	//patches
 	TH2F *hEJEcentn     = new TH2F("hEJEcentn", "hEJEcentn;EJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
 	TH2F *hEJEcentw     = new TH2F("hEJEcentw", "hEJEcentw;EJE patch;cent", nptbins, 0, maxpt, 100, 0, 100);
@@ -228,30 +262,30 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	for (unsigned int i = 0; i < cent.size() / 2; i++)
 	{
 		hEGAEJEmedw[i] = new TH2F(TString::Format("hEGAEJEmedwC%d", i),
-		                         TString::Format("hEGAEJEmedw %1.1f %1.1f;med EGA;med EJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hEGAEJEmedw %1.1f %1.1f;med EGA;med EJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hDGADJEmedw[i] = new TH2F(TString::Format("hDGADJEmedwC%d", i),
-		                         TString::Format("hDGADJEmedw %1.1f %1.1f;med DGA;med DJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hDGADJEmedw %1.1f %1.1f;med DGA;med DJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEGAEJEmaxw[i] = new TH2F(TString::Format("hEGAEJEmaxwC%d", i),
-		                         TString::Format("hEGAEJEmaxw %1.1f %1.1f;max EGA;max EJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hEGAEJEmaxw %1.1f %1.1f;max EGA;max EJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hDGADJEmaxw[i] = new TH2F(TString::Format("hDGADJEmaxwC%d", i),
-		                         TString::Format("hDGADJEmaxw %1.1f %1.1f;max DGA;max DJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hDGADJEmaxw %1.1f %1.1f;max DGA;max DJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 
 		hEGAEJEmedn[i] = new TH2F(TString::Format("hEGAEJEmednC%d", i),
-		                         TString::Format("hEGAEJEmedn %1.1f %1.1f;med EGA;med EJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hEGAEJEmedn %1.1f %1.1f;med EGA;med EJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hDGADJEmedn[i] = new TH2F(TString::Format("hDGADJEmednC%d", i),
-		                         TString::Format("hDGADJEmedn %1.1f %1.1f;med DGA;med DJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hDGADJEmedn %1.1f %1.1f;med DGA;med DJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEGAEJEmaxn[i] = new TH2F(TString::Format("hEGAEJEmaxnC%d", i),
-		                         TString::Format("hEGAEJEmaxn %1.1f %1.1f;max EGA;max EJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hEGAEJEmaxn %1.1f %1.1f;max EGA;max EJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hDGADJEmaxn[i] = new TH2F(TString::Format("hDGADJEmaxnC%d", i),
-		                         TString::Format("hDGADJEmaxn %1.1f %1.1f;max DGA;max DJE", cent[i * 2], cent[i * 2 + 1]),
-		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
+		                          TString::Format("hDGADJEmaxn %1.1f %1.1f;max DGA;max DJE", cent[i * 2], cent[i * 2 + 1]),
+		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 	}
 
 	TFile *fin = new TFile(fname);
@@ -399,6 +433,23 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					hEptCdiffjw[ic]->Fill(i->Pt(), tg.maxjECAL - tg.medjDCAL, hd.xsec);
 				}
 			}
+		}
+		// jEr
+		for (std::vector<TLorentzVector>::iterator i = pjEr->begin(); i != pjEr->end(); ++i)
+		{
+			for (unsigned int ic = 0; ic < cent.size() / 2; ic++)
+			{
+				if (hd.cent >= cent[ic * 2] && hd.cent < cent[ic * 2 + 1])
+				{
+					hErptCmedjn[ic]->Fill(i->Pt(), tg.medjDCAL);
+					hErptCmedjw[ic]->Fill(i->Pt(), tg.medjDCAL, hd.xsec);
+					hErptCmaxjn[ic]->Fill(i->Pt(), tg.maxjECAL);
+					hErptCmaxjw[ic]->Fill(i->Pt(), tg.maxjECAL, hd.xsec);
+
+					hErptCdiffjn[ic]->Fill(i->Pt(), tg.maxjECAL - tg.medjDCAL);
+					hErptCdiffjw[ic]->Fill(i->Pt(), tg.maxjECAL - tg.medjDCAL, hd.xsec);
+				}
+			}			
 		}
 
 		// jD

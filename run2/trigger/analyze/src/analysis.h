@@ -22,12 +22,12 @@ public:
    	virtual Long64_t 	LoadTree(Long64_t);
 	virtual Bool_t   	Notify();
 	void 				AnalyzeFile(const char *fname, const char *foutname, Long64_t nev = -1);
-
+	void 				SmallR(Bool_t v) {frflag = v;}
 private:
 
 	TTree 		*fChain;//!
 	Int_t        fCurrent; //!current Tree number in a TChain
-
+	Bool_t       frflag;
 	ClassDef(Analysis, 0)
 };
 
