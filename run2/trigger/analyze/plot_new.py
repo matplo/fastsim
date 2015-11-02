@@ -68,7 +68,7 @@ def show_cent_slices(fname, hname, logy=False, xmin=None, xmax=None, ymin=None, 
 	lstore.set_grid_y()
 	lstore.set_log_axis('y')
 
-def show_patches(fname, hnames):
+def show_patches(fname, hnames, xmin=0, xmax=80):
 	ls 	= dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames))
 	lsy = dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames) + 'y')
 	for hn in hnames:
@@ -86,7 +86,7 @@ def show_patches(fname, hnames):
 
 	lsy.legend_position(x1=0.6,y1=0.5,x2=0.8,y2=0.87)
 	lsy.draw_all(logy=True, miny=5e-5, maxy=5)
-	lsy.zoom_axis(0, 0, 80)
+	lsy.zoom_axis(0, xmin, xmax)
 	lsy.set_grid_x()
 	lsy.set_grid_y()
 	lsy.set_log_axis('y')
@@ -111,12 +111,16 @@ if __name__ == '__main__':
 		print "usage:",__file__,'--in <file.root>'
 		exit(1)
 	print fname
+	hnames = [ 	'hEJEcentw', 'hDJEcentw', 
+				'hEGAcentw', 'hDGAcentw']
+	show_patches(fname, hnames, 0., 50)
 	hnames = [	'hEJEmedw', 'hDJEmedw',
 				'hEJEmaxw', 'hDJEmaxw']
 	show_patches(fname, hnames)				
-	hnames = [ 	'hEJEcentw', 'hDJEcentw', 
-				'hEJEdiffcentn', 'hDJEdiffcentn']				
-	show_patches(fname, hnames)
+
+	hnames = [ 	'hEJEdiffcentw', 'hDJEdiffcentw',
+				'hEJEdiffmaxmedw', 'hDJEdiffmaxmedw']
+	show_patches(fname, hnames, -10., 50)
 
 	#show_cent_slices(fname, 'hEJEcentw', logy=True, xmin=0, xmax=70, ymin=1e-1, ymax=1e6)
 	#show_cent_slices(fname, 'hEJEcentn', logy=True, xmin=0, xmax=70, ymin=1e-2, ymax=1e4)

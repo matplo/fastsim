@@ -133,20 +133,20 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	for (unsigned int i = 0; i < cent.size() / 2; i++)
 	{
 		hEptCmedjn[i] = new TH2F(TString::Format("hEptC%dmedjn", i).Data(),
-		                         TString::Format("hEptC_%1.1f_%1.1fmedjn;pt;cent;med JE DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         TString::Format("hEptC_%1.1f_%1.1fmedjn;pt;med JE DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEptCmedjw[i] = new TH2F(TString::Format("hEptC%dmedjw", i).Data(),
 		                         TString::Format("hEptC_%1.1f_%1.1fmedjw;pt;med JE DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEptCmaxjn[i] = new TH2F(TString::Format("hEptC%dmaxjn", i).Data(),
-		                         TString::Format("hEptC_%1.1f_%1.1fmaxjn;pt;cent;max JE ECAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                         TString::Format("hEptC_%1.1f_%1.1fmaxjn;pt;max JE ECAL", cent[i * 2], cent[i * 2 + 1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 		hEptCmaxjw[i] = new TH2F(TString::Format("hEptC%dmaxjw", i).Data(),
 		                         TString::Format("hEptC_%1.1f_%1.1fmaxjw;pt;max JE ECAL", cent[i * 2], cent[i * 2 + 1]).Data(),
 		                         nptbins, 0, maxpt, nptbins, 0, maxpt);
 
 		hEptCdiffjn[i] = new TH2F(TString::Format("hEptC%ddiffjn", i).Data(),
-		                          TString::Format("hEptC%1.1f%1.1fdiffjn;pt;cent;max JE ECAL - med DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
+		                          TString::Format("hEptC%1.1f%1.1fdiffjn;pt;max JE ECAL - med DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
 		                          nptbins, 0, maxpt, nptbins, -maxpt, maxpt);
 		hEptCdiffjw[i] = new TH2F(TString::Format("hEptC%ddiffjw", i).Data(),
 		                          TString::Format("hEptC%1.1f%1.1fdiffjw;pt;max JE ECal - med DCAL", cent[i * 2], cent[i * 2 + 1]).Data(),
