@@ -2,6 +2,8 @@
 
 # set -x
 
+[ -z $RUN2EMCTRIGGER ] && echo "[e] RUN2EMCTRIGGER not set" && exit 1
+
 args=$@
 function is_arg_set
 {
@@ -32,6 +34,11 @@ function write_script
         photons=true
         newdir="./photons/mult-$4/bin-$1-$2"
     fi
+    minbias=false
+    if [ $1 == "0" ]; then
+        minbias=true
+        newdir="./hardQCD/mult-$4/minbias"
+    fi
     mkdir -p $newdir
     echo "find \$PWD -name \"job.sh\" -exec {} \;" > $newdir/../run_all.sh
     chmod +x $newdir/../run_all.sh
@@ -39,18 +46,30 @@ function write_script
     chmod +x $newdir/../submit_all.sh
     cd $newdir
     spwd=$PWD
-    cp -v $RUN2EMCTRIGGER/generate/5TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/5TeV/job.sh .
+    cp -v $RUN2EMCTRIGGER/generate/2.76TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/2.76TeV/job.sh $spwd
     cmndfile=$spwd/emctrig.cmnd
-    replace_line "PhaseSpace:pTHatMin" "PhaseSpace:pTHatMin = $1" "$cmndfile"
-    replace_line "PhaseSpace:pTHatMax" "PhaseSpace:pTHatMax = $2" "$cmndfile"
     replace_line "Main:numberOfEvents" "Main:numberOfEvents = $3" "$cmndfile"
-    replace_line "Beams:eCM"           "Beams:eCM = 2760"         "$cmndfile"
+    replace_line "Beams:eCM"           "Beams:eCM = 2760."        "$cmndfile"
     if $photons; then
-        replace_line "HardQCD:all"      "HardQCD:all = off"       "$cmndfile"
-        replace_line "PromptPhoton:all" "PromptPhoton:all = on"   "$cmndfile"
+        replace_line "PhaseSpace:pTHatMin"  "PhaseSpace:pTHatMin = $1"  "$cmndfile"
+        replace_line "PhaseSpace:pTHatMax"  "PhaseSpace:pTHatMax = $2"  "$cmndfile"
+        replace_line "HardQCD:all"          "HardQCD:all = off"         "$cmndfile"
+        replace_line "PromptPhoton:all"     "PromptPhoton:all = on"     "$cmndfile"
+        replace_line "SoftQCD:all"          "SoftQCD:all = off"         "$cmndfile"
     else
-        replace_line "HardQCD:all"      "HardQCD:all = on"        "$cmndfile"
-        replace_line "PromptPhoton:all" "PromptPhoton:all = off"  "$cmndfile"
+        if $minbias; then
+            replace_line "SoftQCD:all"         "SoftQCD:all = on"           "$cmndfile"
+            replace_line "PromptPhoton:all"    "PromptPhoton:all = off"     "$cmndfile"
+            replace_line "HardQCD:all"         "HardQCD:all = off"          "$cmndfile"
+            replace_line "PhaseSpace:pTHatMin" "#PhaseSpace:pTHatMin = 0"   "$cmndfile"
+            replace_line "PhaseSpace:pTHatMax" "#PhaseSpace:pTHatMax = 0"   "$cmndfile"
+        else
+            replace_line "PhaseSpace:pTHatMin"  "PhaseSpace:pTHatMin = $1"  "$cmndfile"
+            replace_line "PhaseSpace:pTHatMax"  "PhaseSpace:pTHatMax = $2"  "$cmndfile"
+            replace_line "SoftQCD:all"          "SoftQCD:all = off"         "$cmndfile"
+            replace_line "HardQCD:all"          "HardQCD:all = on"          "$cmndfile"
+            replace_line "PromptPhoton:all"     "PromptPhoton:all = off"    "$cmndfile"
+        fi
     fi
     spwd="${spwd//\//\\/}"
     sed -i -e "s/rundir=XXX/rundir=${spwd}/" $jobfile
@@ -76,7 +95,11 @@ then
     [ "$response" != "y" ] && exit 0
 fi
 
-declare -a pThatBins=( 5 7 10 15 20 30 40 60 80 110 140 180 220 270 1000 )
+declare -a pThatBins=( 0 2 5 7 10 15 20 30 40 60 80 110 140 180 220 270 1000 )
+if is_arg_set "minbias"; then
+    declare -a pThatBins=( 0 2 )
+fi
+
 mult=$1
 [ -z $1 ] && mult=0
 nevents=$2
