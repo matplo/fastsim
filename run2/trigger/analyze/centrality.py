@@ -44,6 +44,9 @@ class Centrality(object):
 	def TAA(self, ibin):
 		return self.table[ibin][9]
 
+	def TAAmb(self):
+		return ((self.TAA(0)+self.TAA(1))/2. + self.TAA(5))/2.
+
 	def Ncoll(self, ibin):
 		return self.table[ibin][6]
 

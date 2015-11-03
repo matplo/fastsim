@@ -13,6 +13,9 @@ import centrality
 import tutils as tu
 import hnutil
 
+def to_file_name(s):
+	return "".join([x if x.isalnum() else "_" for x in s])
+
 def rejection_table(hl, rej = 1.e-3):
         print '[i] rejections for', hl.name, 'rej:',rej
         retvals = []
@@ -82,9 +85,11 @@ def show_cent_slices(fname, hname, logy=False, xmin=None, xmax=None, ymin=None, 
 	lstore.set_grid_y()
 	lstore.set_log_axis('y')
 
-def show_patches(fname, hnames, xmin=0, xmax=80):
-	ls 	= dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames))
-	lsy = dlist.ListStorage(fname + 'show_patches' + '-'.join(hnames) + 'y')
+def show_patches(fname, hnames, xmin=0, xmax=150):
+	hlname = to_file_name(fname + 'show_patches' + '-'.join(hnames))
+	ls 	= dlist.ListStorage(hlname)
+	hlname = to_file_name(fname + 'show_patches' + '-'.join(hnames) + 'y')
+	lsy = dlist.ListStorage(hlname)
 	for hn in hnames:
 		hl = get_cent_slices(fname, hn)
 		ls.append(hl)	
@@ -107,12 +112,17 @@ def show_patches(fname, hnames, xmin=0, xmax=80):
 	lsy.set_grid_y()
 	lsy.set_log_axis('y')
 
+	if '--print' in sys.argv:
+		lsy.pdf()
+
 def show_2d(fname, hnames, thr=[18,14,11,8,7,10]):
 	cent = [5,15,30,50,70,90]
 	gr = dlist.make_graph_xy('thresholds'+fname, thr, cent)
 	for hn in hnames:
 		h = tu.get_object_from_file(hn, fname)
-		hl = dlist.dlist(fname+hn)
+		hlname = fname + '-' + hn + '-' + '-'.join(str(t) for t in thr) 
+		hlname = to_file_name(hlname)
+		hl = dlist.dlist(hlname)
 		hl.make_canvas()
 		hl.add(h, hn, 'colz')
 		hl.zoom_axis(0, -25, 30)
@@ -125,10 +135,59 @@ def show_2d(fname, hnames, thr=[18,14,11,8,7,10]):
 		gr.Draw('L')
 		tu.gList.append(gr)
 		ROOT.gPad.Update()
+		if '--print' in sys.argv:
+			hl.pdf()
+
+
+def show_mb_stats(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
+	cent = centrality.Centrality()
+	hlname = fname + '-mb-stats'
+	hlname = to_file_name(hlname)
+	hl = dlist.dlist(hlname)
+	nevgen = get_nev(fname)
+	for i in range(0, 7):
+		hname = 'hEptC{}diffjw'.format(i)
+		print hname
+		h2d = tu.get_object_from_file(hname, fname)
+		ixmin = thr[i]
+		ixmax = 300
+		axis  = 0
+		hname1 = '{}-{}-cut'.format(hname, i)
+		proj1 = hnutil.get_projection_axis(hname1, h2d, axis, ixmin, ixmax)
+		proj1.Rebin(10)
+		hname2 = '{}-{}-uncut'.format(hname, i)
+		proj2 = hnutil.get_projection_axis(hname2, h2d, axis, h2d.GetYaxis().GetXmin(), h2d.GetYaxis().GetXmax())
+		proj2.Rebin(10)
+		if i == 0:
+			cs = 'min. bias [{:1.1f}M]'.format(150.)
+			print 'TAAmb is',cent.TAAmb()
+			proj1.Scale(1./10. * cent.TAAmb() * 150.e6 / nevgen)
+			proj2.Scale(1./10. * cent.TAAmb() * 150.e6 / nevgen)			
+		else:
+			cs = cent.Label(i-1)
+			proj1.Scale(1./10. * cent.TAA(i-1) * 150.e6 / nevgen)
+			proj2.Scale(1./10. * cent.TAA(i-1) * 150.e6 / nevgen)			
+		hl.add(proj1, cs, 'l')
+		#hl.add(proj2, cs, 'l noleg -k -l')
+	hl.make_canvas(600,600)
+	hl.zoom_axis(0, 20, 140)
+	hl.draw(miny=1e-1, maxy=5e5)
+	ROOT.gPad.SetLogy()
+	hl.reset_axis_titles('jet p_{T}', 'dN/dp_{T}')
+	hl.self_legend(y1=0.55, y2=0.8)
+	ROOT.gPad.SetGridy()
+	ROOT.gPad.SetGridx()	
+	ROOT.gPad.Update()
+	tu.gList.append(hl)
+	if '--print' in sys.argv:
+		hl.pdf()
+
 
 def show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 	cent = centrality.Centrality()
-	hl = dlist.dlist(fname+'biases')
+	hlname = fname + '-bias-' + '-'.join(str(t) for t in thr) 
+	hlname = to_file_name(hlname)
+	hl = dlist.dlist(hlname)
 	for i in range(0, 7):
 		hname = 'hEptC{}diffjw'.format(i)
 		print hname
@@ -150,7 +209,7 @@ def show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 		hl.add(hlr[0].obj, cs, 'l')
 
 	hl.make_canvas(600,600)
-	hl.zoom_axis(0, 0, 120)
+	hl.zoom_axis(0, 0, 140)
 	#hl.draw(miny=1e-5, maxy=1e8)
 	hl.draw(miny=0, maxy=1.2)
 	#ROOT.gPad.SetLogy()
@@ -160,6 +219,9 @@ def show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 	ROOT.gPad.SetGridx()	
 	ROOT.gPad.Update()
 	tu.gList.append(hl)
+	if '--print' in sys.argv:
+		hl.pdf()
+
 
 def show_some_patches(fname):
 	hnames = [
@@ -180,22 +242,29 @@ if __name__ == '__main__':
 		#fname = './test-list.outputs/out-0.root'
 		print "usage:",__file__,'--in <file.root>'
 		exit(1)
-	print fname
-	hnames = [ 	'hEJEcentw', 'hDJEcentw', 
-				'hEGAcentw', 'hDGAcentw']
-	show_patches(fname, hnames, 0., 150)
-	hnames = [	'hEJEmedw', 'hDJEmedw',
-				'hEJEmaxw', 'hDJEmaxw']
-	show_patches(fname, hnames)				
 
-	hnames = [ 	'hEJEdiffcentw', 'hDJEdiffcentw',
-				'hEJEdiffmaxmedw', 'hDJEdiffmaxmedw']
-	show_patches(fname, hnames, -10., 150)
+	if '--patch' in sys.argv:
+		hnames = [ 	'hEJEcentw', 'hDJEcentw', 
+					'hEGAcentw', 'hDGAcentw']
+		show_patches(fname, hnames, 0., 150)
+		hnames = [	'hEJEmedw', 'hDJEmedw',
+					'hEJEmaxw', 'hDJEmaxw']
+		show_patches(fname, hnames, 0., 150)				
 
-	hnames = [ 'hEJEdiffcentw' ]
-	show_2d(fname, hnames)
+		hnames = [ 	'hEJEdiffcentw', 'hDJEdiffcentw',
+					'hEJEdiffmaxmedw', 'hDJEdiffmaxmedw']
+		show_patches(fname, hnames, -10., 150)
 
-	show_bias(fname)
+	if '--bias' in sys.argv:
+		hnames = [ 'hEJEdiffcentw' ]
+		if 'mtune1.2' in fname:
+			show_2d(fname, hnames, thr=[23, 19, 14, 9, 8, 11])
+			show_bias(fname, thr=[18, 23, 19, 14, 9, 8, 11])
+		else:
+			show_2d(fname, hnames, thr=[18, 14, 11, 8, 7, 10])
+			show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10])
+
+	show_mb_stats(fname)
 
 	#show_cent_slices(fname, 'hEJEcentw', logy=True, xmin=0, xmax=70, ymin=1e-1, ymax=1e6)
 	#show_cent_slices(fname, 'hEJEcentn', logy=True, xmin=0, xmax=70, ymin=1e-2, ymax=1e4)
