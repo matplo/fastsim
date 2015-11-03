@@ -121,9 +121,10 @@ if __name__ == '__main__':
             cdir = get_arg_with('--dir')
             if cdir==None:
                 cdir='<missing arg>'
-            sname = get_arg_with('--name') + '-list'
+            sname = get_arg_with('--name')
             if sname == None:
-                sname = 'defaultout-list'
+                sname = 'default-out'
+            sname = sname + '-list'
             if os.path.isdir(cdir):
                 files = find_files(cdir, 'tree-*.root')
                 with open(sname,'w') as f:
