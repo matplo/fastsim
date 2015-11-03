@@ -1,4 +1,4 @@
 #!/bin/bash
 
-find . -name "*.log" -exec tail -v -n 20 {} \;
+find . -name "*.log" -exec tail -v -n 1 {} \;
 
