@@ -1,1 +1,4 @@
 *.root
+*-list
+*.outputs
+submit-test-list.sh
