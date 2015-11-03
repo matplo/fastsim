@@ -192,12 +192,15 @@ int emctrig_par_revent( int argc, char *argv[])
 	int nRejectedEvents = 0;
 
 	std::vector <fj::PseudoJet> py_hard_event; // signal from pythia
+	std::vector <fj::PseudoJet> py_hard_event_charged; // signal from pythia
+	std::vector <fj::PseudoJet> py_hard_event_neutral; // signal from pythia
 	std::vector <fj::PseudoJet> bg_event_all; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_tracks; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_clusters; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_clusters_ecal; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_clusters_dcal; // boltzman background
 	std::vector <fj::PseudoJet> full_event; //signal+background
+	std::vector <fj::PseudoJet> pi0;
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
@@ -224,12 +227,15 @@ int emctrig_par_revent( int argc, char *argv[])
 
 		// Begin FastJet analysis: extract particles from event record.
 		py_hard_event.clear(); // signal from pythia
+		py_hard_event_charged.clear(); // signal from pythia
+		py_hard_event_neutral.clear(); // signal from pythia		
 		bg_event_all.clear(); // boltzman background
 		bg_event_tracks.clear(); // boltzman background
 		bg_event_clusters.clear(); // boltzman background
 		bg_event_clusters_ecal.clear(); // boltzman background
 		bg_event_clusters_dcal.clear(); // boltzman background
 		full_event.clear(); //signal+background
+		pi0.clear();
 
 		py::Vec4   pTemp;
 		double mTemp;
@@ -244,6 +250,21 @@ int emctrig_par_revent( int argc, char *argv[])
 
 		for (int i = 0; i < event.size(); ++i)
 		{
+			if (event[i].id() == 111)
+			{
+				fj::PseudoJet p = event[i];
+				if ( emcalmapping.IsEMCAL(p.eta(), p.phi_02pi()) )
+				{
+					p.set_user_index(0);
+					pi0.push_back(p);
+				}
+				if ( emcalmapping.IsDCALPHOS(p.eta(), p.phi_02pi()) )
+				{
+					p.set_user_index(1);
+					pi0.push_back(p);
+				}
+
+			}
 			if (event[i].isFinal())
 			{
 
@@ -269,18 +290,20 @@ int emctrig_par_revent( int argc, char *argv[])
 				// Optionally modify mass and energy.
 				pTemp = event[i].p();
 				mTemp = event[i].m();
-				if (massSet < 2)
-				{
-					mTemp = (massSet == 0 || event[i].id() == 22) ? 0. : 0.13957;
-					pTemp.e( sqrt(pTemp.pAbs2() + mTemp * mTemp) );
-					particleTemp.reset_momentum( pTemp.px(), pTemp.py(),
-					                             pTemp.pz(), pTemp.e() );
-				}
 
 				// Store acceptable particles as input to Fastjet.
 				// Conversion to PseudoJet is performed automatically
 				// with the help of the code in FastJet3.h.
 				py_hard_event.push_back( particleTemp );
+
+				if (event[i].isCharged())
+				{
+					py_hard_event_charged.push_back( particleTemp );
+				}
+				else
+				{
+					py_hard_event_neutral.push_back( particleTemp );
+				}
 				++nAnalyze;
 			} // for the final particles
 		}// end particle loop within the event
@@ -365,6 +388,17 @@ int emctrig_par_revent( int argc, char *argv[])
 		fj::ClusterSequence clust_seq_hard_r(py_hard_event, jet_def_hard_r);
 		vector <fj::PseudoJet> inclusive_jets_hard_r = clust_seq_hard_r.inclusive_jets(pTMin);
 		vector <fj::PseudoJet> sorted_jets_hard_r    = fj::sorted_by_pt(inclusive_jets_hard_r);
+
+		// charged
+		fj::JetDefinition jet_def_hard_charged(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
+		fj::ClusterSequence clust_seq_hard_charged(py_hard_event_charged, jet_def_hard_charged);
+		vector <fj::PseudoJet> inclusive_jets_hard_charged = clust_seq_hard_charged.inclusive_jets(pTMin);
+		vector <fj::PseudoJet> sorted_jets_hard_charged    = fj::sorted_by_pt(inclusive_jets_hard_charged);
+
+		fj::JetDefinition jet_def_hard_r_charged(fj::genkt_algorithm, R / 2., power); // this is for signal - anti-kT
+		fj::ClusterSequence clust_seq_hard_r_charged(py_hard_event_charged, jet_def_hard_r_charged);
+		vector <fj::PseudoJet> inclusive_jets_hard_r_charged = clust_seq_hard_r_charged.inclusive_jets(pTMin);
+		vector <fj::PseudoJet> sorted_jets_hard_r_charged    = fj::sorted_by_pt(inclusive_jets_hard_r_charged);
 
 		// ------------- now with background
 		fj::JetDefinition jet_def_full(fj::antikt_algorithm, R);
@@ -614,27 +648,33 @@ int emctrig_par_revent( int argc, char *argv[])
 		revent.SetPythia(&pythia);
 		revent.SetBackground(pFME);
 		revent.SetEMCresponse(EMCresponse);
-		revent.FillHeader("hd", &head);
 
-		revent.FillBranch("p",  py_hard_event);
-		revent.FillBranch("bgcl", bg_event_clusters);
-		revent.FillBranch("bgtrk", bg_event_tracks);
+		revent.FillHeader("hd", 	&head);
 
-		revent.FillTrigger("tg", &tm);
-		revent.FillTrigger("tgbg", &tm_bg);
+		//revent.FillBranch("p",  	fj::sorted_by_pt(py_hard_event));
+		revent.FillBranch("pne",  	fj::sorted_by_pt(py_hard_event_neutral));		
+		revent.FillBranch("pch",  	fj::sorted_by_pt(py_hard_event_charged));
+		revent.FillBranch("pi0",  	fj::sorted_by_pt(pi0));
+		//revent.FillBranch("bgcl", 	bg_event_clusters);
+		//revent.FillBranch("bgtrk", 	bg_event_tracks);
 
-		revent.FillBranch("j",  sorted_jets_hard);
-		revent.FillBranch("jf", full_jets);
-		revent.FillBranch("jE", ej);
-		revent.FillBranch("jD", dj);
+		revent.FillTrigger("tg", 	&tm);
+		revent.FillTrigger("tgbg", 	&tm_bg);
 
-		revent.FillBranch("jr",  sorted_jets_hard_r);
-		revent.FillBranch("jEr", ej_r);
-		revent.FillBranch("jDr", dj_r);
+		revent.FillBranch("j",  	sorted_jets_hard);
+		revent.FillBranch("jch",  	sorted_jets_hard_charged);
+		//revent.FillBranch("jf",     full_jets);
+		revent.FillBranch("jE", 	ej);
+		revent.FillBranch("jD", 	dj);
 
-		revent.FillBranch("g",  photons);
-		revent.FillBranch("gE", eg);
-		revent.FillBranch("gD", dg);
+		revent.FillBranch("jr",  	sorted_jets_hard_r);
+		revent.FillBranch("jrch",	sorted_jets_hard_r_charged);
+		revent.FillBranch("jEr", 	ej_r);
+		revent.FillBranch("jDr", 	dj_r);
+
+		revent.FillBranch("g",  	photons);
+		revent.FillBranch("gE", 	eg);
+		revent.FillBranch("gD", 	dg);
 
 		revent.FinishEvent();
 	} // end of event loop
