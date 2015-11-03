@@ -200,7 +200,8 @@ int emctrig_par_revent( int argc, char *argv[])
 	std::vector <fj::PseudoJet> bg_event_clusters_ecal; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_clusters_dcal; // boltzman background
 	std::vector <fj::PseudoJet> full_event; //signal+background
-	std::vector <fj::PseudoJet> pi0;
+	std::vector <fj::PseudoJet> pi0E;
+	std::vector <fj::PseudoJet> pi0D;	
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
@@ -235,7 +236,8 @@ int emctrig_par_revent( int argc, char *argv[])
 		bg_event_clusters_ecal.clear(); // boltzman background
 		bg_event_clusters_dcal.clear(); // boltzman background
 		full_event.clear(); //signal+background
-		pi0.clear();
+		pi0E.clear();
+		pi0D.clear();		
 
 		py::Vec4   pTemp;
 		double mTemp;
@@ -256,12 +258,12 @@ int emctrig_par_revent( int argc, char *argv[])
 				if ( emcalmapping.IsEMCAL(p.eta(), p.phi_02pi()) )
 				{
 					p.set_user_index(0);
-					pi0.push_back(p);
+					pi0E.push_back(p);
 				}
 				if ( emcalmapping.IsDCALPHOS(p.eta(), p.phi_02pi()) )
 				{
 					p.set_user_index(1);
-					pi0.push_back(p);
+					pi0D.push_back(p);
 				}
 
 			}
@@ -654,7 +656,8 @@ int emctrig_par_revent( int argc, char *argv[])
 		//revent.FillBranch("p",  	fj::sorted_by_pt(py_hard_event));
 		revent.FillBranch("pne",  	fj::sorted_by_pt(py_hard_event_neutral));		
 		revent.FillBranch("pch",  	fj::sorted_by_pt(py_hard_event_charged));
-		revent.FillBranch("pi0",  	fj::sorted_by_pt(pi0));
+		revent.FillBranch("pi0E",  	fj::sorted_by_pt(pi0E));
+		revent.FillBranch("pi0D",  	fj::sorted_by_pt(pi0D));		
 		//revent.FillBranch("bgcl", 	bg_event_clusters);
 		//revent.FillBranch("bgtrk", 	bg_event_tracks);
 
