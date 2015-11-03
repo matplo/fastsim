@@ -48,7 +48,12 @@ def main():
 	tu.setup_basic_root()
 	fname = tu.get_arg_with('--in')
 	if fname == None:
-		fname = 'default-out-list.outputs/out-0.root'
+		#fname = 'default-out-list.outputs/out-0.root'
+		if '--pho' in sys.argv:
+			fname = 'save/pho-mtune1.0-5TeV-list.outputs.root'
+		else:
+			fname = 'save/qcd-mtune1.0-5TeV-list.outputs.root'
+	print fname
 	#hl = get_reoil_yield(fname, 'tnpi0jet')
 	hl = get_reoil_yield(fname, 'tngjet')
 	hl.make_canvas()

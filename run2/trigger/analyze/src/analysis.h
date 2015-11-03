@@ -7,8 +7,6 @@ class TLorentzVector;
 class TTree;
 class TBranch;
 
-#include "rstructures.h"
-
 class Analysis : public TObject
 {
 public:

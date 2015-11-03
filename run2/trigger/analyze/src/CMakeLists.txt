@@ -31,7 +31,7 @@ set(CMAKE_MACOSX_RPATH 1)
 set(SRCS
 	readtree.cxx
 	analysis.cxx
-	rstructures.cxx
+	#rstructures.cxx
 )
 
 # Headers from sources
@@ -42,9 +42,10 @@ set(DICT ${PROJECT_NAME}_Dict )
 set(LINKDEFS "${PROJECT_NAME}LinkDef.h" )
 #message("linkdef file is: ${LINKDEFS}")
 # the dot below is needed for the ROOT_GENERATE_DICTIONARY
-include_directories(${ROOT_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
+include_directories(${ROOT_INCLUDE_DIR} $ENV{RUN2EMCTRIGGER}/include ${PROJECT_SOURCE_DIR})
 # if root not build with cmake the following does not work
-ROOT_GENERATE_DICTIONARY(${DICT} ${HDRS} LINKDEF ${LINKDEFS})
+#ROOT_GENERATE_DICTIONARY(${DICT} ${HDRS} LINKDEF ${LINKDEFS} OPTIONS -I$ENV{RUN2EMCTRIGGER}/include ) #for rstructures 
+ROOT_GENERATE_DICTIONARY(${DICT} ${HDRS} LINKDEF ${LINKDEFS} OPTIONS )
 # workaround
 #ADD_CUSTOM_COMMAND(
 #    OUTPUT ${DICT}.cxx

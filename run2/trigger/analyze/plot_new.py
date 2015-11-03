@@ -139,12 +139,13 @@ def show_2d(fname, hnames, thr=[18,14,11,8,7,10]):
 			hl.pdf()
 
 
-def show_mb_stats(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
+def show_mb_stats(fname, nev=150.e6, thr=[14, 18, 14, 11, 8, 7, 10]):
 	cent = centrality.Centrality()
 	hlname = fname + '-mb-stats'
 	hlname = to_file_name(hlname)
 	hl = dlist.dlist(hlname)
 	nevgen = get_nev(fname)
+	irebin = 10
 	for i in range(0, 7):
 		hname = 'hEptC{}diffjw'.format(i)
 		print hname
@@ -154,19 +155,19 @@ def show_mb_stats(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 		axis  = 0
 		hname1 = '{}-{}-cut'.format(hname, i)
 		proj1 = hnutil.get_projection_axis(hname1, h2d, axis, ixmin, ixmax)
-		proj1.Rebin(10)
+		proj1.Rebin(irebin)
 		hname2 = '{}-{}-uncut'.format(hname, i)
 		proj2 = hnutil.get_projection_axis(hname2, h2d, axis, h2d.GetYaxis().GetXmin(), h2d.GetYaxis().GetXmax())
-		proj2.Rebin(10)
+		proj2.Rebin(irebin)
 		if i == 0:
-			cs = 'min. bias [{:1.1f}M]'.format(150.)
+			cs = 'min. bias [{:1.1f}M]'.format(nev/1e6)
 			print 'TAAmb is',cent.TAAmb()
-			proj1.Scale(1./10. * cent.TAAmb() * 150.e6 / nevgen)
-			proj2.Scale(1./10. * cent.TAAmb() * 150.e6 / nevgen)			
+			proj1.Scale(1./irebin * cent.TAAmb() * nev / nevgen)
+			proj2.Scale(1./irebin * cent.TAAmb() * nev / nevgen)			
 		else:
 			cs = cent.Label(i-1)
-			proj1.Scale(1./10. * cent.TAA(i-1) * 150.e6 / nevgen)
-			proj2.Scale(1./10. * cent.TAA(i-1) * 150.e6 / nevgen)			
+			proj1.Scale(1./irebin * cent.TAA(i-1) * nev / nevgen)
+			proj2.Scale(1./irebin * cent.TAA(i-1) * nev / nevgen)			
 		hl.add(proj1, cs, 'l')
 		#hl.add(proj2, cs, 'l noleg -k -l')
 	hl.make_canvas(600,600)
@@ -181,7 +182,6 @@ def show_mb_stats(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 	tu.gList.append(hl)
 	if '--print' in sys.argv:
 		hl.pdf()
-
 
 def show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10]):
 	cent = centrality.Centrality()
@@ -235,6 +235,41 @@ def show_some_patches(fname):
 	for i, hn in enumerate(hnames):
 		show_cent_slices(fname, hn, logy=True, xmin=-20, xmax=60)
 
+def show_stats(fname, nev=150.e6, tname='tnjet', title='jets EMC', cal=0, xmax=200):
+	cent = centrality.Centrality()
+	hlname = fname + '-{:1.1f}'.format(nev/1.e6)
+	hlname = to_file_name('-'.join([hlname, tname, str(cal)]))
+	hl = dlist.dlist(hlname)
+	nevgen = get_nev(fname)
+	irebin = 10
+	hl.make_canvas(600,600)
+	nevgen = get_nev(fname)	
+	for i,taa in enumerate(cent.TAAs()):
+		print taa, i
+		cut = '(cent >= {} && cent < {} && cal=={}) * (xsec)'.format(cent.BinLow(i), cent.BinHigh(i), cal)
+		print cut
+		var = 'jpt'
+		bwidth = 20.
+		xmin = 0
+		h = tu.draw_h1d_from_ntuple(fname, tname, var, cut, bwidth, xmin, xmax)
+		if h == None:
+			continue
+		h.Scale(taa * nev / nevgen / cent.BinWidth(i))
+		#htitle = '{} {}'.format(tname, cut)
+		htitle = '{} {} [{:1.0f} M]'.format(cent.BinLow(i), cent.BinHigh(i), nev * cent.BinWidth(i)/1.e6)
+		hl.add(h, htitle, 'hist l')
+		print '[i]',htitle,h.GetEntries()
+	hl.draw(logy=True, maxy=8e8)
+	hl.reset_axis_titles('p_{T}', 'dN/dp_{T}')
+	hl.self_legend(1, title)
+	ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()
+	hl.update(logy=True)
+	tu.gList.append(hl)		
+	if '--print' in sys.argv:
+		hl.pdf()
+
 if __name__ == '__main__':
 	tu.setup_basic_root()
 	fname = tu.get_arg_with('--in')
@@ -264,7 +299,22 @@ if __name__ == '__main__':
 			show_2d(fname, hnames, thr=[18, 14, 11, 8, 7, 10])
 			show_bias(fname, thr=[14, 18, 14, 11, 8, 7, 10])
 
-	show_mb_stats(fname)
+	#show_mb_stats(fname)
+	#show_stats(fname)
+	sigmaPbPb = 7.7 # barns
+	intLumi = 220. * 1.e6 # 1/b
+	nevPbPb = intLumi * sigmaPbPb
+	show_stats(fname, nevPbPb, 'tnjet', 'anti-kT R=0.4 EMC', 0)
+	show_stats(fname, nevPbPb, 'tnjet', 'anti-kT R=0.4 DMC', 1)
+	show_stats(fname, nevPbPb, 'tnjetr', 'anti-kT R=0.2 EMC', 0)
+	show_stats(fname, nevPbPb, 'tnjetr', 'anti-kT R=0.2 DMC', 1)
+
+	show_stats(fname, nevPbPb, 'tnpi0', '#pi^{0} EMC', 0, 100)
+	show_stats(fname, nevPbPb, 'tnpi0', '#pi^{0} DMC', 1, 100)
+
+	fname = fname.replace('qcd-', 'pho-')
+	show_stats(fname, nevPbPb, 'tng', '#gamma EMC', 0, 100)
+	show_stats(fname, nevPbPb, 'tng', '#gamma DMC', 1, 100)
 
 	#show_cent_slices(fname, 'hEJEcentw', logy=True, xmin=0, xmax=70, ymin=1e-1, ymax=1e6)
 	#show_cent_slices(fname, 'hEJEcentn', logy=True, xmin=0, xmax=70, ymin=1e-2, ymax=1e4)
