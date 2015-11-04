@@ -42,7 +42,7 @@ namespace py = Pythia8;
 int emctrig_par_revent( int argc, char *argv[])
 {
 	gSystem->Load("libR2Util"); // this is needed on ubuntu but not on mac os x (?)
-	cout << "[i] This is emctrig_par ." << endl;
+	cout << "[i] This is emctrig_par_revent ." << endl;
 	int verbosity = 0;
 	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
 	cout << "[i] Verbosity : " << verbosity << endl;
