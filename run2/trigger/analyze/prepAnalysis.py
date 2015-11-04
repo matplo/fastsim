@@ -83,7 +83,10 @@ def write_scripts(infiles=None):
         return
     with open(subm_script, 'w') as fs:
         for sc in scripts:
-            print >> fs,'qsub -d',os.path.dirname(sc),sc
+            if '--pdsf' in sys.argv:
+                print >> fs, 'qsub -P alice -o {} -e {} -m e -M mploskon@lbl.gov {}'.format(os.path.dirname(sc), sc)
+            else:
+                print >> fs,'qsub -d',os.path.dirname(sc),sc
     print '[i] written:',subm_script
     os.chmod(subm_script, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
