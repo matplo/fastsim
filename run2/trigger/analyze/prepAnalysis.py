@@ -84,7 +84,7 @@ def write_scripts(infiles=None):
     with open(subm_script, 'w') as fs:
         for sc in scripts:
             if '--pdsf' in sys.argv:
-                print >> fs, 'qsub -P alice -o {1} -e {1} -m e -M mploskon@lbl.gov {2}'.format(os.path.dirname(sc), sc)
+                print >> fs, 'qsub -P alice -o {0} -e {0} -m e -M mploskon@lbl.gov {1}'.format(os.path.dirname(sc), sc)
             else:
                 print >> fs,'qsub -d',os.path.dirname(sc),sc
     print '[i] written:',subm_script
