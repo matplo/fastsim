@@ -63,6 +63,8 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in)
 		v.push_back(tlv);
 	}
 	b->Fill();
+	pv->clear();
+	delete pv;
 }
 
 void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
@@ -86,6 +88,8 @@ void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
 		v.push_back(tlv);
 	}
 	b->Fill();
+	pv->clear();
+	delete pv;
 }
 
 void REvent::FinishEvent()
