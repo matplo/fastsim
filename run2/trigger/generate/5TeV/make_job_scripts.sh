@@ -27,26 +27,31 @@ function replace_line
 
 function write_script 
 {
+    jobfile="job.sh"
+    if is_arg_set "pdsf" ;
+    then
+	jobfile="job_pdsf.sh"
+    fi
     echo "[i] make script for: pThatMin="$1 "pThatMax="$2
-    newdir="./hardQCD/mult-$4/bin-$1-$2"
+    newdir="./hardQCD/$4/bin-$1-$2"
     photons=false
     if is_arg_set "photons"; then 
         photons=true
-        newdir="./photons/mult-$4/bin-$1-$2"
+        newdir="./photons/$4/bin-$1-$2"
     fi
     minbias=false
     if [ $1 == "0" ]; then
         minbias=true
-        newdir="./hardQCD/mult-$4/minbias"
+        newdir="./hardQCD/$4/minbias"
     fi
     mkdir -p $newdir
-    echo "find \$PWD -name \"job.sh\" -exec {} \;" > $newdir/../run_all.sh
+    echo "find \$PWD -name \"$jobfile\" -exec {} \;" > $newdir/../run_all.sh
     chmod +x $newdir/../run_all.sh
     echo "find \$PWD -name \"submit.sh\" -exec {} \;" > $newdir/../submit_all.sh
     chmod +x $newdir/../submit_all.sh
     cd $newdir
     spwd=$PWD
-    cp -v $RUN2EMCTRIGGER/generate/5TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/5TeV/job.sh $spwd
+    cp -v $RUN2EMCTRIGGER/generate/5TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/5TeV/$jobfile $spwd
     cmndfile=$spwd/emctrig.cmnd
     replace_line "Main:numberOfEvents" "Main:numberOfEvents = $3" "$cmndfile"
     replace_line "Beams:eCM"           "Beams:eCM = 5000."        "$cmndfile"
@@ -73,12 +78,16 @@ function write_script
     fi
     spwd="${spwd//\//\\/}"
     sed -i -e "s/rundir=XXX/rundir=${spwd}/" $jobfile
-    sed -i -e "s/mult=XXX/mult=${4}/" $jobfile
+    sed -i -e "s/mult=XXX/mult=${3}/" $jobfile
 
-    chmod +x ./job.sh
+    chmod +x $jobfile
     echo "#!/bin/bash" > ./submit.sh
-    #echo "qsub -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov job.sh" >> ./submit.sh
-    echo "qsub -o $PWD -e $PWD $PWD/job.sh" >> ./submit.sh
+    if is_arg_set "pdsf" ;
+    then
+	echo "qsub -l h_vmem=2G -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov $PWD/$jobfile" >> ./submit.sh
+    else
+	echo "qsub -o $PWD -e $PWD $PWD/$jobfile" >> ./submit.sh
+    fi
     chmod +x ./submit.sh
     if is_arg_set "submit" ;
     then
@@ -105,8 +114,6 @@ mult=$1
 nevents=$2
 [ -z $2 ] && nevents=1000
 #nevents=500
-
-jobfile="job.sh"
 
 echo "[i] bin edges: "${pThatBins[@]}
 echo "[i] number of bins: "$((${#pThatBins[@]}-1))

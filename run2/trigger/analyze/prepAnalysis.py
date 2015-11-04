@@ -2,6 +2,7 @@
 
 import os
 import sys
+import stat
 import ROOT
 import fnmatch
 
@@ -40,6 +41,7 @@ def is_out_dir_ok(outdir):
     return os.path.isdir(outdir)
 
 def write_script(fname, foutname):
+    thisfile = os.path.basename(__file__)
     fsh = foutname + '.sh'
     with open(fsh, 'w') as f:
         print >> f, '#!/bin/bash'
@@ -47,23 +49,25 @@ def write_script(fname, foutname):
         print >> f, 'module load use.own'
         print >> f, 'module load run2trigger'
         print >> f, 'cd {}'.format(os.path.dirname(foutname))
-        print >> f, '$RUN2EMCTRIGGER/analyze/testAnalysis.py --in {} --out {} | tee {}.log'.format(fname, foutname, foutname)
+        print >> f, '$RUN2EMCTRIGGER/analyze/{} --in {} --out {} | tee {}.log'.format(thisfile, fname, foutname, foutname)
         print >> f, 'date'
     print '[i] script generated:',fsh
+    os.chmod(fsh, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
     return fsh
 
 def write_scripts(infiles=None):
     scripts = []
     if infiles == None:
+        print '[i] running with default settings...'
         infiles = ['hardQCDfiles.txt', 'photonfiles.txt']
         subm_script = 'submit_ana.sh'
     else:
         subm_script = 'submit-' + infiles[0] + '.sh'
     for fn in infiles:
         infile = os.path.join(os.getcwd(), fn)
-        files   = getFiles(infile)
-        outdir  = os.path.basename(infile).replace('.txt', '') + '.outputs'
-        outdir  = os.path.join(os.getcwd(), outdir)
+        files  = getFiles(infile)
+        outdir = os.path.basename(infile).replace('.txt', '') + '.outputs'
+        outdir = os.path.join(os.getcwd(), outdir)
         if not is_out_dir_ok(outdir):
             print '[e] unable to access outdir:',outdir
         else:
@@ -74,9 +78,17 @@ def write_scripts(infiles=None):
                 foutname = '{}/out-{}.root'.format(outdir, i)
                 script = write_script(fname, foutname)
                 scripts.append(script)
+    if len(scripts) < 1:
+        print '[i] no scripts written...'
+        return
     with open(subm_script, 'w') as fs:
         for sc in scripts:
-            print >> fs,'qsub -d',os.path.dirname(sc),sc
+            if '--pdsf' in sys.argv:
+                print >> fs, 'qsub -P alice -o {0} -e {0} -m e -M mploskon@lbl.gov {1}'.format(os.path.dirname(sc), sc)
+            else:
+                print >> fs,'qsub -d',os.path.dirname(sc),sc
+    print '[i] written:',subm_script
+    os.chmod(subm_script, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
 def analyze():
     libs = ['libR2Util', 'libAnalyze']
@@ -125,8 +137,13 @@ if __name__ == '__main__':
             if sname == None:
                 sname = 'default-out'
             sname = sname + '-list'
+            spatt = 'tree-*.root'
+            if get_arg_with('--pattern'):
+                spatt = get_arg_with('--pattern')
             if os.path.isdir(cdir):
-                files = find_files(cdir, 'tree-*.root')
+                files = find_files(cdir, spatt)
+                if len (files) < 1:
+                    print '[i] no files with',spatt,'found...'
                 with open(sname,'w') as f:
                     for fn in files:
                         print >> f,fn
