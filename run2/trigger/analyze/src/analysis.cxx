@@ -378,10 +378,10 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	Header hd;
 	TriggerInfo tg;
 	TriggerInfo tgbg;
-	std::vector<TLorentzVector> *pjE  = 0;
-	std::vector<TLorentzVector> *pjD  = 0;
-	std::vector<TLorentzVector> *pjEr = 0;
-	std::vector<TLorentzVector> *pjDr = 0;
+	std::vector<TLorentzVector> *pjE       = 0;
+	std::vector<TLorentzVector> *pjD       = 0;
+	std::vector<TLorentzVector> *pjEr      = 0;
+	std::vector<TLorentzVector> *pjDr      = 0;
 
 	std::vector<TLorentzVector> *ptgEJE    = 0;
 	std::vector<TLorentzVector> *ptgEJE8x8 = 0;
@@ -390,15 +390,15 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	std::vector<TLorentzVector> *ptgDJE8x8 = 0;
 	std::vector<TLorentzVector> *ptgDGA    = 0;
 
-	std::vector<TLorentzVector> *pjch 	= 0;
-	std::vector<TLorentzVector> *pjrch 	= 0;
+	std::vector<TLorentzVector> *pjch      = 0;
+	std::vector<TLorentzVector> *pjrch     = 0;
 
-	std::vector<TLorentzVector> *pch	= 0;
-	std::vector<TLorentzVector> *pi0E	= 0;
-	std::vector<TLorentzVector> *pi0D	= 0;
+	std::vector<TLorentzVector> *pch       = 0;
+	std::vector<TLorentzVector> *pi0E      = 0;
+	std::vector<TLorentzVector> *pi0D      = 0;
 
-	std::vector<TLorentzVector> *gE		= 0;
-	std::vector<TLorentzVector> *gD		= 0;
+	std::vector<TLorentzVector> *gE        = 0;
+	std::vector<TLorentzVector> *gD        = 0;
 
 	//fChain->SetBranchStatus("*", kFALSE);
 	//fChain->SetBranchStatus("p", kFALSE);
@@ -757,6 +757,24 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 				}
 			}
 		}
+
+		pjE       ->clear();
+		pjD       ->clear();
+		pjEr      ->clear();
+		pjDr      ->clear();
+		ptgEJE    ->clear();
+		ptgEJE8x8 ->clear();
+		ptgEGA    ->clear();
+		ptgDJE    ->clear();
+		ptgDJE8x8 ->clear();
+		ptgDGA    ->clear();
+		pjch      ->clear();
+		pjrch     ->clear();
+		pch       ->clear();
+		pi0E      ->clear();
+		pi0D      ->clear();
+		gE        ->clear();
+		gD        ->clear();
 
 	} //end event loop
 	fin->Close();
