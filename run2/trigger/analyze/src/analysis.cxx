@@ -662,7 +662,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 			hDJEpEJEmed[icent]->Fill(i->E(), tg.medjECAL8x8, hd.xsec);
 			hDJEpEGAmed[icent]->Fill(i->E(), tg.medgECAL, hd.xsec);
 		}
-		for (std::vector<TLorentzVector>::iterator i = ptgDJE->begin(); i != ptgDJE->end(); ++i)
+		for (std::vector<TLorentzVector>::iterator i = ptgDJE8x8->begin(); i != ptgDJE8x8->end(); ++i)
 		{
 			tnDJE8x8->Fill(hd.xsec, hd.cent, i->E(), tg.medjDCAL, tg.medjDCAL8x8, tg.medjECAL, tg.medjECAL8x8);
 		}
