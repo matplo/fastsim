@@ -344,22 +344,29 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		                          nptbins, 0, maxpt, nptbins, 0, maxpt);
 	}
 
-	// in case cal=0 the max is ECAL and med is DCAL
-	// in case cal=1 the max is DCAL and med is ECAL
-	TNtuple *tnpi0jet = 	new TNtuple("tnpi0jet", 	"tnpi0jet", 	"cal:xsec:cent:ptT:jpt:dphi:maxJE:maxGA:medJE:medGA");
-
-	// in case cal=0 the max is ECAL and med is DCAL
-	// in case cal=1 the max is DCAL and med is ECAL
-	TNtuple *tngjet = 	new TNtuple("tngjet", 	"tngjet", 	"cal:xsec:cent:ptT:jpt:dphi:maxJE:maxGA:medJE:medGA");
-	TNtuple *tnghad = 	new TNtuple("tnghad", 	"tnghad", 	"cal:xsec:cent:ptT:hpt:dphi:maxJE:maxGA:medJE:medGA");
-
 	// just to count
-	TNtuple *tn   = new TNtuple("tn", "tn", "xsec:cent:maxEJE:maxEJE8x8:maxEGA:medEJE:medEJE8x8:medEGA:maxDJE:maxDJE8x8:maxDGA:medDJE:medDJE8x8:medDGA");
+	TNtuple *tn   = new TNtuple("tn", "tn",
+	                            "xsec:cent:maxEJE:maxEJE8x8:maxEGA:medEJE:medEJE8x8:medEGA:maxDJE:maxDJE8x8:maxDGA:medDJE:medDJE8x8:medDGA");
 
-	TNtuple *tnj   = new TNtuple("tnjet", "tnjet", "cal:xsec:cent:jpt:maxJE:maxGA:medJE:medGA");
-	TNtuple *tnjr  = new TNtuple("tnjetr", "tnjet", "cal:xsec:cent:jpt:maxJE:maxGA:medJE:medGA");
-	TNtuple *tnpi0 = new TNtuple("tnpi0", "tnpi0", "cal:xsec:cent:jpt:maxJE:maxGA:medJE:medGA");
-	TNtuple *tng   = new TNtuple("tng", "tng", "cal:xsec:cent:jpt:maxJE:maxGA:medJE:medGA");
+	TNtuple *tnEJE    = new TNtuple("tnEJE", 	"tnEJE", 	"xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
+	TNtuple *tnDJE    = new TNtuple("tnDJE", 	"tnDJE", 	"xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
+	TNtuple *tnEJE8x8 = new TNtuple("tnEJE8x8", "tnEJE8x8", "xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
+	TNtuple *tnDJE8x8 = new TNtuple("tnDJE8x8", "tnDJE8x8", "xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
+
+	TNtuple *tnj   = new TNtuple("tnjet", 	"tnjet", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
+	TNtuple *tnjr  = new TNtuple("tnjetr", 	"tnjet", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
+	TNtuple *tnpi0 = new TNtuple("tnpi0", 	"tnpi0", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
+	TNtuple *tng   = new TNtuple("tng", 	"tng", 		"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
+
+	// in case cal=0 the max is ECAL and med is DCAL
+	// in case cal=1 the max is DCAL and med is ECAL
+	TNtuple *tnpi0jet = 	new TNtuple("tnpi0jet", 	"tnpi0jet",
+	                                    "cal:xsec:cent:ptT:jpt:dphi:maxJE:maxJE8x8:maxGA:medJE:medGA");
+
+	// in case cal=0 the max is ECAL and med is DCAL
+	// in case cal=1 the max is DCAL and med is ECAL
+	TNtuple *tngjet = 	new TNtuple("tngjet", 	"tngjet", 	"cal:xsec:cent:ptT:jpt:dphi:maxJE:maxJE8x8:maxGA:medJE:medGA");
+	TNtuple *tnghad = 	new TNtuple("tnghad", 	"tnghad", 	"cal:xsec:cent:ptT:hpt:dphi:maxJE:maxJE8x8:maxGA:medJE:medGA");
 
 	// begin output
 
@@ -523,7 +530,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 10)
 			{
-				tnj->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+				tnj->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 			}
 
 			hEptn->Fill(i->Pt());
@@ -561,7 +568,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 10)
 			{
-				tnjr->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+				tnjr->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 			}
 
 			for (unsigned int ic = 0; ic < cent.size() / 2; ic++)
@@ -584,7 +591,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 10)
 			{
-				tnj->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+				tnj->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 			}
 
 			hDptn->Fill(i->Pt());
@@ -606,13 +613,15 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 10)
 			{
-				tnjr->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+				tnjr->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 			}
 		}
 
 		// patches
 		for (std::vector<TLorentzVector>::iterator i = ptgEJE->begin(); i != ptgEJE->end(); ++i)
 		{
+			tnEJE->Fill(hd.xsec, hd.cent, i->E(), tg.medjECAL, tg.medjECAL8x8, tg.medjDCAL, tg.medjDCAL8x8);
+
 			hEJEcentn->Fill(i->E(), hd.cent);
 			hEJEcentw->Fill(i->E(), hd.cent, hd.xsec);
 			hEJEdiffcentn->Fill(i->E() - tg.medjDCAL8x8, hd.cent);
@@ -622,6 +631,10 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 			hEJEpDGAmed[0]->Fill(i->E(), tg.medgDCAL, hd.xsec);
 			hEJEpDJEmed[icent]->Fill(i->E(), tg.medjDCAL8x8, hd.xsec);
 			hEJEpDGAmed[icent]->Fill(i->E(), tg.medgDCAL, hd.xsec);
+		}
+		for (std::vector<TLorentzVector>::iterator i = ptgEJE8x8->begin(); i != ptgEJE8x8->end(); ++i)
+		{
+			tnEJE8x8->Fill(hd.xsec, hd.cent, i->E(), tg.medjECAL, tg.medjECAL8x8, tg.medjDCAL, tg.medjDCAL8x8);
 		}
 		for (std::vector<TLorentzVector>::iterator i = ptgEGA->begin(); i != ptgEGA->end(); ++i)
 		{
@@ -637,6 +650,8 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		}
 		for (std::vector<TLorentzVector>::iterator i = ptgDJE->begin(); i != ptgDJE->end(); ++i)
 		{
+			tnDJE->Fill(hd.xsec, hd.cent, i->E(), tg.medjDCAL, tg.medjDCAL8x8, tg.medjECAL, tg.medjECAL8x8);
+
 			hDJEcentn->Fill(i->E(), hd.cent);
 			hDJEcentw->Fill(i->E(), hd.cent, hd.xsec);
 			hDJEdiffcentn->Fill(i->E() - tg.medjECAL8x8, hd.cent);
@@ -646,6 +661,10 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 			hDJEpEGAmed[0]->Fill(i->E(), tg.medgECAL, hd.xsec);
 			hDJEpEJEmed[icent]->Fill(i->E(), tg.medjECAL8x8, hd.xsec);
 			hDJEpEGAmed[icent]->Fill(i->E(), tg.medgECAL, hd.xsec);
+		}
+		for (std::vector<TLorentzVector>::iterator i = ptgDJE->begin(); i != ptgDJE->end(); ++i)
+		{
+			tnDJE8x8->Fill(hd.xsec, hd.cent, i->E(), tg.medjDCAL, tg.medjDCAL8x8, tg.medjECAL, tg.medjECAL8x8);
 		}
 		for (std::vector<TLorentzVector>::iterator i = ptgDGA->begin(); i != ptgDGA->end(); ++i)
 		{
@@ -668,7 +687,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 5)
 			{
-				tnpi0->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+				tnpi0->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 			}
 			if (i->Pt() > 20)
 			{
@@ -677,7 +696,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 10 && TMath::Abs(j->Eta()) < 0.9 - 0.4)
 					{
 						tnpi0jet->Fill(0, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						               tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+						               tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 					}
 				}
 			}
@@ -686,7 +705,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 5)
 			{
-				tnpi0->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+				tnpi0->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 			}
 			if (i->Pt() > 20)
 			{
@@ -695,7 +714,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 10 && TMath::Abs(j->Eta()) < 0.9 - 0.4)
 					{
 						tnpi0jet->Fill(1, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						               tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+						               tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 					}
 				}
 			}
@@ -709,7 +728,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 5)
 			{
-				tng->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+				tng->Fill(0, hd.xsec, hd.cent, i->Pt(), tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 			}
 			if (i->Pt() > 20)
 			{
@@ -718,7 +737,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 10 && TMath::Abs(j->Eta()) < 0.9 - 0.4)
 					{
 						tngjet->Fill(0, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						             tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+						             tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 					}
 				}
 				for (std::vector<TLorentzVector>::iterator j = pch->begin(); j != pch->end(); ++j)
@@ -726,7 +745,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 1 && TMath::Abs(j->Eta()) < 0.9)
 					{
 						tnghad->Fill(0, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						             tg.maxjECAL, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
+						             tg.maxjECAL, tg.maxjECAL8x8, tg.maxgECAL, tg.medjDCAL8x8, tg.medgDCAL);
 					}
 				}
 			}
@@ -735,7 +754,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		{
 			if (i->Pt() > 5)
 			{
-				tng->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+				tng->Fill(1, hd.xsec, hd.cent, i->Pt(), tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 			}
 			if (i->Pt() > 20)
 			{
@@ -744,7 +763,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 10 && TMath::Abs(j->Eta()) < 0.9 - 0.4)
 					{
 						tngjet->Fill(1, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						             tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+						             tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 					}
 				}
 				for (std::vector<TLorentzVector>::iterator j = pch->begin(); j != pch->end(); ++j)
@@ -752,7 +771,7 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 					if (j->Pt() > 1 && TMath::Abs(j->Eta()) < 0.9)
 					{
 						tnghad->Fill(1, hd.xsec, hd.cent, i->Pt(), j->Pt(), j->DeltaPhi(*i),
-						             tg.maxjDCAL, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
+						             tg.maxjDCAL, tg.maxjDCAL8x8, tg.maxgDCAL, tg.medjECAL8x8, tg.medgECAL);
 					}
 				}
 			}
