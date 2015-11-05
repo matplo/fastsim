@@ -353,6 +353,9 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 	TNtuple *tnEJE8x8 = new TNtuple("tnEJE8x8", "tnEJE8x8", "xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
 	TNtuple *tnDJE8x8 = new TNtuple("tnDJE8x8", "tnDJE8x8", "xsec:cent:JE:medJE:medJE8x8:medXJE:medXJE8x8");
 
+	TNtuple *tnEGA    = new TNtuple("tnEGA", 	"tnEGA", 	"xsec:cent:GA:medGA:medJE8x8:medXGA:medXJE8x8");
+	TNtuple *tnDGA    = new TNtuple("tnDGA", 	"tnDGA", 	"xsec:cent:GA:medGA:medJE8x8:medXGA:medXJE8x8");
+
 	TNtuple *tnj   = new TNtuple("tnjet", 	"tnjet", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
 	TNtuple *tnjr  = new TNtuple("tnjetr", 	"tnjet", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
 	TNtuple *tnpi0 = new TNtuple("tnpi0", 	"tnpi0", 	"cal:xsec:cent:pt:maxJE:maxJE8x8:maxGA:medJE:medGA");
@@ -638,6 +641,8 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		}
 		for (std::vector<TLorentzVector>::iterator i = ptgEGA->begin(); i != ptgEGA->end(); ++i)
 		{
+			tnEGA->Fill(hd.xsec, hd.cent, i->E(), tg.medgECAL, tg.medjECAL8x8, tg.medgDCAL, tg.medjDCAL8x8);
+
 			hEGAcentn->Fill(i->E(), hd.cent);
 			hEGAcentw->Fill(i->E(), hd.cent, hd.xsec);
 			hEGAdiffcentn->Fill(i->E() - tg.medgDCAL, hd.cent);
@@ -668,6 +673,8 @@ void Analysis::AnalyzeFile(const char *fname, const char *foutname, Long64_t nev
 		}
 		for (std::vector<TLorentzVector>::iterator i = ptgDGA->begin(); i != ptgDGA->end(); ++i)
 		{
+			tnDGA->Fill(hd.xsec, hd.cent, i->E(), tg.medgDCAL, tg.medjDCAL8x8, tg.medgECAL, tg.medjECAL8x8);
+
 			hDGAcentn->Fill(i->E(), hd.cent);
 			hDGAcentw->Fill(i->E(), hd.cent, hd.xsec);
 			hDGAdiffcentn->Fill(i->E() - tg.medgECAL, hd.cent);
