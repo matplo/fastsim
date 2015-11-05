@@ -2,3 +2,4 @@ hardQCD
 photons
 *.root
 *.*~
+*default-out-list*
