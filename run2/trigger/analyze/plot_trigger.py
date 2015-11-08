@@ -99,6 +99,12 @@ def plot_xsec_je(fname, bwidth=20):
 	if '--write' in sys.argv:
 		hl.write_to_file(name_mod='modn:')
 
+	hlr = dlist.make_ratio(hl[1].obj, hl[0].obj)
+	hlr.make_canvas(600,600)
+	hlr.draw(miny=0, maxy=1.2)
+	hlr.self_legend()
+	tu.gList.append(hlr)
+
 def get_xsec_gapi(fname, which='EMC', gapi='g', usercut='(1)', bwidth=1):
 	tname = 'tng'
 	if gapi=='pi0':
