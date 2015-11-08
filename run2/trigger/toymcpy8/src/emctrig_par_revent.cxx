@@ -32,11 +32,9 @@ namespace py = Pythia8;
 
 #include "util.h"
 #include <AliGenFastModelingEvent.h>
-
 #include <TriggerMaker.h>
-
 #include <EMPartResp.h>
-
+#include <R2Util.h>
 #include "revent.h"
 
 int emctrig_par_revent( int argc, char *argv[])
@@ -560,9 +558,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard[i].phi_02pi();
 			eta = sorted_jets_hard[i].eta();
-			if (emcalmapping.IsEMCAL(eta, phi))
+			if (R2Util::IsEMCAL02pi(eta, phi))
 				ej.push_back(sorted_jets_hard[i]);
-			if (emcalmapping.IsDCALPHOS(eta, phi))
+			if (R2Util::IsDCALPHOS02pi(eta, phi))
 				dj.push_back(sorted_jets_hard[i]);
 		}
 
@@ -572,9 +570,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard_r[i].phi_02pi();
 			eta = sorted_jets_hard_r[i].eta();
-			if (emcalmapping.IsEMCAL(eta, phi))
+			if (R2Util::IsEMCAL02pi(eta, phi))
 				ej_r.push_back(sorted_jets_hard_r[i]);
-			if (emcalmapping.IsDCALPHOS(eta, phi))
+			if (R2Util::IsDCALPHOS02pi(eta, phi))
 				dj_r.push_back(sorted_jets_hard_r[i]);
 		}
 
@@ -598,6 +596,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = photons[i].phi_02pi();
 			eta = photons[i].eta();
+			// note: here as photon is a particle we use the particle acceptance
 			if (emcalmapping.IsEMCAL(eta, phi))
 				eg.push_back(photons[i]);
 			if (emcalmapping.IsDCALPHOS(eta, phi))

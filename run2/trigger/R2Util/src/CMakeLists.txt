@@ -26,6 +26,11 @@ set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
 #message ("[info] CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 find_package(ROOT REQUIRED Eg)
 
+find_package(Boost REQUIRED math_c99)
+if (BOOST-NOTFOUND)
+	message(SEND_ERROR "Boost or one of the components not found. Will not compile ${EXE_NAME}")
+endif (BOOST-NOTFOUND)
+
 set(CMAKE_MACOSX_RPATH 1)
 
 set(SRCS
@@ -50,7 +55,9 @@ ROOT_GENERATE_DICTIONARY(${DICT} ${HDRS} LINKDEF ${LINKDEFS})
 #    DEPENDS ${HDRS} )
 #message ("[info] ${DICT} ${ROOTCINT_EXECUTABLE}")
 
-link_libraries(${ROOT_LIBRARIES})
+include_directories(${Boost_INCLUDE_DIR})
+
+link_libraries(${ROOT_LIBRARIES} ${Boost_LIBRARIES})
 add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS} ${DICT}.cxx)
 
 install(TARGETS ${PROJECT_NAME}
