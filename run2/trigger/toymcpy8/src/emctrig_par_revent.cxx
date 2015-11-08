@@ -34,7 +34,7 @@ namespace py = Pythia8;
 #include <AliGenFastModelingEvent.h>
 #include <TriggerMaker.h>
 #include <EMPartResp.h>
-#include <R2Util.h>
+#include <r2util.h>
 #include "revent.h"
 
 int emctrig_par_revent( int argc, char *argv[])
