@@ -12,12 +12,13 @@ import sys
 import centrality
 import tutils as tu
 import hnutil
+import draw_ntuple
 
 from trigutils import *
 from je_plot_trigger import *
 from ga_plot_trigger import *
 
-def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1):
+def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=True):
 	tname = 'tnjet'
 	if R==0.2:
 		tname = 'tnjetr'
@@ -30,40 +31,58 @@ def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1):
 	var    = 'pt'
 	xlow   = 0
 	if '--lowpt' in sys.argv:
-		xhigh = 100
+		xhigh  = 100
 		bwidth = 10
 	else:
-		xhigh  = 260
+		xhigh  = 160
 	tu.getTempCanvas().cd()
-	cuts = '(xsec)*( ({}) && (cal=={}))'.format(usercut, cal)
-	h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	cuts = '(xsec)*( ({}) && (cal=={}) )'.format(usercut, cal)
+	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	refcuts = '( ({}) && (cal=={}) )'.format(usercut, cal)
+	hl = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr = 1 * bwidth/2.)
+	#h = hl.last().obj
+	h = hl[0].obj.Clone(hl[0].name + 'clone')
 	#cuts = '( ({}) && (cal=={}))'.format(usercut, cal)
 	#href = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
 	#tu.filter_single_entries(h, href, 3)
-	h.Scale(1./get_nev(fname)/keepOutFactor/bwidth)
+	#print keepOutFactor
+	#h.Scale(1./get_nev(fname)*keepOutFactor)
+	#h.Scale(1./get_nev(fname)/bwidth*keepOutFactor)
+	if scalebw == True:
+		h.Scale(1./10000/bwidth*keepOutFactor)
+	else:
+		h.Scale(1./10000*keepOutFactor)		
 	return h
 
-def get_yields_je(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1):
+def get_yields_je(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=False):
 	hlname = 'yields_{}_{}_{:1.1f}M_events'.format(which, str(R), nev/1.e6)
 	if '--lowpt' in sys.argv:
 		hlname = hlname + '-lowpt'
 	hl = dlist.dlist(hlname)
 	cent = centrality.Centrality()
-	hmb  = get_xsec_je(fname, which, R, usercut, bwidth)
+	hmb  = get_xsec_je(fname, which, R, usercut, bwidth, scalebw=scalebw)
 	hmb.Scale(cent.TAAmb() * nev)
 	htitle = 'min. bias [{:1.1f}M]'.format(nev/1.e6)
 	hl.add(hmb, htitle, 'p')
 	for i,taa in enumerate(cent.TAAs()):
 		print cent.Label(i), taa, nev * cent.BinWidth(i)
-		h = get_xsec_je(fname, which, R, usercut, bwidth)
+		h = get_xsec_je(fname, which, R, usercut, bwidth, scalebw=scalebw)
 		h.Scale(taa * nev * cent.BinWidth(i))
 		htitle = '{} R={} {} [{}M]'.format(which, R, cent.Label(i), nev * cent.BinWidth(i)/1e6)
 		hl.add(h, htitle, 'p')
-	hl.reset_axis_titles('jet p_{T} (GeV/c)', 'dN/dp_{T} (c/GeV)')
+	if scalebw == True:		
+		hl.reset_axis_titles('jet p_{T} (GeV/c)', 'dN/dp_{T} (c/GeV)')
+		yscale = 1.
+	else:
+		yaxtitle = 'N_{jets} in bwidth GeV/c bin'
+		yaxtitle = yaxtitle.replace('bwidth', str(bwidth))
+		hl.reset_axis_titles('jet p_{T} (GeV/c)', yaxtitle)
+		yscale = bwidth
+
 	hl.make_canvas(w=700,h=700)
 	hl.zoom_axis(0, 0, 350)
-	hl.draw(logy=True, miny=1e-3, maxy=1e8)
-	hl.self_legend()
+	hl.draw(logy=True, miny=1e-3 * yscale, maxy=1e8 * yscale)
+	hl.self_legend(1, '{} R={}'.format(which, R))
 	ROOT.gPad.SetLogy()
 	ROOT.gPad.SetGridx()
 	ROOT.gPad.SetGridy()	
@@ -99,11 +118,11 @@ def plot_xsec_je(fname, bwidth=20):
 	if '--write' in sys.argv:
 		hl.write_to_file(name_mod='modn:')
 
-	hlr = dlist.make_ratio(hl[1].obj, hl[0].obj)
-	hlr.make_canvas(600,600)
-	hlr.draw(miny=0, maxy=1.2)
-	hlr.self_legend()
-	tu.gList.append(hlr)
+	#hlr = dlist.make_ratio(hl[1].obj, hl[0].obj)
+	#hlr.make_canvas(600,600)
+	#hlr.draw(miny=0, maxy=1.2)
+	#hlr.self_legend()
+	#tu.gList.append(hlr)
 
 def get_xsec_gapi(fname, which='EMC', gapi='g', usercut='(1)', bwidth=1):
 	tname = 'tng'
@@ -203,7 +222,8 @@ def main():
 		get_yields_je(fname, nev=nev, which='DMC', R=0.2, usercut='(1)', bwidth=bwidth)
 
 	if '--ycut1' in sys.argv:
-		fname = './qcd-mtune1.2-list.outputs.root'
+		#fname = './qcd-mtune1.2-list.outputs.root'
+		#fname = './qcd-mtune1.2-list.outputs'
 		bwidth = 10
 		if '--mb' in sys.argv:
 			nev = 150.e6 * effiRAA
@@ -224,6 +244,7 @@ def main():
 		#hlr3 = divide_lists(hl3c, hl3)
 
 		hlr = dlist.dlist('bias')
+
 		h  = get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=bwidth)
 		hc = get_xsec_je(fname, which='EMC', R=0.4, usercut='((maxJE-medJE)>18)', bwidth=bwidth)
 		hlr1 = dlist.make_ratio(hc, h)
