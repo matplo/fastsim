@@ -1,6 +1,6 @@
-import dlist
 from trigutils import *
 import ROOT
+import draw_ntuple
 
 def plot_patches_ga(fname, usercut='(1)'):
 	var = 'GA'
@@ -12,12 +12,16 @@ def plot_patches_ga(fname, usercut='(1)'):
 	hl = dlist.dlist(to_file_name(hlname))
 	for tn in ['tnEGA', 'tnDGA', 'tnEGA8x8', 'tnDGA8x8' ]:
 		tu.getTempCanvas().cd()
-		h = tu.draw_h1d_from_ntuple(fname, tn, var, cuts, bwidth, xlow, xhigh)
-		hl.add(h, tn, 'p')
+		#h = tu.draw_h1d_from_ntuple(fname, tn, var, cuts, bwidth, xlow, xhigh)
+		#hl.add(h, tn, 'p')
+		hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tn, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr = 10)
+		hl.add(hls[0].obj, tn, 'p')
 	for var in ['maxEGA', 'maxDGA', 'maxEGA8x8', 'maxDGA8x8']:
 		tu.getTempCanvas().cd()
-		h = tu.draw_h1d_from_ntuple(fname, 'tn', var, cuts, bwidth, xlow, xhigh)
-		hl.add(h, var, 'hist l')		
+		#h = tu.draw_h1d_from_ntuple(fname, 'tn', var, cuts, bwidth, xlow, xhigh)
+		#hl.add(h, var, 'hist l')		
+		hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, 'tn', var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr = 10)
+		hl.add(hls[0].obj, var, 'hist l')		
 	hl.make_canvas(600,600)
 	hl.draw(logy=True)
 	hl.self_legend()
@@ -32,11 +36,14 @@ def plot_trigger_ga(fname, which='EGA', usercut='(1)'):
 		tname = 'tnDGA'
 	var = 'GA - medXGA8x8 / 16.'
 	cuts = '(xsec)*({})'.format(usercut)
+	refcuts = '({})'.format(usercut)
 	bwidth = 1
 	xlow   = -50
 	xhigh  = 200
 	tu.getTempCanvas().cd()
-	h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr=10)
+	h = hls[0].obj
 	hlname = 'plot trigger GA {} {}'.format(tname, var)
 	if usercut!='(1)':
 		hlname = 'plot trigger {} {} | {}'.format(tname, var, usercut)		
@@ -60,11 +67,14 @@ def plot_trigger_max_ga(fname, which='EGA', usercut='(1)'):
 	else:
 		var = 'maxDGA - medEJE8x8 / 16'
 	cuts = '(xsec)*({})'.format(usercut)
+	refcuts = '({})'.format(usercut)
 	bwidth = 1
 	xlow   = -50
 	xhigh  = 200
 	tu.getTempCanvas().cd()
-	h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
+	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr=10)
+	h = hls[0].obj
 	hlname = 'plot trigger max GA {} {}'.format(tname, var)
 	if usercut!='(1)':
 		hlname = 'plot trigger max GA {} {} | {}'.format(tname, var, usercut)		
