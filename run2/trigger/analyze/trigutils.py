@@ -9,7 +9,7 @@ def EMCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 	print '[i] using EMCalKeepOutFactor with R=', R, retval
-	return 1 #retval
+	return retval
 
 def EMCalUpScaleAtlas(R=0.4):
 	dphi  = 360. / 110.
@@ -23,7 +23,7 @@ def DCalKeepOutFactor(R=0.4):
 	dphi_r = dphi - 2. * R
 	retval =  deta_r * dphi_r / (deta * dphi)
 	print '[i] using DCalKeepOutFactor with R=', R, retval
-	return 1 #retval
+	return retval
 
 def to_file_name(s):
 	return "".join([x if x.isalnum() else "_" for x in s])
