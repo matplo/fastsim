@@ -115,6 +115,8 @@ int emctrig_test( int argc, char *argv[])
 	std::vector <fj::PseudoJet> bg_event_clusters_ecal; // boltzman background
 	std::vector <fj::PseudoJet> bg_event_clusters_dcal; // boltzman background
 
+	std::vector <fj::PseudoJet> bg_event_clusters_dcal_rot; // boltzman background
+
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
 		double xsec = 1.0;
@@ -129,6 +131,7 @@ int emctrig_test( int argc, char *argv[])
 		bg_event_clusters.clear(); // boltzman background
 		bg_event_clusters_ecal.clear(); // boltzman background
 		bg_event_clusters_dcal.clear(); // boltzman background
+		bg_event_clusters_dcal_rot.clear(); // boltzman background
 
 		py::Vec4   pTemp;
 		double mTemp;
@@ -169,6 +172,7 @@ int emctrig_test( int argc, char *argv[])
 
 		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_ecal, 0);
 		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
+		GenerUtil::add_particles(bg_event_clusters_dcal_rot, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
 
 		if (verbosity > 7)
 		{
@@ -206,7 +210,7 @@ int emctrig_test( int argc, char *argv[])
 			{
 				tm.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 				tm_bg.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
-				hbgcl->Fill(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				//hbgcl->Fill(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 			}
 		}
 
@@ -222,11 +226,11 @@ int emctrig_test( int argc, char *argv[])
 			}
 		}
 
-		for (unsigned int ip = 0; ip < bg_event_clusters_dcal.size(); ip++)
+		for (unsigned int ip = 0; ip < bg_event_clusters_dcal_rot.size(); ip++)
 		{
-			if (emcalmapping.IsDCALPHOS(bg_event_clusters_dcal[ip].eta(), bg_event_clusters_dcal[ip].phi_02pi()))
+			if (emcalmapping.IsDCALPHOS(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi()))
 			{
-				hbgcl->Fill(bg_event_clusters_dcal[ip].eta(), bg_event_clusters_dcal[ip].phi_02pi(), bg_event_clusters_dcal[ip].e());
+				hbgcl->Fill(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi(), bg_event_clusters_dcal_rot[ip].e());
 				acceptedBGdcal++;
 			}
 		}
