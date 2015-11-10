@@ -100,11 +100,16 @@ int emctrig_test( int argc, char *argv[])
 	TH2F *hbgcl				= new TH2F("hbgcl", "hbgcl;#eta;#phi", 100, -1, 1, 360, 0, TMath::Pi() * 2.);
 	TH2F *hcentmult			= new TH2F("hcentmult", "hcentmult;cent;mult", 100, 0, 100, 5000, 0, 5000);
 
-	TH2F *hgenBGecal		= new TH2F("hgenBGecal", "hgenBGecal;N_{gen};centrality", 100, 0, 4000, 100, 0, 100);
-	TH2F *hgenBGdcal		= new TH2F("hgenBGdcal", "hgenBGecal;N_{gen};centrality", 100, 0, 4000, 100, 0, 100);
+	TH2F *hgenBGecal		= new TH2F("hgenBGecal", "hgenBGecal;centrality;N_{gen}", 100, 0, 100, 100, 0, 2500);
+	TH2F *hgenBGdcal		= new TH2F("hgenBGdcal", "hgenBGecal;centrality;N_{gen}", 100, 0, 100, 100, 0, 2500);
 
-	TH2F *haccBGecal		= new TH2F("haccBGecal", "haccBGecal;N_{acc}/N_{gen};centrality", 100, 0, 1, 100, 0, 100);
-	TH2F *haccBGdcal		= new TH2F("haccBGdcal", "haccBGecal;N_{acc}/N_{gen};centrality", 100, 0, 1, 100, 0, 100);
+	TH2F *haccBGecal		= new TH2F("haccBGecal", "haccBGecal;centrality;N_{acc}/N_{gen}", 100, 0, 100, 100, 0, 1);
+	TH2F *haccBGdcal		= new TH2F("haccBGdcal", "haccBGdcal;centrality;N_{acc}/N_{gen}", 100, 0, 100, 100, 0, 1);
+
+	TH2F *hphietacl			= new TH2F("hphietacl", 	"hphietacl", 	3600, 0, TMath::Pi() * 2., 2000, -1, 1);
+	TH2F *hphietaclT		= new TH2F("hphietaclT", 	"hphietaclT", 	3600, 0, TMath::Pi() * 2., 2000, -1, 1);
+
+	TH2F *hEcl 				= new TH2F("hEcl", "hEcl;centrality;Energy", 10	, 0, 100, 100, 0, 10);
 
 	TriggerMappingEmcalSimple emcalmapping;
 	int nRejectedEvents = 0;
@@ -171,8 +176,8 @@ int emctrig_test( int argc, char *argv[])
 		bg_event_clusters_dcal = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
 
 		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_ecal, 0);
-		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
-		GenerUtil::add_particles(bg_event_clusters_dcal_rot, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
+		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //3.1416); //rotate in phi by 2.8 rad
+		GenerUtil::add_particles(bg_event_clusters_dcal_rot, bg_event_clusters_dcal, 2.8); //3.1416); //rotate in phi by 2.8 rad
 
 		if (verbosity > 7)
 		{
@@ -211,7 +216,9 @@ int emctrig_test( int argc, char *argv[])
 				tm.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 				tm_bg.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 				//hbgcl->Fill(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				hphietaclT->Fill(bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].eta());
 			}
+			hphietacl->Fill(bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].eta());
 		}
 
 		double acceptedBGecal = 0;
@@ -219,33 +226,47 @@ int emctrig_test( int argc, char *argv[])
 
 		for (unsigned int ip = 0; ip < bg_event_clusters_ecal.size(); ip++)
 		{
-			if (emcalmapping.IsEMCAL(bg_event_clusters_ecal[ip].eta(), bg_event_clusters_ecal[ip].phi_02pi()))
+			if ( emcalmapping.IsEMCAL(bg_event_clusters_ecal[ip].eta(), bg_event_clusters_ecal[ip].phi_02pi()) )
 			{
 				hbgcl->Fill(bg_event_clusters_ecal[ip].eta(), bg_event_clusters_ecal[ip].phi_02pi(), bg_event_clusters_ecal[ip].e());
+				hEcl->Fill(centRandom, bg_event_clusters_ecal[ip].e());
 				acceptedBGecal++;
+			}
+		}
+
+		unsigned int possibleDCal = 0;
+		for (unsigned int ip = 0; ip < bg_event_clusters_dcal_rot.size(); ip++)
+		{
+			if ( R2Util::IsDCALPHOS02pi(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi()) )
+			{
+				possibleDCal++;
 			}
 		}
 
 		for (unsigned int ip = 0; ip < bg_event_clusters_dcal_rot.size(); ip++)
 		{
-			if (emcalmapping.IsDCALPHOS(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi()))
+			if ( emcalmapping.IsDCALPHOS(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi()) )
 			{
 				hbgcl->Fill(bg_event_clusters_dcal_rot[ip].eta(), bg_event_clusters_dcal_rot[ip].phi_02pi(), bg_event_clusters_dcal_rot[ip].e());
 				acceptedBGdcal++;
 			}
 		}
 
-		hgenBGecal->Fill(bg_event_clusters_ecal.size(), centRandom);
-		hgenBGdcal->Fill(bg_event_clusters_dcal.size(), centRandom);
+		hgenBGecal->Fill(centRandom, bg_event_clusters_ecal.size());
+		//hgenBGdcal->Fill(bg_event_clusters_dcal.size(), centRandom);
+		hgenBGdcal->Fill(centRandom, possibleDCal);
 
 		if (bg_event_clusters_ecal.size() > 0)
 		{
-			haccBGecal->Fill(acceptedBGecal / bg_event_clusters_ecal.size(), centRandom);
+			haccBGecal->Fill(centRandom, acceptedBGecal / bg_event_clusters_ecal.size());
 			if (verbosity > 8)
 				cout << "[i] event bg cluster stat ECAL [acc | gen | a/g ratio]: " << acceptedBGecal << " " << bg_event_clusters_ecal.size() << " " << acceptedBGecal / bg_event_clusters_ecal.size() << endl;
 		}
 		if (bg_event_clusters_dcal.size() > 0)
-			haccBGdcal->Fill(acceptedBGdcal / bg_event_clusters_dcal.size(), centRandom);
+		{
+			haccBGdcal->Fill(centRandom, acceptedBGdcal / possibleDCal);
+			//haccBGdcal->Fill(acceptedBGdcal / bg_event_clusters_dcal.size(), centRandom);
+		}
 
 		if (verbosity > 8)
 		{
