@@ -39,7 +39,8 @@ def make_map(fname, det='EMC'):
 	rfout = ROOT.TFile.Open(rfoutname, 'recreate')
 	etadet = 0.668305
 	hname = '{}_{}'.format(fname.replace('.png', ''), det)
-	hout = ROOT.TH2I(hname, hname+';eta;phi', 200, -0.7, 0.7, 450, 0, math.pi * 2.)
+	#hout = ROOT.TH2I('hmask', hname+';eta;phi', 2000, -0.7, 0.7, 4500, 0, math.pi * 2.)
+	hout = ROOT.TH2I('hmask', hname+';eta;phi', 1400, -0.7, 0.7, 36000, 0, math.pi * 2.)
 
 	img = Image.open(fname).convert('RGBA')
 	arr = np.array(img)
