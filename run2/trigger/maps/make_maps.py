@@ -8,6 +8,9 @@ import sys
 import numpy as np
 from PIL import Image
 
+import ROOT
+import math
+
 #http://stackoverflow.com/questions/15612373/convert-image-png-to-matrix-and-then-to-1d-array
 
 #From TriggerMappingEmcalSimple.cxx
@@ -33,11 +36,12 @@ class Square(object):
 	def __init__(self, x, y):
 		self.xy = []
 		self.xy.append([x,y])
+		self.box()
 		print '[i] new square:', self.__repr__()
 
 	def addPixel(self, x, y):
-		#if self.isInside(x, y):
-		#	return True
+		if self.isInside(x, y):
+			return True
 
 		if self.isNeighbour(x,y):
 			self.xy.append([x,y])
@@ -59,22 +63,36 @@ class Square(object):
 		return False
 
 	def box(self):
-		xmin = 1e6
-		ymin = 1e6
-		xmax = 0
-		ymax = 0
+		self.xmin = 1e6
+		self.ymin = 1e6
+		self.xmax = 0
+		self.ymax = 0
 		for xy in self.xy:
-			if xy[0] < xmin:
-				xmin = xy[0]
-			if xy[1] < ymin:
-				ymin = xy[1]
+			if xy[0] < self.xmin:
+				self.xmin = xy[0]
+			if xy[1] < self.ymin:
+				self.ymin = xy[1]
 
-			if xy[0] > xmax:
-				xmax = xy[0]
-			if xy[1] > ymax:
-				ymax = xy[1]
+			if xy[0] > self.xmax:
+				self.xmax = xy[0]
+			if xy[1] > self.ymax:
+				self.ymax = xy[1]
 
-		return [xmin, xmax, ymin, ymax]
+		return [self.xmin, self.xmax, self.ymin, self.ymax]
+
+	def addPixelBox(self, x, y):
+		if self.isInsideBox(x,y):
+			return True
+		if self.isNeighbour(x,y):
+			self.xy.append([x,y])
+			self.box()
+			return True
+		return False
+
+	def isInsideBox(self, x, y):
+		if x <= self.xmax and x >= self.xmin and y <= self.ymax and y >= self.ymin:
+			return True
+		return False
 
 	def __repr__(self):
 		return ':'.join([str(x) for x in self.box()])
@@ -102,28 +120,72 @@ def make_map(fname, det='EMC'):
 	print '[i] make_maps:',fname, det
 
 	rfoutname = fname.replace('.png', '_mask.root')
-	#rfout = TFile.Open(rfoutname, 'recreate')
-	#hout = TH2F(hname, hname, 200)
+	rfout = ROOT.TFile.Open(rfoutname, 'recreate')
+	etadet = 0.668305
+	hname = '{}-{}'.format(fname.replace('.png'), det)
+	hout = ROOT.TH2F(hname, hname, 500/2, -0.7, 0.7, 4500/2, 0, math.pi * 2.)
 
 	img = Image.open(fname).convert('RGBA')
 	arr = np.array(img)
 	for index, x in np.ndenumerate(arr):
 		#print index, x
+		print index,'\r',
 		ridx = (index[0], index[1], 0)
 		gidx = (index[0], index[1], 1)
 		bidx = (index[0], index[1], 2)
 		if arr[gidx] == 255 or arr[gidx] == 247:
-			setcol = 0
-		else:
 			setcol = 1
-			#if arr[gidx] > 0:
-			#	print index, x
+		else:
+			setcol = 0
+		for col in range(4):
+			idx = (index[0], index[1], col)
+			arr[idx] = setcol * 255
+
+	img2 = Image.fromarray(arr, 'RGBA')
+	img2.save(fname.replace('.png', '_mask.png'), 'PNG')
+
+	squares = Squares()
+	for index, x, in np.ndenumerate(arr):
+		print index,'\r',
+		if x > 0:
+			squares.addPixel(index[0], index[1])
+
+	img2 = Image.fromarray(arr, 'RGBA')
+	img2.save(fname.replace('.png', '_mask.png'), 'PNG')
+
+	if det=='EMC':
+		phidet = 1.40413
+	else:
+		phidet = 4.54573
+
+	for index, x in np.ndenumerate(arr):
+		phi = index[1] * phifrac + phidet
+		eta = index[0] + etadet
+
+	rfout.Write()
+
+def make_map_detail(fname, det='EMC'):
+	print '[i] make_maps:',fname, det
+
+	img = Image.open(fname).convert('RGBA')
+	arr = np.array(img)
+	for index, x in np.ndenumerate(arr):
+		#print index, x
+		print index,'\r',
+		ridx = (index[0], index[1], 0)
+		gidx = (index[0], index[1], 1)
+		bidx = (index[0], index[1], 2)
+		if arr[gidx] == 255 or arr[gidx] == 247:
+			setcol = 1
+		else:
+			setcol = 0
 		for col in range(4):
 			idx = (index[0], index[1], col)
 			arr[idx] = setcol * 255
 
 	squares = Squares()
 	for index, x, in np.ndenumerate(arr):
+		print index,'\r',
 		if x == 0:
 			squares.addPixel(index[0], index[1])
 
@@ -134,15 +196,15 @@ def make_map(fname, det='EMC'):
 
 	squares.dump()
 
-	if det=='EMC':
-		phidet = 1.40413
-	else:
-		phidet = 4.54573
-	etadet = -0.668305
+	#if det=='EMC':
+	#	phidet = 1.40413
+	#else:
+	#	phidet = 4.54573
+	#etadet = -0.668305
 
-	for index, x in np.ndenumerate(arr):
-		phi = index[1] + phidet
-		eta = index[0] + etadet
+	#for index, x in np.ndenumerate(arr):
+	#	phi = index[1] + phidet
+	#	eta = index[0] + etadet
 
 	# make a PIL image
 	img2 = Image.fromarray(arr, 'RGBA')
