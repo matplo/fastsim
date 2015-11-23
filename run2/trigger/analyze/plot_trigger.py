@@ -18,6 +18,18 @@ from trigutils import *
 from je_plot_trigger import *
 from ga_plot_trigger import *
 
+def get_entries(fname):
+	nentries = 0
+	flist = ut.find_files(fname, '*.root')
+	for f in flist:
+		fr = ROOT.TFile.Open(f)
+		tn = fr.Get('tn')
+		nentries += tn.GetEntries()
+		fr.Close()
+	nentries = nentries/len(flist)		
+	print 'nentries=',nentries
+	return nentries
+
 def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=True):
 	tname = 'tnjet'
 	if R==0.2:
@@ -34,12 +46,12 @@ def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=True
 		xhigh  = 100
 		bwidth = 10
 	else:
-		xhigh  = 160
+		xhigh  = 200
 	tu.getTempCanvas().cd()
 	cuts = '(xsec)*( ({}) && (cal=={}) )'.format(usercut, cal)
 	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
 	refcuts = '( ({}) && (cal=={}) )'.format(usercut, cal)
-	hl = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr = 1 * bwidth/2.)
+	hl = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=1*bwidth/2) #nev=10000, thr = 1 * bwidth/2.)
 	#h = hl.last().obj
 	h = hl[0].obj.Clone(hl[0].name + 'clone')
 	#cuts = '( ({}) && (cal=={}))'.format(usercut, cal)
@@ -48,13 +60,14 @@ def get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=True
 	#print keepOutFactor
 	#h.Scale(1./get_nev(fname)*keepOutFactor)
 	#h.Scale(1./get_nev(fname)/bwidth*keepOutFactor)
+	nentries = get_entries(fname)
 	if scalebw == True:
-		h.Scale(1./10000/bwidth*keepOutFactor)
+		h.Scale(1./nentries/bwidth*keepOutFactor)
 	else:
-		h.Scale(1./10000*keepOutFactor)		
+		h.Scale(1./nentries*keepOutFactor)		
 	return h
 
-def get_yields_je(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=False):
+def get_yields_je_bin_by_bin(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=False):
 	hlname = 'yields_{}_{}_{:1.1f}M_events'.format(which, str(R), nev/1.e6)
 	if '--lowpt' in sys.argv:
 		hlname = hlname + '-lowpt'
@@ -82,6 +95,48 @@ def get_yields_je(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1
 	hl.make_canvas(w=700,h=700)
 	hl.zoom_axis(0, 0, 350)
 	hl.draw(logy=True, miny=1e-3 * yscale, maxy=1e8 * yscale)
+	hl.self_legend(1, '{} R={}'.format(which, R))
+	ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()	
+	hl.update()
+	tu.gList.append(hl)	
+	if '--print' in sys.argv:
+		hl.pdf()
+	if '--write' in sys.argv:
+		hl.write_to_file(name_mod='modn:')
+	return hl
+
+def get_yields_je(fname, nev=150.e6, which='EMC', R=0.4, usercut='(1)', bwidth=1, scalebw=False):
+	hlname = 'yields_{}_{}_{:1.1f}M_events'.format(which, str(R), nev/1.e6)
+	if '--lowpt' in sys.argv:
+		hlname = hlname + '-lowpt'
+	hl      = dlist.dlist(hlname)
+	cent    = centrality.Centrality()
+	hjexsec = get_xsec_je(fname, which, R, usercut, bwidth, scalebw=scalebw)
+	hmb     = tu.clone(hjexsec, 'jemb', which, R)
+	hmb.Scale(cent.TAAmb() * nev)
+	htitle = 'min. bias [{:1.1f}M]'.format(nev/1.e6)
+	hl.add(hmb, htitle, 'p')
+	for i,taa in enumerate(cent.TAAs()):
+		print cent.Label(i), taa, nev * cent.BinWidth(i)
+		#h = get_xsec_je(fname, which, R, usercut, bwidth, scalebw=scalebw)
+		h = tu.clone(hjexsec, 'je', which, R, cent.Label(i))
+		h.Scale(taa * nev * cent.BinWidth(i))
+		htitle = '{} R={} {} [{}M]'.format(which, R, cent.Label(i), nev * cent.BinWidth(i)/1e6)
+		hl.add(h, htitle, 'p')
+	if scalebw == True:		
+		hl.reset_axis_titles('jet p_{T} (GeV/c)', 'dN/dp_{T} (c/GeV)')
+		yscale = 1.
+	else:
+		yaxtitle = 'N_{jets} in bwidth GeV/c bin'
+		yaxtitle = yaxtitle.replace('bwidth', str(bwidth))
+		hl.reset_axis_titles('jet p_{T} (GeV/c)', yaxtitle)
+		yscale = bwidth
+
+	hl.make_canvas(w=700,h=700)
+	hl.zoom_axis(0, 0, 350)
+	hl.draw(logy=True, miny=1e-1 * yscale, maxy=1e9 * yscale)
 	hl.self_legend(1, '{} R={}'.format(which, R))
 	ROOT.gPad.SetLogy()
 	ROOT.gPad.SetGridx()
@@ -193,11 +248,62 @@ def compare_to_atlas(fname='/Users/ploskon/devel/sandbox/run2/trigger/generate/7
 	if '--print' in sys.argv:
 		hl.pdf()
 
+def draw_bias(fname, rej=1e-3, thr=[29, 18, 19]):
+
+	bwidth = 10	
+
+	hlr = dlist.dlist(tu.make_unique_name('bias', rej, thr))
+
+	dopt = 'l hist'
+
+	#R=0.4 16x16 patch
+	h  = get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=bwidth)
+	hc = get_xsec_je(fname, which='EMC', R=0.4, usercut='((maxJE-medJE * 4.) > {})'.format(thr[0]), bwidth=bwidth)
+	hlr1 = dlist.make_ratio(hc, h)
+	hlr.add(hlr1[0].obj, 'EMC R=0.4 (maxJE[16x16]-medJE[8x8] * 4) > {} GeV'.format(thr[0]), dopt)
+
+	#R=0.2 16x16 patch
+	h  = get_xsec_je(fname, which='EMC', R=0.2, usercut='(1)', bwidth=bwidth)
+	hc = get_xsec_je(fname, which='EMC', R=0.2, usercut='((maxJE-medJE * 4.) > {})'.format(thr[0]), bwidth=bwidth)
+	hlr2 = dlist.make_ratio(hc, h)
+	hlr.add(hlr2[0].obj, 'EMC R=0.2 (maxJE[16x16]-medJE[8x8] * 4) > {} GeV'.format(thr[0]), dopt)
+
+	#R=0.2 DMC 8x8 patch
+	h  = get_xsec_je(fname, which='DMC', R=0.2, usercut='(1)', bwidth=bwidth)
+	hc = get_xsec_je(fname, which='DMC', R=0.2, usercut='((maxJE8x8-medJE) > {})'.format(thr[1]), bwidth=bwidth)
+	hlr3 = dlist.make_ratio(hc, h)
+	hlr.add(hlr3[0].obj, 'DMC R=0.2 (maxJE[8x8]-medJE[8x8]) > {} GeV'.format(thr[1]), dopt)
+
+	if '--optional' in sys.argv:
+		#R=0.4 EMC 8x8 patch
+		h  = get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=bwidth)
+		hc = get_xsec_je(fname, which='EMC', R=0.4, usercut='((maxJE8x8-medJE) > {})'.format(thr[2]), bwidth=bwidth)
+		hlr1 = dlist.make_ratio(hc, h)
+		hlr.add(hlr1[0].obj, 'EMC R=0.4 (maxJE[8x8]-medJE[8x8]) > {} GeV'.format(thr[2]), dopt)
+		#R=0.2 EMC 8x8 patch
+		h  = get_xsec_je(fname, which='EMC', R=0.2, usercut='(1)', bwidth=bwidth)
+		hc = get_xsec_je(fname, which='EMC', R=0.2, usercut='((maxJE8x8-medJE) > {})'.format(thr[2]), bwidth=bwidth)
+		hlr2 = dlist.make_ratio(hc, h)
+		hlr.add(hlr2[0].obj, 'EMC R=0.2 (maxJE[8x8]-medJE[8x8]) > {} GeV'.format(thr[2]), dopt)
+
+	hlr.make_canvas(600, 600)
+	hlr.reset_axis_titles('p_{T}', 'ratio:  triggered /min. bias')
+	hlr.draw(miny=0, maxy=2)
+	hlr.self_legend(1, 'Rejection {:1.0e}'.format(rej), x1=0.3)
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()		
+	hlr.update()
+
+	tu.gList.append(hlr)
+
 def main():
 	fname = tu.get_arg_with('--in')
-	if fname == None and not '--ycut1' in sys.argv:
+	if fname == None:
 		print "usage:",__file__,'--in <file.root>'
 		return
+
+	if '--mtune1.2' in sys.argv:
+		fname = fname.replace('mtune1.0', 'mtune1.2')
 
 	if '--patches' in sys.argv:
 		plot_patches_je(fname)
@@ -205,12 +311,13 @@ def main():
 	if '--xsec' in sys.argv:
 		plot_xsec_je(fname, bwidth=20)
 
-	effiRAA = 0.5 * 0.25 
-	if '--noeffiRAA':
-		effiRAA = 1.
+	effiRAA = 1.
+	#if '--noeffiRAA':
+	if '--effiRAA' in sys.argv:
+		effiRAA = 0.5 * 0.25 
 
 	if '--yields' in sys.argv:
-		bwidth = 20
+		bwidth = 10
 		if '--mb' in sys.argv:
 			nev = 150.e6 * effiRAA
 		else:
@@ -221,52 +328,21 @@ def main():
 		get_yields_je(fname, nev=nev, which='EMC', R=0.2, usercut='(1)', bwidth=bwidth)
 		get_yields_je(fname, nev=nev, which='DMC', R=0.2, usercut='(1)', bwidth=bwidth)
 
-	if '--ycut1' in sys.argv:
-		#fname = './qcd-mtune1.2-list.outputs.root'
-		#fname = './qcd-mtune1.2-list.outputs'
-		bwidth = 10
-		if '--mb' in sys.argv:
-			nev = 150.e6 * effiRAA
-		else:
-			sigmaPbPb = 7.7
-			intLumi = 220. * 1.e6 * effiRAA
-			nev = intLumi * sigmaPbPb
-		#hl1 = get_yields_je(fname, nev=nev, which='EMC', R=0.4, usercut='(1)', bwidth=bwidth)
-		#hl2 = get_yields_je(fname, nev=nev, which='EMC', R=0.2, usercut='(1)', bwidth=bwidth)
-		#hl3 = get_yields_je(fname, nev=nev, which='DMC', R=0.2, usercut='(1)', bwidth=bwidth)
+	rejection = 1.0
+	if '--rej1e-3' in sys.argv:
+		thrs=[23, 15, 16] # last is optional 8x8 EMC	#thrs=[29, 18, 19] # last is optional 8x8 EMC
+		if '--any' in sys.argv:
+			thrs = [15, 9, 8]
+		rejection = 1e-3
+	if '--rej3e-3' in sys.argv:
+		thrs=[22, 13, 14] # last is optional 8x8 EMC#thrs=[27, 16, 17] # last is optional 8x8 EMC
+		if '--any' in sys.argv:
+			thrs = [12, 7, 7]
+		rejection = 3e-3
 
-		#hl1c = get_yields_je(fname, nev=nev, which='EMC', R=0.4, usercut='((maxJE-medJE)>14)', bwidth=bwidth)
-		#hl2c = get_yields_je(fname, nev=nev, which='EMC', R=0.2, usercut='((maxJE-medJE)>14)', bwidth=bwidth)
-		#hl3c = get_yields_je(fname, nev=nev, which='DMC', R=0.2, usercut='((maxJE-medJE)>9)', bwidth=bwidth)
-
-		#hlr1 = divide_lists(hl1c, hl1)
-		#hlr2 = divide_lists(hl2c, hl2)
-		#hlr3 = divide_lists(hl3c, hl3)
-
-		hlr = dlist.dlist('bias')
-
-		h  = get_xsec_je(fname, which='EMC', R=0.4, usercut='(1)', bwidth=bwidth)
-		hc = get_xsec_je(fname, which='EMC', R=0.4, usercut='((maxJE-medJE)>18)', bwidth=bwidth)
-		hlr1 = dlist.make_ratio(hc, h)
-		hlr.add(hlr1[0].obj, 'EMC R=0.4 (maxJE-medJE)>18', 'l hist')
-
-		h  = get_xsec_je(fname, which='EMC', R=0.2, usercut='(1)', bwidth=bwidth)
-		hc = get_xsec_je(fname, which='EMC', R=0.2, usercut='((maxJE-medJE)>18)', bwidth=bwidth)
-		hlr2 = dlist.make_ratio(hc, h)
-		hlr.add(hlr2[0].obj, 'EMC R=0.2 (maxJE-medJE)>18', 'l hist')
-
-		h  = get_xsec_je(fname, which='DMC', R=0.2, usercut='(1)', bwidth=bwidth)
-		hc = get_xsec_je(fname, which='DMC', R=0.2, usercut='((maxJE-medJE)>11)', bwidth=bwidth)
-		hlr3 = dlist.make_ratio(hc, h)
-		hlr.add(hlr3[0].obj, 'DMC R=0.2 (maxJE-medJE)>11', 'l hist')
-
-		hlr.make_canvas(600, 600)
-		hlr.reset_axis_titles('p_{T}', 'ratio:  triggered /min. bias')
-		hlr.draw(miny=0, maxy=2)
-		hlr.self_legend(x1=0.3)
-		hlr.update()
-
-		tu.gList.append(hlr)
+	if '--bias' in sys.argv:
+		if rejection < 1:
+			draw_bias(fname, rejection, thrs)
 
 	if '--gapiy' in sys.argv:
 		bwidth = 10
@@ -287,6 +363,7 @@ def main():
 		compare_to_atlas()
 
 	if '--rejections' in sys.argv:
+		#plot_rejections_je(fname, usercut="cent<=10")
 		plot_rejections_je(fname)
 		plot_rejections_ga(fname)
 

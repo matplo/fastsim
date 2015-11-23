@@ -47,14 +47,15 @@ def plot_trigger_je(fname, which='EJE', opt='16x16', usercut='(1)'):
 	xhigh  = 200
 	tu.getTempCanvas().cd()
 	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
-	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr=10)
+	# nev should be -1
+	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=200000, thr=10)
 	h = hls[0].obj
 	hlname = 'plot trigger {} {} {}'.format(tname, var, opt)
 	if usercut!='(1)':
 		hlname = 'plot trigger {} {} {} | {}'.format(tname, var, opt, usercut)		
 	print '[i] ', hlname
 	hl = dlist.dlist(to_file_name(hlname))
-	if usercut!='(1)':
+	if usercut != '(1)':
 		hl.add(h, '{} {} | {}'.format(which, opt, usercut), 'p')
 	else:
 		hl.add(h, '{} {}'.format(which, opt), 'p')		
@@ -77,24 +78,23 @@ def plot_trigger_max_je(fname, which='EJE', opt='16x16', usercut='(1)'):
 		var = var.replace('NxN', '8x8').replace(' * AreaF', '')
 
 	cuts = '(xsec)*({})'.format(usercut)
-	refcuts = '(xsec)*({})'.format(usercut)
+	refcuts = '({})'.format(usercut)
 	bwidth = 1
 	xlow   = -50
 	xhigh  = 200
 	tu.getTempCanvas().cd()
 	#h = tu.draw_h1d_from_ntuple(fname, tname, var, cuts, bwidth, xlow, xhigh)
-	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=10000, thr=10)
+	hls = draw_ntuple.h1d_from_ntuple_dir_filter(fname, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=10)
 	h = hls[0].obj
 	hlname = 'plot trigger max {} {} [{}]'.format(tname, var, opt)
 	if usercut!='(1)':
 		hlname = 'plot trigger {} {} {} | {}'.format(tname, var, opt, usercut)		
 	print '[i] ', hlname
 	hl = dlist.dlist(to_file_name(hlname))
-	hl.add(h, 'max {} {}'.format(which, opt), 'p')
 	if usercut!='(1)':
-		hl.add(h, '{} {} | {}'.format(which, opt, usercut), 'p')
+		hl.add(h, 'max {} {} | {}'.format(which, opt, usercut), 'p')
 	else:
-		hl.add(h, '{} {}'.format(which, opt), 'p')		
+		hl.add(h, 'max {} {}'.format(which, opt), 'p')		
 	hl.make_canvas(600,600)
 	hl.draw(logy=True)
 	hl.self_legend()

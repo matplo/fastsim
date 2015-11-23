@@ -4,6 +4,9 @@
 #include <Rtypes.h>
 #include <vector>
 
+class TriggerMaker;
+
+class TH2I;
 class TF1;
 class TRandom;
 class TLorentzVector;
@@ -71,6 +74,9 @@ make_par_background_mtune(
     				const Double_t dCluMeanPt);
 
 std::vector <fastjet::PseudoJet> param_vectors(AliGenFastModelingEvent *gen, Int_t select);
+
+void fillBadChannelFromHistogram(TriggerMaker *tm, TH2I *hin);
+TriggerMaker *createTriggerMaker(const char *emcalMap = 0, const char* dcalMap = 0);
 
 };
 

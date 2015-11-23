@@ -3,11 +3,16 @@
 // PARAM response
 #include <AliGenFastModelingEvent.h>
 
+#include <TriggerMaker.h>
+#include <TriggerMappingEmcalSimple.h>
+
 #include <TF1.h>
 #include <TRandom.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include <TSystem.h>
+#include <TH2I.h>
+#include <TFile.h>
 
 namespace fj = fastjet;
 
@@ -50,8 +55,8 @@ double getArgD(const char *what, int argc, char **argv, double defret = 0.0)
 	{
 		if (strcmp(what, argv[i]) == 0)
 			if ( i + 1 < argc)
-			  return strtod(argv[i + 1], 0);
-			  //return std::stod(argv[i + 1]);
+				return strtod(argv[i + 1], 0);
+		//return std::stod(argv[i + 1]);
 	}
 	return defret;
 }
@@ -288,8 +293,8 @@ AliGenFastModelingEvent *make_par_background(
 }
 
 AliGenFastModelingEvent *make_par_background_mtune(
-	const Double_t dTrkMultMin, const Double_t dTrkMultMax,
-	const Double_t dCluMultMin, const Double_t dCluMultMax,
+    const Double_t dTrkMultMin, const Double_t dTrkMultMax,
+    const Double_t dCluMultMin, const Double_t dCluMultMax,
     const TString sPath,
     const Bool_t bUseBoltzmann,
     const Double_t dTrkMeanPt,
@@ -356,4 +361,88 @@ std::vector <fj::PseudoJet> param_vectors(AliGenFastModelingEvent *gen, Int_t se
 
 	return ret;
 }
+
+void fillBadChannelFromHistogram(TriggerMaker *tm, TH2I *hin)
+{
+	for (Int_t ieta = 1; ieta < hin->GetNbinsX(); ieta++)
+	{
+		for (Int_t iphi = 1; iphi < hin->GetNbinsY(); iphi++)
+		{
+			Double_t eta = hin->GetXaxis()->GetBinCenter(ieta);
+			Double_t phi = hin->GetYaxis()->GetBinCenter(iphi);
+			if (hin->GetBinContent(ieta, iphi) <= 0)
+				continue;
+			TriggerMappingEmcalSimple map = tm->GetTriggerChannelMapping();
+			if (map.IsEMCAL(eta, phi))
+			{
+				TriggerChannel ch = map.GetPositionFromEtaPhi(eta, phi);
+				Int_t row = ch.GetRow();
+				Int_t col = ch.GetCol();
+				tm->AddBadChannelEMCAL(col, row);
+			}
+			if (map.IsDCALPHOS(eta, phi))
+			{
+				TriggerChannel ch = map.GetPositionFromEtaPhi(eta, phi);
+				Int_t row = ch.GetRow();
+				Int_t col = ch.GetCol();
+				tm->AddBadChannelDCALPHOS(col, row);
+			}
+		}
+	}
+}
+
+TriggerMaker *createTriggerMaker(const char *emcalMap, const char* dcalMap)
+{
+	TriggerSetup tsetup;
+	tsetup.SetThresholds(0., 0., 0., 0.);
+	tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
+
+	TriggerMaker *tm = new TriggerMaker();
+	tm->SetTriggerSetup(tsetup);
+
+	TFile *fin = 0;
+	TH2I *hin = 0;
+
+	if (emcalMap)
+	{
+		fin = TFile::Open(emcalMap);
+		if (fin)
+		{
+			hin = (TH2I*)fin->Get("hmask");
+			if (hin)
+			{
+				fillBadChannelFromHistogram(tm, hin);
+			}
+		}
+		std::vector<TriggerBadChannelContainer::TriggerChannelPosition> vEMCal = tm->GetBadChannelContainerEMCAL().GetChannels();
+		cout << "[i] EMCal bad channels: " << emcalMap << " N=" << vEMCal.size() << endl;
+	}
+	else
+	{
+		cout << "[i] No bad channels in ECal" << endl;
+	}
+
+	if (dcalMap)
+	{
+		fin = TFile::Open(dcalMap);
+		if (fin)
+		{
+			hin = (TH2I*)fin->Get("hmask");
+			if (hin)
+			{
+				fillBadChannelFromHistogram(tm, hin);
+			}
+		}
+		std::vector<TriggerBadChannelContainer::TriggerChannelPosition> vDCal = tm->GetBadChannelContainerDCALPHOS().GetChannels();
+		cout << "[i] DCal  bad channels: " <<  dcalMap << " N=" <<  vDCal.size() << endl;
+	}
+	else
+	{
+		cout << "[i] No bad channels in DCal" << endl;
+	}
+
+
+	return tm;
+}
+
 };
