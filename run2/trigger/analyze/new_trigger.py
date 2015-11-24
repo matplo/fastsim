@@ -13,6 +13,7 @@ import centrality
 import tutils as tu
 import hnutil
 import draw_ntuple
+import draw_utils as du
 
 from trigutils import *
 
@@ -33,7 +34,7 @@ def get_Ei_median(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=1, xlow=-50, xh
 		cuts    = '(xsec)'
 		refcuts = '(1)'
 	tu.getTempCanvas().cd()
-	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=100, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.)
+	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=5, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
 	return hl
 
 def main_patches(X = '', cent=''):
@@ -53,6 +54,14 @@ def main_patches(X = '', cent=''):
 		'tgXDGA.fE-tgX.medgECAL'		
 	]
 
+	#dvars = [
+	#	'tgX.maxjEJE-tgX.medjDCAL8x8*4',
+	#	'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
+	#	'tgX.maxjDJE8x8-tgX.medjECAL8x8',
+	#	'tgX.maxgEGA.fE-tgX.medgDCAL',
+	#	'tgX.maxgDGA-tgX.medgECAL'		
+	#]
+
 	print '[i] main_patches'
 	for var in [v.replace('X',X) for v in dvars]:
 		print '    main_patches:',var,'cent:',cent
@@ -62,6 +71,128 @@ def main_patches(X = '', cent=''):
 	ls.draw_all(logy=True)
 	ls.pdf()
 	ls.write_all(mod='modn:')
+
+### JET SPECTRA
+def get_Ei_jetpt(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=15, xlow=0, xhigh=300, ucuts=''):
+	print '[i] get_Ei_jetpt:',var
+	tu.getTempCanvas().cd()
+	tname = 't'
+	if len(ucuts) > 0:
+		cuts = '(xsec)*({})'.format(ucuts)
+		refcuts = '(1)*({})'.format(ucuts)
+	else:
+		#cuts    = '(1)'
+		cuts    = '(xsec)'
+		refcuts = '(1)'
+	tu.getTempCanvas().cd()
+	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=1, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
+	return hl
+
+def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
+
+	ls = dlist.ListStorage(tu.make_unique_name('jetpt', X, thr))
+	indir = './test'
+	indir = './hardQCD/mtune1.2'
+
+	dcuts = [
+		'tgXEJE.fE-tgX.medjDCAL8x8*4 > THR',
+		'tgXEJE8x8.fE-tgX.medjDCAL8x8 > THR',
+		'tgXDJE8x8.fE-tgX.medjECAL8x8 > THR',
+		'tgXEGA.fE-tgX.medgDCAL > THR',
+		'tgXDGA.fE-tgX.medgECAL > THR'		
+	]
+
+	dcuts = [
+		'tgX.maxjEJE-tgX.medjDCAL8x8*4 > THR',
+		'tgX.maxjEJE8x8-tgX.medjDCAL8x8 > THR',
+		'tgX.maxjDJE8x8-tgX.medjECAL8x8 > THR',
+		'tgX.maxgEGA.fE-tgX.medgDCAL > THR',
+		'tgX.maxgDGA-tgX.medgECAL > THR'		
+	]
+
+	dvars = [
+		'jE.fE',
+		'jDr.fE',
+		'jEr.fE',
+		#'pi0E.fE',
+		#'pi0D.fE',
+	]
+
+	print '[i] main_patches'
+	for i,var in enumerate(dvars):
+		for ic, dcut in enumerate(dcuts):
+			if thr[ic] > 0:
+				sdcuts = dcut.replace('X', X).replace('THR', '{}'.format(thr[ic]))
+			else:
+				sdcuts = ''
+			print '    main_patches:',var,'cuts:',sdcuts
+			hl = get_Ei_jetpt(indir, var, ucuts=sdcuts)
+			hl.name = ut.to_file_name('bias_{}_{}_{}'.format(X, var, sdcuts))
+			ls.append(hl)
+
+	ls.draw_all(logy=True)
+	ls.pdf()
+	ls.write_all(mod='modn:')
+
+def show_bias(X = '', cent='', thr=[15,8,9,4,4], det='EMC'):
+
+	ls = dlist.ListStorage(tu.make_unique_name('showbias', X, thr, det))
+	indir = './patch_rfiles'
+
+	dcuts = [
+		'tgX.maxjEJE-tgX.medjDCAL8x8*4 > THR',
+		'tgX.maxjEJE8x8-tgX.medjDCAL8x8 > THR',
+		'tgX.maxjDJE8x8-tgX.medjECAL8x8 > THR',
+		'tgX.maxgEGA.fE-tgX.medgDCAL > THR',
+		'tgX.maxgDGA-tgX.medgECAL > THR'		
+	]
+
+	dvars = [
+		'jE.fE',
+		'jEr.fE',
+		'jDr.fE',
+		'pi0E.fE',
+		'pi0D.fE',
+	]
+
+	print '[i] main_patches'
+	for i,var in enumerate(dvars):
+		if det=='EMC':
+			if i in [2,4]:
+				continue
+		else:
+			if i in [0,1,3]:
+				continue
+		for ic, dcut in enumerate(dcuts):
+			if det=='EMC':
+				if ic in [2,4]:
+					continue
+			else:
+				if ic in [0,1,3]:
+					continue
+			sdcuts = dcut.replace('X', X).replace('THR', '{}'.format(thr[ic]))
+			mbfile = os.path.join(indir, ut.to_file_name('bias_{}_{}_{}'.format('', var, '')) + '.root' )
+			cfile = os.path.join(indir, ut.to_file_name('bias_{}_{}_{}'.format(X, var, sdcuts)) + '.root' )
+			hltmp = dlist.dlist('hltmp')
+			hltmp.add_from_file('o_0', mbfile, 'l hist')
+			if det=='DMC':
+				hltmp.l[-1].obj.Rebin(2)
+			hltmp.add_from_file('o_0', cfile,  'l hist')
+			if det=='DMC':
+				hltmp.l[-1].obj.Rebin(2)
+			hlr = dlist.make_ratio(hltmp[1].obj, hltmp[0].obj)
+			hlr.reset_axis_titles('E (GeV)', 'bias')
+			hlrname = 'mask [{}] {}'.format(X, var)
+			htitle  = '{}'.format(sdcuts.replace('tg', '').replace(X+'.', ''))
+			ls.add_to_list(hlrname, hlr[0].obj, htitle, 'l hist')
+
+	ls.legend_position(x1=0.25, y1=0.25, y2=0.4)
+	ls.zoom_axis(0, 0, 150)
+	ls.draw_all(logy=False)
+	ls.pdf()
+	ls.write_all(mod='modn:')
+
+##END JET SPECTRA
 
 def extra_smooth(hl, thr=5):
 	for o in hl.l:
@@ -84,6 +215,14 @@ def main_rejections(X = '', cent=''):
 		'tgXEGA.fE-tgX.medgDCAL',
 		'tgXDGA.fE-tgX.medgECAL'		
 	]
+
+	#dvars = [
+	#	'tgX.maxjEJE-tgX.medjDCAL8x8*4',
+	#	'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
+	#	'tgX.maxjDJE8x8-tgX.medjECAL8x8',
+	#	'tgX.maxgEGA.fE-tgX.medgDCAL',
+	#	'tgX.maxgDGA-tgX.medgECAL'		
+	#]
 
 	fdir = './patch_rfiles'
 
@@ -129,13 +268,89 @@ def main_rejections(X = '', cent=''):
 
 def main_centrality_patch(X = ''):
 	dvars = [
-		'tgXEJE.fE-tgX.medjDCAL8x8*4',
-		'tgXEJE8x8.fE-tgX.medjDCAL8x8',
-		'tgXDJE8x8.fE-tgX.medjECAL8x8',
-		'tgXEGA.fE-tgX.medgDCAL',
-		'tgXDGA.fE-tgX.medgECAL'		
+		#'tgXEJE.fE-tgX.medjDCAL8x8*4',
+		#'tgXEJE8x8.fE-tgX.medjDCAL8x8',
+		#'tgXDJE8x8.fE-tgX.medjECAL8x8'
+
+		'tgX.maxjEJE-tgX.medjDCAL8x8*4',
+		'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
+		'tgX.maxjDJE8x8-tgX.medjECAL8x8'
+
+		#'tgXEGA.fE-tgX.medgDCAL',
+		#'tgXDGA.fE-tgX.medgECAL'		
 	]
-	pass
+
+	dvarsy = [
+		'tgX.medjDCAL8x8*4',
+		'tgX.medjDCAL8x8',
+		'tgX.medjECAL8x8'
+		#'tgX.medgDCAL',
+		#'tgX.medgECAL'		
+	]
+	vary = [v.replace('X',X) for v in dvarsy]
+
+	lfiles = ut.find_files('./hardQCD/mtune1.2', 'tree-*.root')
+
+	hlt = dlist.dlist('main_centrality_patch_{}'.format(X))
+	print '[i] main_centrality_patch'
+	for i,var in enumerate([v.replace('X',X) for v in dvars]):
+		print '    main_centrality_patch:',var
+		hl = dlist.dlist(tu.make_unique_name('hl2d',var))
+		for ifile,fn in enumerate(lfiles):
+			tu.getTempCanvas().cd()
+			print '     ', fn
+			htitle = '{};{};{}'.format(ut.to_file_name(var), var, vary[i])
+			var2d = '{}:{}'.format(vary[i], var)
+			h = tu.draw_h2d_from_ntuple(fname=fn, ntname='t', var=var2d, cuts='(xsec)', 
+        			                	 xbwidth=0.5, xlow=-30, xhigh=100, 
+    	        		    	         ybwidth=0.5, ylow=  0, yhigh= 50,                          
+        	        		    	     title=htitle, modname='f{}'.format(ifile), nev=-1)
+			hl.add(h)
+		hs = hl.sum()
+		htitle = '{};{};{}'.format(ut.to_file_name(var), var, vary[i])
+		hlt.add(hs.obj, htitle, 'colz')
+
+	hltc = dlist.dlist('main_centrality_patch_cent_{}'.format(X))
+	for i,var in enumerate([v.replace('X',X) for v in dvars]):
+		print '    main_centrality_patch cent:',var
+		hlc = dlist.dlist(tu.make_unique_name('hl2dc',var))
+		for ifile,fn in enumerate(lfiles):
+			tu.getTempCanvas().cd()
+			print '     ', fn
+			# with centrality
+			htitle = '{};{};{}'.format(ut.to_file_name(var), var, 'centrality')
+			var2d = '{}:{}'.format('hd.cent', var)
+			hc = tu.draw_h2d_from_ntuple(fname=fn, ntname='t', var=var2d, cuts='(xsec)', 
+        			                	 xbwidth=0.5, xlow=-30, xhigh=100, 
+    	        		    	         ybwidth=1.0, ylow=  0, yhigh=100,                          
+        	        		    	     title=htitle, modname='fc{}'.format(ifile), nev=-1)
+			hlc.add(hc)
+		hsc = hlc.sum()
+		htitle = '{};{};{}'.format(ut.to_file_name(var), var, 'centrality')
+		hltc.add(hsc.obj, htitle, 'colz')
+
+	tu.gList.append(hlt)
+
+	for h in hlt.l:
+		tc = du.canvas(h.obj.GetName(), h.obj.GetTitle())
+		h.obj.Draw('colz')
+		ROOT.gPad.SetLogz()
+		tc.resize_window(600,600)
+		tu.gList.append(tc)
+		tc.pdf()
+
+	tu.gList.append(hltc)
+
+	for h in hltc.l:
+		tc = du.canvas(h.obj.GetName(), h.obj.GetTitle())
+		h.obj.Draw('colz')
+		ROOT.gPad.SetLogz()
+		tc.resize_window(600,600)
+		tu.gList.append(tc)
+		tc.pdf()
+
+	hlt.write_to_file(name_mod='modn:')
+	hltc.write_to_file(name_mod='modn:')
 
 def main_overlap(X = ''):
 	dvars = [
@@ -163,5 +378,31 @@ if __name__ == '__main__':
 			main_patches(v, cent=cent)
 		if '--rejections' in sys.argv:
 			main_rejections(v, cent=cent)
+		if '--2d' in sys.argv:
+			main_centrality_patch(v)
+
+	if '--bias-make' in sys.argv:
+		zerothr=[0,0,0,0,0]
+		main_bias(X='', 	cent='', 	thr=zerothr )
+		#main_bias(X='1', 	cent='', 	thr=zerothr )
+		#main_bias(X='2', 	cent='', 	thr=zerothr )
+		#main_bias(X='3', 	cent='', 	thr=zerothr )
+
+		main_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4] )
+		main_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4] )
+		main_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4] )
+		main_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4] )
+
+	if '--bias' in sys.argv:
+		show_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4], det='EMC')
+		show_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4], det='EMC')
+		show_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4], det='EMC')
+		show_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4], det='EMC')
+
+		show_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4], det='DMC')
+		show_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4], det='DMC')
+		show_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4], det='DMC')
+		show_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4], det='DMC')
+
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
