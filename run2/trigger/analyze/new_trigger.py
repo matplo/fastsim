@@ -21,18 +21,22 @@ def get_entries(fname):
 	t = fin.Get("t")
 	return t.GetEntries()
 
-def get_Ei_median(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=1, xlow=-50, xhigh=300):
+def get_Ei_median(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=1, xlow=-50, xhigh=300, cent=''):
 	print '[i] get_Ei_median:',var
 	tu.getTempCanvas().cd()
 	tname = 't'
-	cuts    = '(xsec)'
-	#cuts    = '(1)'
-	refcuts = '(1)'
+	if len(cent) > 0:
+		cuts = '(xsec)*({})'.format(cent)
+		refcuts = '(1)*({})'.format(cent)
+	else:
+		#cuts    = '(1)'
+		cuts    = '(xsec)'
+		refcuts = '(1)'
 	tu.getTempCanvas().cd()
 	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=100, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.)
 	return hl
 
-def main_patches(X = ''):
+def main_patches(X = '', cent=''):
 	#fname = './test/tree-default_emctrig_out_R_0.4_femcpar_mtune_1.2.root'
 	#nentries = get_entries(fname)
 	#print '[i] number of entries:', nentries
@@ -51,8 +55,8 @@ def main_patches(X = ''):
 
 	print '[i] main_patches'
 	for var in [v.replace('X',X) for v in dvars]:
-		print '    main_patches:',var
-		hl = get_Ei_median(indir, var)
+		print '    main_patches:',var,'cent:',cent
+		hl = get_Ei_median(indir, var, cent=cent)
 		ls.append(hl)
 
 	ls.draw_all(logy=True)
@@ -72,7 +76,7 @@ def extra_smooth(hl, thr=5):
 				err = (h.GetBinError(ib-1) + h.GetBinError(ib+1))/2.
 				h.SetBinError(ib, err)
 
-def main_rejections(X = ''):
+def main_rejections(X = '', cent=''):
 	dvars = [
 		'tgXEJE.fE-tgX.medjDCAL8x8*4',
 		'tgXEJE8x8.fE-tgX.medjDCAL8x8',
@@ -91,7 +95,10 @@ def main_rejections(X = ''):
 	for var in [v.replace('X',X) for v in dvars]:
 		fname = ut.to_file_name(var)
 		print '    main_rejections:',var,fname
-		flist = ut.find_files(fdir, '*'+fname+'*xsec*.root')
+		if len(cent) > 0:
+			flist = ut.find_files(fdir, '*'+fname+'*xsec*{}__filtered.root'.format(ut.to_file_name(cent)))
+		else:
+			flist = ut.find_files(fdir, '*'+fname+'*xsec__filtered.root')
 		#flist = ut.find_files(fdir, '*'+fname+'*1*.root')
 		for fn in flist:
 			print '    found file:',fn
@@ -121,19 +128,40 @@ def main_rejections(X = ''):
 	tu.gList.append(hlr)
 
 def main_centrality_patch(X = ''):
+	dvars = [
+		'tgXEJE.fE-tgX.medjDCAL8x8*4',
+		'tgXEJE8x8.fE-tgX.medjDCAL8x8',
+		'tgXDJE8x8.fE-tgX.medjECAL8x8',
+		'tgXEGA.fE-tgX.medgDCAL',
+		'tgXDGA.fE-tgX.medgECAL'		
+	]
 	pass
 
 def main_overlap(X = ''):
+	dvars = [
+		'tgXEJE.fE-tgX.medjDCAL8x8*4',
+		'tgXEJE8x8.fE-tgX.medjDCAL8x8',
+		'tgXDJE8x8.fE-tgX.medjECAL8x8',
+		'tgXEGA.fE-tgX.medgDCAL',
+		'tgXDGA.fE-tgX.medgECAL'		
+	]
+
 	pass
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
 	variants = ['', '1', '2', '3']
+	cent=''
+	if '--cent' in sys.argv:
+		cent = 'hd.cent>0 && hd.cent<10'
+	if '--periph' in sys.argv:
+		cent = 'hd.cent>60 && hd.cent<80'
+	if '--semi-cent' in sys.argv:
+		cent = 'hd.cent>20 && hd.cent<40'
 	for v in variants:
 		if '--patches' in sys.argv:
-			main_patches(v)
+			main_patches(v, cent=cent)
 		if '--rejections' in sys.argv:
-			main_rejections(v)
-
+			main_rejections(v, cent=cent)
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
