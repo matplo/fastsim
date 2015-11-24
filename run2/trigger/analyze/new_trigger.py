@@ -90,7 +90,7 @@ def get_Ei_jetpt(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=15, xlow=0, xhig
 
 def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
 
-	ls = dlist.ListStorage(tu.make_unique_name('jetpt', X, thr))
+	ls = dlist.ListStorage(tu.make_unique_name('makebias', X, thr))
 	indir = './test'
 	indir = './hardQCD/mtune1.2'
 
@@ -118,14 +118,14 @@ def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
 		#'pi0D.fE',
 	]
 
-	print '[i] main_patches'
+	print '[i] main_bias'
 	for i,var in enumerate(dvars):
 		for ic, dcut in enumerate(dcuts):
 			if thr[ic] > 0:
 				sdcuts = dcut.replace('X', X).replace('THR', '{}'.format(thr[ic]))
 			else:
 				sdcuts = ''
-			print '    main_patches:',var,'cuts:',sdcuts
+			print '    main_bias:',var,'cuts:',sdcuts
 			hl = get_Ei_jetpt(indir, var, ucuts=sdcuts)
 			hl.name = ut.to_file_name('bias_{}_{}_{}'.format(X, var, sdcuts))
 			ls.append(hl)
@@ -172,7 +172,11 @@ def show_bias(X = '', cent='', thr=[15,8,9,4,4], det='EMC'):
 					continue
 			sdcuts = dcut.replace('X', X).replace('THR', '{}'.format(thr[ic]))
 			mbfile = os.path.join(indir, ut.to_file_name('bias_{}_{}_{}'.format('', var, '')) + '.root' )
-			cfile = os.path.join(indir, ut.to_file_name('bias_{}_{}_{}'.format(X, var, sdcuts)) + '.root' )
+			cfile  = os.path.join(indir, ut.to_file_name('bias_{}_{}_{}'.format(X, var, sdcuts)) + '.root' )
+			print ' * mb file:',mbfile
+			print '   cf file:',cfile
+			print '   dc     :',dcut
+			print '   var    :',var
 			hltmp = dlist.dlist('hltmp')
 			hltmp.add_from_file('o_0', mbfile, 'l hist')
 			if det=='DMC':
@@ -180,10 +184,10 @@ def show_bias(X = '', cent='', thr=[15,8,9,4,4], det='EMC'):
 			hltmp.add_from_file('o_0', cfile,  'l hist')
 			if det=='DMC':
 				hltmp.l[-1].obj.Rebin(2)
-			hlr = dlist.make_ratio(hltmp[1].obj, hltmp[0].obj)
-			hlr.reset_axis_titles('E (GeV)', 'bias')
+			hlr     = dlist.make_ratio(hltmp[1].obj, hltmp[0].obj)
 			hlrname = 'mask [{}] {}'.format(X, var)
 			htitle  = '{}'.format(sdcuts.replace('tg', '').replace(X+'.', ''))
+			hlr.reset_axis_titles('E (GeV)', 'bias')
 			ls.add_to_list(hlrname, hlr[0].obj, htitle, 'l hist')
 
 	ls.legend_position(x1=0.25, y1=0.25, y2=0.4)
