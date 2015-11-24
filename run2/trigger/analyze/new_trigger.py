@@ -114,8 +114,8 @@ def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
 		'jE.fE',
 		'jDr.fE',
 		'jEr.fE',
-		#'pi0E.fE',
-		#'pi0D.fE',
+		'pi0E.fE',
+		'pi0D.fE',
 	]
 
 	print '[i] main_bias'
