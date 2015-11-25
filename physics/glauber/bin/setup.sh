@@ -45,4 +45,6 @@ do
     sed -i "" -e "s/<dir to be set>/${XDIRr}/" $THISDIR/$FNAME
 done
 
+$THISDIR/make_module.sh
+
 cd $savedir
