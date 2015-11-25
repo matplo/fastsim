@@ -1,0 +1,12 @@
+A Monte Carlo generator of nucleon configurations in complex nuclei including Nucleon-Nucleon correlations
+M. Alvioli, H.-J. Drescher, M. Strikman
+http://arxiv.org/abs/0905.2670
+link to the code: http://users.phys.psu.edu/~malvioli/eventgenerator/
+
+
+This reached via:
+Effect of initial-state nucleon-nucleon correlations on collective flow in ultra-central heavy-ion collisions
+G. S. Denicol, C. Gale, S. Jeon, J.-F. Paquet, B. Schenke
+http://arxiv.org/abs/1406.7792
+
+
