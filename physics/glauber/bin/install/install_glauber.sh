@@ -4,7 +4,7 @@ savedir=$PWD
 
 PACKAGENAME=AliGlauber
 
-XDIR="/Users/ploskon/devel/sandbox/physics/glauber"
+XDIR="<dir to be set>"
 working_dir="$XDIR/$PACKAGENAME"
 mkdir -p $working_dir
 
