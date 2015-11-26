@@ -67,7 +67,7 @@ EOF
 
 function build()
 {
-    bdir=$working_dir/.build/$PACKAGENAME
+    bdir=$working_dir/.build/$1
     if is_arg_set "realclean" ;
     then
         rm -rf $bdir
@@ -77,7 +77,7 @@ function build()
     debug="-DCMAKE_BUILD_TYPE=Release"
     #cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
     is_arg_set "debug" && debug=-DCMAKE_BUILD_TYPE=Debug
-    cmake -DCMAKE_INSTALL_PREFIX=$1 $debug $XDIR/$PACKAGENAME/src
+    cmake -DCMAKE_INSTALL_PREFIX=$2 $debug $XDIR/$1/src
     is_arg_set "clean" && make clean
     is_arg_set "verbose" && verbose="VERBOSE=1"
     make $verbose && make install
@@ -95,7 +95,8 @@ else
     echo "[i] will install to: $install_dir"    
     echo "[i] installing $PACKAGENAME $version"
 
-    build $install_dir
+    build AliGlauber $install_dir
+    build GlauberMC $install_dir
 
     write_setup_script $install_dir
     write_module_file $install_dir $version

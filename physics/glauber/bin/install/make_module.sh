@@ -26,8 +26,9 @@ setenv  ${PACKAGENAME}DIR ${XDIR}
 setenv  ${PACKAGENAME}_VERSION $2    
 prepend-path LD_LIBRARY_PATH 	${XDIR}/lib
 prepend-path DYLD_LIBRARY_PATH 	${XDIR}/lib
+prepend-path PATH ${XDIR}/bin
 
-module use $XDIR/modules
+#module use $XDIR/modules
 module load AliGlauber
 
 EOF
