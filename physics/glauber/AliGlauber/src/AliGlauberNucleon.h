@@ -17,7 +17,7 @@
 class TNamed;
 
 class AliGlauberNucleon : public TNamed {
-  
+
 private:
    Double32_t fX;            //Position of nucleon
    Double32_t fY;            //Position of nucleon
@@ -40,13 +40,13 @@ public:
    Bool_t     IsInNucleusB() const {return !fInNucleusA;}
    Bool_t     IsSpectator()  const {return !fNColl;}
    Bool_t     IsWounded()    const {return fNColl;}
-   void       Reset()              {fNColl=0;}
-   void       SetInNucleusA()      {fInNucleusA=1;}
-   void       SetInNucleusB()      {fInNucleusA=0;}
-   void       SetSigNN(Double_t s) {fSigNN=s;}
-   void       SetXYZ(Double_t x, Double_t y, Double_t z) {fX=x; fY=y; fZ=z;}
+   void       Reset()              {fNColl = 0;}
+   void       SetInNucleusA()      {fInNucleusA = 1;}
+   void       SetInNucleusB()      {fInNucleusA = 0;}
+   void       SetSigNN(Double_t s) {fSigNN = s;}
+   void       SetXYZ(Double_t x, Double_t y, Double_t z) {fX = x; fY = y; fZ = z;}
 
-   ClassDef(AliGlauberNucleon,2)
+   ClassDef(AliGlauberNucleon, 2)
 };
 
 #endif

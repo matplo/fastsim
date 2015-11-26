@@ -34,7 +34,7 @@ private:
    void       Lookup(Option_t* name);
 
 public:
-   AliGlauberNucleus(Option_t* iname="Au", Int_t iN=0, Double_t iR=0, Double_t ia=0, Double_t iw=0, TF1* ifunc=0);
+   AliGlauberNucleus(Option_t* iname = "Au", Int_t iN = 0, Double_t iR = 0, Double_t ia = 0, Double_t iw = 0, TF1* ifunc = 0);
    virtual ~AliGlauberNucleus();
    AliGlauberNucleus(const AliGlauberNucleus& in);
    AliGlauberNucleus& operator=(const AliGlauberNucleus& in);
@@ -47,14 +47,14 @@ public:
    Double_t   GetW()             const {return fW;}
    TObjArray *GetNucleons()      const {return fNucleons;}
    Int_t      GetTrials()        const {return fTrials;}
-   void       SetN(Int_t in)           {fN=in;}
+   void       SetN(Int_t in)           {fN = in;}
    void       SetR(Double_t ir);
    void       SetA(Double_t ia);
    void       SetW(Double_t iw);
-   void       SetMinDist(Double_t min) {fMinDist=min;}
-   void       ThrowNucleons(Double_t xshift=0.);
+   void       SetMinDist(Double_t min) {fMinDist = min;}
+   void       ThrowNucleons(Double_t xshift = 0.);
 
-   ClassDef(AliGlauberNucleus,1)
+   ClassDef(AliGlauberNucleus, 1)
 };
 
 #endif
