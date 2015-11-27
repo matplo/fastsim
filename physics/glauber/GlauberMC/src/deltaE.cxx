@@ -21,73 +21,93 @@ namespace py = Pythia8;
 
 #include "util.h"
 
-int deltaE( int argc, char *argv[])
+int verbosity = 0;
+
+double getTotalE(py::Event &event)
 {
-	int verbosity = 0;
-	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
-	cout << "[i] Verbosity : " << verbosity << endl;
+	double totalE = 0;
 
-	// PYTHIA INIT
-	// Generator. Shorthand for event.
-	py::Pythia pythia;
-	py::Info& info   = pythia.info;
-	py::Event& event = pythia.event;
-
-	// Read in commands from external file.
-	TString spath = gSystem->ExpandPathName(gSystem->Getenv("GLAUBERDIR"));
-	TString pycfg = spath + "/GlauberMC/config/pythia8.cfg";
-	pythia.readFile(pycfg.Data());
-
-	// Extract settings to be used in the main program.
-	int nEvent      = 1000;
-
-	int nEventUser = atoi(SysUtil::getArg("--nev", argc, argv));
-	if (nEventUser > 0)
+	for (int i = 0; i < event.size(); ++i)
 	{
-		nEvent = nEventUser;
+		if (event[i].isFinal())
+		{
+			if (verbosity > 5)
+			{
+				cout << i << " " << event[i].name() << " " << event[i].e() << endl;
+				vector<int> vmoms = event[i].motherList();
+				for (int im = 0; im < vmoms.size(); im++)
+				{
+					cout << "    " << im << " " << event[im].name() << endl;
+				}
+			}
+			totalE = totalE + event[i].e();
+		}
 	}
 
-	cout << "[i] Run for " << nEvent << " events." << endl;
+	return totalE;
+}
 
+double getHardE(py::Event &event)
+{
+	double hardE = event[5].e() + event[6].e();
+	return hardE;
+}
+
+int runPythia(py::Pythia *ppythia, int nEvent)
+{
+	py::Pythia& pythia = *ppythia;
+	py::Info&   info   = pythia.info;
+	py::Event&  event  = pythia.event;
 	pythia.init();
 
-	//ROOT IO
-	// for the root IO...
-
-	TString outputFname = SysUtil::getArg("-out", argc, argv);
+	TString outputFname = ""; //SysUtil::getArg("-out", argc, argv);
 	if (outputFname.Length() == 0)
 	{
-		outputFname = "default_emctrig_out.root";
+		//double sqrts = pythia.settings.parm("Beams:eCM");
+		//outputFname  = TString::Format("sqrts_%1.3f_deltaE_out.root", sqrts);
+		double eA = pythia.settings.parm("Beams:eA");
+		double eB = pythia.settings.parm("Beams:eB");
+		outputFname  = TString::Format("deltaE_eA_%1.3f_eB_%1.3f.root", eA, eB);		
 	}
+
 	cout << "[i] Output file: " << outputFname.Data() << endl;
 
 	TFile *fout = new TFile (outputFname.Data(), "RECREATE");
 	fout->cd();
 
-	TH1I *hnefn            = new TH1I("hnefn", 	"hnefn;NEF;counts", 		10, 0, 1);
-	TH1I *hnefw            = new TH1I("hnefw", 	"hnefw;NEF;counts x xsec", 	10, 0, 1);
+	TH1I *hevn            = new TH1I("hevn", 	"hevn;bin number;counts", 			10, 0, 10);
+	TH1I *hevw            = new TH1I("hevw", 	"hevw;bin number;counts x xsec", 	10, 0, 10);
+
+	TNtuple *tn = new TNtuple("tn", "tn", "n:xsec:hardE:deltaE1:deltaE2:nFinal");
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
 		if (!pythia.next()) continue;
 		double xsec = info.sigmaGen();
 
-		hnefn->Fill(1);
-		hnefw->Fill(1, xsec);
+		hevn->Fill(1);
+		hevw->Fill(1, xsec);
 
-		if (iEvent % 100 == 0)
+		cout << info.eA() << event[2].e() << endl;
+
+		double totalE  = getTotalE(event);
+		double hardE   = getHardE(event);
+		double deltaE1 = info.eA() - event[5].e();
+		double deltaE2 = info.eB() - event[6].e();
+		int    nFinal  = info.nFinal();
+		if (nFinal > 2)
 		{
-			cout << "[info] event #" << iEvent << endl;
+			cout << "    number of final partons:" << nFinal << endl;
 		}
-
-		for (int i = 0; i < event.size(); ++i)
+		if (verbosity > 2)
 		{
-			if (event[i].isFinal())
+			cout << "event: " << iEvent << " total energy (final particles): " << totalE << endl;
+			if (totalE <= 0)
 			{
-				cout << event[i].name() << endl;
-			} // for the final particles
-		}// end particle loop within the event
-
+				event.list();
+			}
+		}
+		tn->Fill(iEvent, xsec, hardE, deltaE1, deltaE2, nFinal);
 	} // end of event loop
 
 	// Statistics. Histograms.
@@ -95,6 +115,35 @@ int deltaE( int argc, char *argv[])
 
 	fout->Write();
 	fout->Close();
+	delete fout;
+
+	return 0;
+}
+
+int deltaE( int argc, char *argv[] )
+{
+	verbosity = atoi(SysUtil::getArg("-v", argc, argv));
+	cout << "[i] Verbosity : " << verbosity << endl;
+
+	// Extract settings to be used in the main program.
+	int nEvent     = 1;
+	int nEventUser = atoi(SysUtil::getArg("--nev", argc, argv));
+	if (nEventUser > 0)
+	{
+		nEvent = nEventUser;
+	}
+	cout << "[i] Run for " << nEvent << " events." << endl;
+
+	// PYTHIA INIT
+
+	// Read in commands from external file.
+	TString spath = gSystem->ExpandPathName(gSystem->Getenv("GLAUBERDIR"));
+	TString pycfg = spath + "/GlauberMC/config/pythia8.cfg";
+
+	// Generator. Shorthand for event.
+	py::Pythia pythia;
+	pythia.readFile(pycfg.Data());
+	runPythia(&pythia, nEvent);
 
 	return 0;
 }
