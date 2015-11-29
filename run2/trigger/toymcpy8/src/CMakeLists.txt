@@ -37,6 +37,7 @@ set(SOURCES_LIB
 	emctrig_par_revent.cxx
 	rstructures.cxx
 	revent.cxx
+	emctrig_test.cxx
 )
 
 set(SOURCES_EXE main.cxx)

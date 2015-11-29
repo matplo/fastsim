@@ -32,11 +32,9 @@ namespace py = Pythia8;
 
 #include "util.h"
 #include <AliGenFastModelingEvent.h>
-
 #include <TriggerMaker.h>
-
 #include <EMPartResp.h>
-
+#include <r2util.h>
 #include "revent.h"
 
 int emctrig_par_revent( int argc, char *argv[])
@@ -139,6 +137,17 @@ int emctrig_par_revent( int argc, char *argv[])
 		pFME->SetTuneMult(multTune);
 	}
 
+	TString emcalMaskFile1 = gSystem->ExpandPathName("$RUN2EMCTRIGGER/maps/files/emcal_mask.root");
+	TString dcalMaskFile1  = gSystem->ExpandPathName("$RUN2EMCTRIGGER/maps/files/dcal_mask.root");
+	TString dcalMaskFile2  = gSystem->ExpandPathName("$RUN2EMCTRIGGER/maps/files/dcalphos_3rdphos_mask.root");
+	TString dcalMaskFile3  = gSystem->ExpandPathName("$RUN2EMCTRIGGER/maps/files/dcalphos_nophos_mask.root");
+
+	TriggerMaker *tm0    = GenerUtil::createTriggerMaker();
+	TriggerMaker *tm0_bg = GenerUtil::createTriggerMaker();
+	TriggerMaker *tm1    = GenerUtil::createTriggerMaker(emcalMaskFile1.Data(), dcalMaskFile1.Data());
+	TriggerMaker *tm2    = GenerUtil::createTriggerMaker(emcalMaskFile1.Data(), dcalMaskFile2.Data());
+	TriggerMaker *tm3    = GenerUtil::createTriggerMaker(emcalMaskFile1.Data(), dcalMaskFile3.Data());
+
 	// PYTHIA INIT
 	// Generator. Shorthand for event.
 	py::Pythia pythia;
@@ -237,7 +246,14 @@ int emctrig_par_revent( int argc, char *argv[])
 		bg_event_clusters_dcal.clear(); // boltzman background
 		full_event.clear(); //signal+background
 		pi0E.clear();
-		pi0D.clear();		
+		pi0D.clear();
+
+		tm0->Reset();		
+		tm1->Reset();		
+		tm2->Reset();		
+		tm3->Reset();		
+
+		tm0_bg->Reset();		
 
 		py::Vec4   pTemp;
 		double mTemp;
@@ -448,18 +464,12 @@ int emctrig_par_revent( int argc, char *argv[])
 
 		// run the trigger algorithms
 
-		TriggerSetup tsetup;
-		tsetup.SetThresholds(0., 0., 0., 0.);
-		tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
-
-		TriggerMaker tm;
-		tm.SetTriggerSetup(tsetup);
 		for (unsigned int ip = 0; ip < py_hard_event.size(); ip++)
 		{
 			if (emcalmapping.IsEMCAL(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi()) ||
 			        emcalmapping.IsDCALPHOS(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi()) )
 			{
-				//tm.FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
+				//tm0->FillChannelMap(full_event[ip].eta(), full_event[ip].phi_02pi(), full_event[ip].e());
 				unsigned int pyidx = py_hard_event[ip].user_index();
 				Double_t emc = 0;
 				if ( event[pyidx].isCharged() )
@@ -491,16 +501,12 @@ int emctrig_par_revent( int argc, char *argv[])
 					// neutral particles deposit full energy
 					emc = py_hard_event[ip].e();
 				}
-				tm.FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
+				tm0->FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
+				tm1->FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
+				tm2->FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
+				tm3->FillChannelMap(py_hard_event[ip].eta(), py_hard_event[ip].phi_02pi(), emc);
 			}
 		}
-
-		TriggerSetup tsetup_bg;
-		tsetup_bg.SetThresholds(0., 0., 0., 0.);
-		tsetup_bg.SetTriggerBitConfig(TriggerBitConfigNew());
-
-		TriggerMaker tm_bg;
-		tm_bg.SetTriggerSetup(tsetup_bg);
 
 		unsigned int npartbg   = bg_event_clusters.size();
 		for (unsigned int ip = 0; ip < npartbg; ip++)
@@ -508,51 +514,54 @@ int emctrig_par_revent( int argc, char *argv[])
 			if (emcalmapping.IsEMCAL(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi()) ||
 			        emcalmapping.IsDCALPHOS(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi()) )
 			{
-				tm.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
-				tm_bg.FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				tm0->FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				tm1->FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				tm2->FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				tm3->FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
+				tm0_bg->FillChannelMap(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 				hbgcl->Fill(bg_event_clusters[ip].eta(), bg_event_clusters[ip].phi_02pi(), bg_event_clusters[ip].e());
 			}
 		}
 
 		if (verbosity > 8)
 		{
-			std::cout << "gam emcal max: " << tm.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
-			std::cout << "gam  dcal max: " << tm.GetMaxGammaDCALPHOS().GetADC() << std::endl;
-			std::cout << "jet emcal max: " << tm.GetMaxJetEMCAL().GetADC() 		<< std::endl;
-			std::cout << "jet  dcal max: " << tm.GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
+			std::cout << "gam emcal max: " << tm0->GetMaxGammaEMCAL().GetADC() 	<< std::endl;
+			std::cout << "gam  dcal max: " << tm0->GetMaxGammaDCALPHOS().GetADC() << std::endl;
+			std::cout << "jet emcal max: " << tm0->GetMaxJetEMCAL().GetADC() 		<< std::endl;
+			std::cout << "jet  dcal max: " << tm0->GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
 
-			std::cout << "gam emcal median: " << tm.GetMedianGammaEMCAL() 		<< std::endl;
-			std::cout << "gam  dcal median: " << tm.GetMedianGammaDCALPHOS() 	<< std::endl;
-			std::cout << "jet emcal median: " << tm.GetMedianJetEMCAL() 		<< std::endl;
-			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		<< std::endl;
+			std::cout << "gam emcal median: " << tm0->GetMedianGammaEMCAL() 		<< std::endl;
+			std::cout << "gam  dcal median: " << tm0->GetMedianGammaDCALPHOS() 	<< std::endl;
+			std::cout << "jet emcal median: " << tm0->GetMedianJetEMCAL() 		<< std::endl;
+			std::cout << "jet  dcal median: " << tm0->GetMedianJetDCALPHOS() 		<< std::endl;
 
 			double pgaA =  4 *  4 * 0.014 * 0.014;
 			double pjeA = 32 * 32 * 0.014 * 0.014;
 
 			std::cout << "per unit area... ga: " << pgaA << " je: " << pjeA << std::endl;
-			std::cout << "gam emcal median: " << tm.GetMedianGammaEMCAL() 		/ pgaA << std::endl;
-			std::cout << "gam  dcal median: " << tm.GetMedianGammaDCALPHOS() 	/ pgaA << std::endl;
-			std::cout << "jet emcal median: " << tm.GetMedianJetEMCAL() 		/ pjeA << std::endl;
-			std::cout << "jet  dcal median: " << tm.GetMedianJetDCALPHOS() 		/ pjeA << std::endl;
+			std::cout << "gam emcal median: " << tm0->GetMedianGammaEMCAL() 		/ pgaA << std::endl;
+			std::cout << "gam  dcal median: " << tm0->GetMedianGammaDCALPHOS() 	/ pgaA << std::endl;
+			std::cout << "jet emcal median: " << tm0->GetMedianJetEMCAL() 		/ pjeA << std::endl;
+			std::cout << "jet  dcal median: " << tm0->GetMedianJetDCALPHOS() 		/ pjeA << std::endl;
 
 			std::cout << "background only: " << std::endl;
-			std::cout << "gam emcal max: " << tm_bg.GetMaxGammaEMCAL().GetADC() 	<< std::endl;
-			std::cout << "gam  dcal max: " << tm_bg.GetMaxGammaDCALPHOS().GetADC()  << std::endl;
-			std::cout << "jet emcal max: " << tm_bg.GetMaxJetEMCAL().GetADC() 		<< std::endl;
-			std::cout << "jet  dcal max: " << tm_bg.GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
+			std::cout << "gam emcal max: " << tm0_bg->GetMaxGammaEMCAL().GetADC() 	<< std::endl;
+			std::cout << "gam  dcal max: " << tm0_bg->GetMaxGammaDCALPHOS().GetADC()  << std::endl;
+			std::cout << "jet emcal max: " << tm0_bg->GetMaxJetEMCAL().GetADC() 		<< std::endl;
+			std::cout << "jet  dcal max: " << tm0_bg->GetMaxJetDCALPHOS().GetADC() 	<< std::endl;
 
-			std::cout << "gam emcal median: " << tm_bg.GetMedianGammaEMCAL() 		<< std::endl;
-			std::cout << "gam  dcal median: " << tm_bg.GetMedianGammaDCALPHOS() 	<< std::endl;
-			std::cout << "jet emcal median: " << tm_bg.GetMedianJetEMCAL() 			<< std::endl;
-			std::cout << "jet  dcal median: " << tm_bg.GetMedianJetDCALPHOS() 		<< std::endl;
+			std::cout << "gam emcal median: " << tm0_bg->GetMedianGammaEMCAL() 		<< std::endl;
+			std::cout << "gam  dcal median: " << tm0_bg->GetMedianGammaDCALPHOS() 	<< std::endl;
+			std::cout << "jet emcal median: " << tm0_bg->GetMedianJetEMCAL() 			<< std::endl;
+			std::cout << "jet  dcal median: " << tm0_bg->GetMedianJetDCALPHOS() 		<< std::endl;
 
 		}
 
 		//("triggers", "triggers", "nEv:xsec:
 		//maxjECAL:maxjDCAL:maxgECAL:maxgDCAL:
 		//medjECAL:medjDCAL:medgECAL:medgDCAL");
-		tm.FindPatches();
-		tm_bg.FindPatches();
+		tm0->FindPatches();
+		tm0_bg->FindPatches();
 
 		std::vector <fj::PseudoJet> ej;
 		std::vector <fj::PseudoJet> dj;
@@ -560,9 +569,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard[i].phi_02pi();
 			eta = sorted_jets_hard[i].eta();
-			if (emcalmapping.IsEMCAL(eta, phi))
+			if (R2Util::IsEMCAL02pi(eta, phi))
 				ej.push_back(sorted_jets_hard[i]);
-			if (emcalmapping.IsDCALPHOS(eta, phi))
+			if (R2Util::IsDCALPHOS02pi(eta, phi))
 				dj.push_back(sorted_jets_hard[i]);
 		}
 
@@ -572,9 +581,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard_r[i].phi_02pi();
 			eta = sorted_jets_hard_r[i].eta();
-			if (emcalmapping.IsEMCAL(eta, phi))
+			if (R2Util::IsEMCAL02pi(eta, phi))
 				ej_r.push_back(sorted_jets_hard_r[i]);
-			if (emcalmapping.IsDCALPHOS(eta, phi))
+			if (R2Util::IsDCALPHOS02pi(eta, phi))
 				dj_r.push_back(sorted_jets_hard_r[i]);
 		}
 
@@ -598,6 +607,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = photons[i].phi_02pi();
 			eta = photons[i].eta();
+			// note: here as photon is a particle we use the particle acceptance
 			if (emcalmapping.IsEMCAL(eta, phi))
 				eg.push_back(photons[i]);
 			if (emcalmapping.IsDCALPHOS(eta, phi))
@@ -661,8 +671,11 @@ int emctrig_par_revent( int argc, char *argv[])
 		//revent.FillBranch("bgcl", 	bg_event_clusters);
 		//revent.FillBranch("bgtrk", 	bg_event_tracks);
 
-		revent.FillTrigger("tg", 	&tm);
-		revent.FillTrigger("tgbg", 	&tm_bg);
+		revent.FillTrigger("tg", 	tm0);
+		revent.FillTrigger("tg1", 	tm1);
+		revent.FillTrigger("tg2", 	tm2);
+		revent.FillTrigger("tg3", 	tm3);
+		revent.FillTrigger("tgbg", 	tm0_bg);
 
 		revent.FillBranch("j",  	sorted_jets_hard);
 		revent.FillBranch("jch",  	sorted_jets_hard_charged);

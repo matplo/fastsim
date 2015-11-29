@@ -82,8 +82,8 @@ void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
 	for (int i = 0; i < in.size(); ++i)
 	{
 		tlv.SetPtEtaPhiE(in[i].GetADC(),
-		                 in[i].GetColStart(),
-		                 in[i].GetRowStart(),
+		                 in[i].GetRowStart() / 64., // phi will not be accurate for DCal
+		                 in[i].GetColStart() / 48., // fixed 48
 		                 in[i].GetADC());
 		v.push_back(tlv);
 	}
@@ -96,7 +96,7 @@ void REvent::FinishEvent()
 {
 	//tree->Fill();
 	Int_t n = tree->GetEntries();
-	tree->SetEntries(n+1);
+	tree->SetEntries(n + 1);
 }
 
 void REvent::FillTrigger(const char* name, TriggerMaker *tm)
@@ -115,21 +115,21 @@ void REvent::FillTrigger(const char* name, TriggerMaker *tm)
 	tinfo.maxgECAL    = tm->GetMaxGammaEMCAL().GetADC();
 	tinfo.maxgDCAL    = tm->GetMaxGammaDCALPHOS().GetADC();
 
-	tinfo.medjECAL    = tm->GetMedianJetEMCAL();  		
-	tinfo.medjDCAL    = tm->GetMedianJetDCALPHOS();		
+	tinfo.medjECAL    = tm->GetMedianJetEMCAL();
+	tinfo.medjDCAL    = tm->GetMedianJetDCALPHOS();
 	tinfo.medjECAL8x8 = tm->GetMedianJetEMCAL8x8();  		// NOTE: median is calculated based on 8x8 FOR not 16x16
 	tinfo.medjDCAL8x8 = tm->GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
 	tinfo.medgECAL    = tm->GetMedianGammaEMCAL();
 	tinfo.medgDCAL    = tm->GetMedianGammaDCALPHOS();
 	b->Fill();
 
-	FillBranch(TString::Format("%sEJE",name).Data(), tm->GetPatches(RawPatch::kEMCALpatchJE));
-	FillBranch(TString::Format("%sEJE8x8",name).Data(), tm->GetPatches(RawPatch::kEMCALpatchJE8x8));
-	FillBranch(TString::Format("%sEGA",name).Data(), tm->GetPatches(RawPatch::kEMCALpatchGA));
+	FillBranch(TString::Format("%sEJE", name).Data(), tm->GetPatches(RawPatch::kEMCALpatchJE));
+	FillBranch(TString::Format("%sEJE8x8", name).Data(), tm->GetPatches(RawPatch::kEMCALpatchJE8x8));
+	FillBranch(TString::Format("%sEGA", name).Data(), tm->GetPatches(RawPatch::kEMCALpatchGA));
 
-	FillBranch(TString::Format("%sDJE",name).Data(), tm->GetPatches(RawPatch::kDCALpatchJE) );
-	FillBranch(TString::Format("%sDJE8x8",name).Data(), tm->GetPatches(RawPatch::kDCALpatchJE8x8) );
-	FillBranch(TString::Format("%sDGA",name).Data(), tm->GetPatches(RawPatch::kDCALpatchGA) );
+	FillBranch(TString::Format("%sDJE", name).Data(), tm->GetPatches(RawPatch::kDCALpatchJE) );
+	FillBranch(TString::Format("%sDJE8x8", name).Data(), tm->GetPatches(RawPatch::kDCALpatchJE8x8) );
+	FillBranch(TString::Format("%sDGA", name).Data(), tm->GetPatches(RawPatch::kDCALpatchGA) );
 
 }
 
