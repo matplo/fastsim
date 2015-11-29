@@ -18,9 +18,9 @@ public:
 	virtual ~REvent();
 	void Init(const char *tname = "t");
 	void Write();
-	void FillBranch(const char* name, std::vector <fastjet::PseudoJet> in);
+	void FillBranch(const char* name, std::vector <fastjet::PseudoJet> in, unsigned int maxn = -1);
 	void FillBranch(const char *name, std::vector <RawPatch> in);
-	void FillTrigger(const char* name, TriggerMaker *tm);
+	void FillTrigger(const char* name, TriggerMaker *tm, Bool_t patches = kFALSE);
 	void FinishEvent();
 	TTree *GetTree() {return tree;}
 private:

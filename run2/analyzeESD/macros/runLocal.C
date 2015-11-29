@@ -18,8 +18,13 @@ void runLocal(const char *fileList = "files_000244982.txt")
 
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("containerName",
 	                                     TTree::Class(), AliAnalysisManager::kOutputContainer,
-	                                     Form("%s", AliAnalysisManager::GetCommonFileName()));
+	                                     Form("Tree_%s", AliAnalysisManager::GetCommonFileName()));
 	mgr->ConnectOutput (task, 1, coutput1 );
+
+	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos",
+	                                     TList::Class(), AliAnalysisManager::kOutputContainer,
+	                                     Form("Hist_%s", AliAnalysisManager::GetCommonFileName()));
+	mgr->ConnectOutput (task, 2, coutput2 );
 
 	if (!mgr->InitAnalysis()) return;
 	mgr->PrintStatus();
@@ -27,7 +32,7 @@ void runLocal(const char *fileList = "files_000244982.txt")
 	TChain* pChain = 0;
 	gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
 	//pChain = CreateESDChain(fileList, 1234567890, 0, kFALSE);
-	pChain = CreateESDChain(fileList, 1, 0, kFALSE);
+	pChain = CreateESDChain(fileList, 100, 0, kFALSE);
 
 	// start analysis
 	Printf("Starting Analysis...");
