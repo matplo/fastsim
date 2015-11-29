@@ -3,6 +3,8 @@
 
 #include "AliAnalysisTaskSE.h"
 
+class AliEMCALGeometry;
+
 class AliAnalysisM : public AliAnalysisTaskSE
 {
  public:
@@ -20,6 +22,8 @@ private:
     AliAnalysisM& operator=(const AliAnalysisM& other) {;}
 
     void *fREvent; //!
+
+    AliEMCALGeometry *fGeom; //!
 
     ClassDef(AliAnalysisM, 1); // Analysis task for standard jet analysis
 };

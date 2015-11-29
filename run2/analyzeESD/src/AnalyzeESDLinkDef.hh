@@ -5,5 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisM++;
+#pragma link C++ class std::vector<TLorentzVector>+;
 
 #endif
