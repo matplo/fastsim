@@ -23,6 +23,7 @@ set(CMAKE_MACOSX_RPATH 1)
 set(SRCS
 	RndSource.cxx
 	RndSource2D.cxx
+	GlauberPy.cxx
 )
 
 set(SOURCES_EXE 

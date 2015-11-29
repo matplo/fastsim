@@ -67,7 +67,7 @@ int runPythia(py::Pythia *ppythia, int nEvent)
 		//outputFname  = TString::Format("sqrts_%1.3f_deltaE_out.root", sqrts);
 		double eA = pythia.settings.parm("Beams:eA");
 		double eB = pythia.settings.parm("Beams:eB");
-		outputFname  = TString::Format("deltaE_eA_%1.3f_eB_%1.3f.root", eA, eB);		
+		outputFname  = TString::Format("deltaE_eA_%1.3f_eB_%1.3f.root", eA, eB);
 	}
 
 	cout << "[i] Output file: " << outputFname.Data() << endl;
@@ -78,7 +78,7 @@ int runPythia(py::Pythia *ppythia, int nEvent)
 	TH1I *hevn            = new TH1I("hevn", 	"hevn;bin number;counts", 			10, 0, 10);
 	TH1I *hevw            = new TH1I("hevw", 	"hevw;bin number;counts x xsec", 	10, 0, 10);
 
-	TNtuple *tn = new TNtuple("tn", "tn", "n:xsec:hardE:deltaE1:deltaE2:nFinal");
+	TNtuple *tn = new TNtuple("tn", "tn", "n:xsec:ecm:hardE:deltaE1:deltaE2:nFinal");
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
@@ -88,12 +88,30 @@ int runPythia(py::Pythia *ppythia, int nEvent)
 		hevn->Fill(1);
 		hevw->Fill(1, xsec);
 
-		cout << info.eA() << event[2].e() << endl;
-
 		double totalE  = getTotalE(event);
 		double hardE   = getHardE(event);
-		double deltaE1 = info.eA() - event[5].e();
-		double deltaE2 = info.eB() - event[6].e();
+
+		double eA = event[1].e();
+		double eB = event[2].e();
+
+		double mA = event[1].m();
+		double mB = event[2].m();
+
+		double pA = TMath::Sqrt(eA * eA - mA * mA);
+		double pB = TMath::Sqrt(eB * eB - mB * mB);
+
+		double eCM = TMath::Sqrt( TMath::Power(eA + eB, 2.) - TMath::Power(pA + (-1. * pB), 2.) );
+
+		cout << "[i] "
+		     << " eA=" << eA << " eB=" << eB
+		     << " mA=" << mA << " mB=" << mB
+		     << " pA=" << pA << " pB=" << pB
+		     << " eCM=" << eCM
+		     << endl;
+
+		double deltaE1 = eA - event[5].e();
+		double deltaE2 = eB - event[6].e();
+
 		int    nFinal  = info.nFinal();
 		if (nFinal > 2)
 		{
@@ -107,7 +125,7 @@ int runPythia(py::Pythia *ppythia, int nEvent)
 				event.list();
 			}
 		}
-		tn->Fill(iEvent, xsec, hardE, deltaE1, deltaE2, nFinal);
+		tn->Fill(iEvent, xsec, eCM, hardE, deltaE1, deltaE2, nFinal);
 	} // end of event loop
 
 	// Statistics. Histograms.

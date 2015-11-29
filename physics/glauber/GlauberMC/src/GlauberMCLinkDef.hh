@@ -7,4 +7,6 @@
 #pragma link C++ class RndSource+;
 #pragma link C++ class RndSource2D+;
 
+#pragma link C++ class GlauberPy+;
+
 #endif
