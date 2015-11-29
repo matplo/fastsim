@@ -23,8 +23,7 @@ private:
     AliAnalysisM& operator=(const AliAnalysisM& other) {;}
 
     void *fREvent;  //!
-    void *fTM_EMC;      //!
-    void *fTM_DMC;      //!
+    void *fTM;      //!
     AliEMCALGeometry *fGeom; //!
 
     THistManager *fHManager;

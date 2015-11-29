@@ -26,8 +26,7 @@ AliAnalysisM::AliAnalysisM()
 	: AliAnalysisTaskSE()
 	, fREvent(new REvent)
 	, fGeom(0)
-	, fTM_EMC(0)
-	, fTM_DMC(0)
+	, fTM(0)
 	, fHManager(0)
 {
 	;
@@ -37,8 +36,7 @@ AliAnalysisM::AliAnalysisM(const char* name)
 	: AliAnalysisTaskSE(name)
 	, fREvent(new REvent)
 	, fGeom(0)
-	, fTM_EMC(new TriggerMaker)
-	, fTM_DMC(new TriggerMaker)
+	, fTM(new TriggerMaker)
 	, fHManager(0)
 {
 	DefineOutput(1, TTree::Class());
@@ -49,10 +47,7 @@ AliAnalysisM::AliAnalysisM(const char* name)
 	tsetup.SetTriggerBitConfig(TriggerBitConfigNew());
 
 	TriggerMaker *tm = 0;
-	tm = (TriggerMaker*)fTM_EMC;
-	tm->SetTriggerSetup(tsetup);
-
-	tm = (TriggerMaker*)fTM_DMC;
+	tm = (TriggerMaker*)fTM;
 	tm->SetTriggerSetup(tsetup);
 }
 
@@ -65,8 +60,10 @@ void AliAnalysisM::UserCreateOutputObjects()
 	TTree *t = (TTree*)revent->GetTree();
 
 	fHManager = new THistManager("histos");
-	fHManager->CreateTH1("fHcellsN", "fHcellsN;abdId", 20000., 0, 20000.);
-	fHManager->CreateTH1("fHcellsW", "fHcellsW;abdId", 20000., 0, 20000.);
+	fHManager->CreateTH1("fHcellsN", "fHcellsN;absId", 20000., 0, 20000.);
+	fHManager->CreateTH1("fHcellsW", "fHcellsW;absId", 20000., 0, 20000.);
+	fHManager->CreateTH1("fHcellsN200", "fHcellsN200;absId", 20000., 0, 20000.);
+	fHManager->CreateTH1("fHcellsW200", "fHcellsW200;absId", 20000., 0, 20000.);
 
 	PostData(1, t);
 	PostData(2, fHManager->GetListOfHistograms());
@@ -112,11 +109,8 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runNo);
 	}
 
-	TriggerMaker *tm_EMC = (TriggerMaker*)fTM_EMC;
-	tm_EMC->Reset();
-
-	TriggerMaker *tm_DMC = (TriggerMaker*)fTM_DMC;
-	tm_DMC->Reset();
+	TriggerMaker *tm = (TriggerMaker*)fTM;
+	tm->Reset();
 
 	// jet finder
 	std::vector <fj::PseudoJet> fjcells_EMC; // signal from pythia
@@ -130,16 +124,24 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		if (amp < 0)
 			continue;
 		Short_t 	absId = cells->GetCellNumber(iCell);
-		Double_t 	phi   = -1000;
-		Double_t 	eta   =  1000;
+		Double_t 	phi   = -2000;
+		Double_t 	eta   =  2000;
 		fGeom->EtaPhiFromIndex(absId, eta, phi);
+
+		tm->FillChannelMap(eta, phi, amp);
 
 		fHManager->FillTH1("fHcellsN", absId);
 		fHManager->FillTH1("fHcellsW", absId, amp);
+		if (amp < 0.200)
+		{
+			continue;
+		}
 
-		Double_t pT = amp / TMath::CosH(eta);
+		fHManager->FillTH1("fHcellsN200", absId);
+		fHManager->FillTH1("fHcellsW200", absId, amp);			
 
 		fj::PseudoJet fjc;
+		Double_t pT = amp / TMath::CosH(eta);
 		fjc.reset_PtYPhiM(pT, eta, phi, 0.0);
 
 		Int_t iSM = -1;
@@ -147,12 +149,10 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		if (iSM < 12)
 		{
 			fjcells_EMC.push_back(fjc);
-			tm_EMC->FillChannelMap(eta, phi, amp);
 		}
 		else
 		{
 			fjcells_DMC.push_back(fjc);
-			tm_DMC->FillChannelMap(eta, phi, amp);
 		}
 
 		//cout << "E=" << fjc.e() << " pt=" << fjc.perp() << " amp=" << amp << endl;
@@ -174,8 +174,6 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	revent->FillBranch(sbname.Data(),  sorted_jets_EMC);
 	sbname = TString::Format("maxE_%s_EMC", tsIs.Data());
 	revent->FillBranch(sbname.Data(),  sorted_jets_EMC, 1);
-	sbname = TString::Format("trig_%s_EMC", tsIs.Data());
-	revent->FillTrigger(sbname.Data(), tm_EMC, kFALSE);
 
 	fj::JetDefinition 		jet_def_DMC(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
 	fj::ClusterSequence 	clust_seq_DMC(fjcells_DMC, jet_def_DMC);
@@ -186,8 +184,9 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	revent->FillBranch(sbname.Data(),  sorted_jets_DMC);
 	sbname = TString::Format("maxE_%s_DMC", tsIs.Data());
 	revent->FillBranch(sbname.Data(),  sorted_jets_DMC, 1);
-	sbname = TString::Format("trig_%s_DMC", tsIs.Data());
-	revent->FillTrigger(sbname.Data(), tm_DMC, kFALSE);
+
+	sbname = TString::Format("trig_%s", tsIs.Data());
+	revent->FillTrigger(sbname.Data(), tm, kFALSE);
 
 	revent->FinishEvent();
 
