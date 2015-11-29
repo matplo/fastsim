@@ -113,8 +113,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	tm->Reset();
 
 	// jet finder
-	std::vector <fj::PseudoJet> fjcells_EMC; // signal from pythia
-	std::vector <fj::PseudoJet> fjcells_DMC; // signal from pythia
+	std::vector <fj::PseudoJet> fjcells; // signal from pythia
 	// loop over cells...
 	AliVCaloCells *cells = InputEvent()->GetEMCALCells();
 	for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); ++iCell)
@@ -143,18 +142,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		fj::PseudoJet fjc;
 		Double_t pT = amp / TMath::CosH(eta);
 		fjc.reset_PtYPhiM(pT, eta, phi, 0.0);
-
-		Int_t iSM = -1;
-		fGeom->SuperModuleNumberFromEtaPhi(eta, phi, iSM);
-		if (iSM < 12)
-		{
-			fjcells_EMC.push_back(fjc);
-		}
-		else
-		{
-			fjcells_DMC.push_back(fjc);
-		}
-
+		fjcells.push_back(fjc);
 		//cout << "E=" << fjc.e() << " pt=" << fjc.perp() << " amp=" << amp << endl;
 		//cout << "dE=" << fjc.e() - amp << endl;
 	}
@@ -165,25 +153,15 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 
 	TString sbname;
 
-	fj::JetDefinition 		jet_def_EMC(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
-	fj::ClusterSequence 	clust_seq_EMC(fjcells_EMC, jet_def_EMC);
-	vector <fj::PseudoJet> 	inclusive_jets_EMC = clust_seq_EMC.inclusive_jets(pTmin);
-	vector <fj::PseudoJet> 	sorted_jets_EMC    = fj::sorted_by_pt(inclusive_jets_EMC);
+	fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
+	fj::ClusterSequence 	clust_seq(fjcells, jet_def);
+	vector <fj::PseudoJet> 	inclusive_jets = clust_seq.inclusive_jets(pTmin);
+	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 
-	sbname = TString::Format("jets_%s_EMC", tsIs.Data());
-	revent->FillBranch(sbname.Data(),  sorted_jets_EMC);
-	sbname = TString::Format("maxE_%s_EMC", tsIs.Data());
-	revent->FillBranch(sbname.Data(),  sorted_jets_EMC, 1);
-
-	fj::JetDefinition 		jet_def_DMC(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
-	fj::ClusterSequence 	clust_seq_DMC(fjcells_DMC, jet_def_DMC);
-	vector <fj::PseudoJet> 	inclusive_jets_DMC = clust_seq_DMC.inclusive_jets(pTmin);
-	vector <fj::PseudoJet> 	sorted_jets_DMC    = fj::sorted_by_pt(inclusive_jets_EMC);
-
-	sbname = TString::Format("jets_%s_DMC", tsIs.Data());
-	revent->FillBranch(sbname.Data(),  sorted_jets_DMC);
-	sbname = TString::Format("maxE_%s_DMC", tsIs.Data());
-	revent->FillBranch(sbname.Data(),  sorted_jets_DMC, 1);
+	sbname = TString::Format("jets_%s", tsIs.Data());
+	revent->FillBranch(sbname.Data(),  sorted_jets);
+	sbname = TString::Format("maxEjet_%s", tsIs.Data());
+	revent->FillBranch(sbname.Data(),  sorted_jets, 1);
 
 	sbname = TString::Format("trig_%s", tsIs.Data());
 	revent->FillTrigger(sbname.Data(), tm, kFALSE);
