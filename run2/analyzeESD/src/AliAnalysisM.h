@@ -8,7 +8,7 @@ class THistManager;
 
 class AliAnalysisM : public AliAnalysisTaskSE
 {
- public:
+public:
     AliAnalysisM();
     AliAnalysisM(const char* name);
     virtual ~AliAnalysisM() {;}
@@ -30,7 +30,21 @@ private:
 
     THistManager *fHManager;
 
+    static Int_t fgBadChannels[]; //!
+
+    inline Bool_t IsBadChannel(Short_t absId)
+    {
+        int i = 0;
+        while (fgBadChannels[i]!=-1)
+        {
+            if (absId == fgBadChannels[i])
+                return kTRUE;
+            i++;
+        }
+        return kFALSE;
+    }
+
     ClassDef(AliAnalysisM, 1); // Analysis task for standard jet analysis
 };
- 
+
 #endif
