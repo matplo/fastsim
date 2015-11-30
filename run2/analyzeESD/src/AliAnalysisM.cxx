@@ -182,8 +182,8 @@ void AliAnalysisM::Jets(void *cells, double R)
 	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 
 	REvent *revent = (REvent*)fREvent;
-	sbname = TString::Format("jets0%d", R*10.);
+	sbname = TString::Format("jets%1.1f", R).ReplaceAll(".", "");
 	revent->FillBranch(sbname.Data(),  sorted_jets);
-	sbname = TString::Format("maxEjet0%d", R*10.);
+	sbname = TString::Format("maxEjet%1.1f", R).ReplaceAll(".", "");
 	revent->FillBranch(sbname.Data(),  sorted_jets, 1);
 }

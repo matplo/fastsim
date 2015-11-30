@@ -37,6 +37,7 @@ public:
 
 private:
 
+	inline void ResetPhi();
 
 	Double_t fPhi;
 	Double_t fEta;
@@ -68,12 +69,19 @@ inline Bool_t CaloVector::IsDCAL()
 	return ( (fEta > -0.668305) && (fEta < 0.668305) && (fPhi > 4.54573 - PI ) && (fPhi < 5.70495 - PI ) );
 }
 
+inline void CaloVector::ResetPhi()
+{
+	if (fPhi < 0)
+		fPhi = fPhi + PI * 2.;
+}
+
 inline CaloVector & CaloVector::operator = (const CaloVector &v)
 {
 	fEta = v.fEta;
 	fPhi = v.fPhi;
 	fE   = v.fE;
 	fDet = v.fDet;
+	ResetPhi();
 	return *this;
 }
 
@@ -94,6 +102,7 @@ inline void CaloVector::SetEtaPhiE(Double_t eta, Double_t phi, Double_t e)
 	fPhi = phi;
 	fEta = eta;
 	fE   = e;
+	ResetPhi();
 	fDet = GetDet02pi();
 }
 
