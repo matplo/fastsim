@@ -11,7 +11,7 @@ class CaloVector : public TObject
 public:
 	CaloVector();
 	CaloVector(const CaloVector &);
-	CaloVector(Double_t eta, Double_t phi, Double_t e);
+	CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det);
 	virtual ~CaloVector();
 
 	inline void SetEtaPhiE(Double_t eta, Double_t phi, Double_t e);
@@ -22,6 +22,7 @@ public:
 	inline Double_t Eta() {return fEta;}
 	inline Double_t E()   {return fE;}
 	inline Double_t Pt();
+	inline Int_t 	Det() {return fDet;}
 
 	inline CaloVector & operator = (const CaloVector &);
 	inline Bool_t 		operator == (const CaloVector & v) const ;
@@ -31,11 +32,17 @@ public:
 	inline Bool_t IsDCAL();
 	inline Bool_t IsDCAL02pi();
 
+	inline void GetDet();
+	inline void GetDet02pi();
+
 private:
+
 
 	Double_t fPhi;
 	Double_t fEta;
 	Double_t fE;
+
+	Int_t	 fDet; //0 for EMCal; 1 for DCal
 
 	ClassDef(CaloVector, 1)
 };
@@ -66,6 +73,7 @@ inline CaloVector & CaloVector::operator = (const CaloVector &v)
 	fEta = v.fEta;
 	fPhi = v.fPhi;
 	fE   = v.fE;
+	fDet = v.fDet;
 	return *this;
 }
 
@@ -86,6 +94,23 @@ inline void CaloVector::SetEtaPhiE(Double_t eta, Double_t phi, Double_t e)
 	fPhi = phi;
 	fEta = eta;
 	fE   = e;
+	fDet = GetDet02pi();
+}
+
+inline void CaloVector::GetDet()
+{
+	fDet = -1;
+	if (IsEMCAL()) fDet = 0;
+	if (IsDCAL())  fDet = 1;
+	return fDet;
+}
+
+inline void CaloVector::GetDet02pi();
+{
+	fDet = -1;
+	if (IsEMCAL02pi()) fDet = 0;
+	if (IsDCAL02pi())  fDet = 1;
+	return fDet;
 }
 
 inline void CaloVector::GetTLV(TLorentzVector &v)
