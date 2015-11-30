@@ -79,10 +79,16 @@ void AliAnalysisM::CreateBranches()
 	{
 		TString tsIs = ts[i];
 		TString sbname;
+
 		sbname = TString::Format("jets_%s", tsIs.Data());
 		revent->CreateBranch(sbname.Data());
+
 		sbname = TString::Format("maxEjet_%s", tsIs.Data());
 		revent->CreateBranch(sbname.Data());
+
+		sbname = TString::Format("trig_%s", tsIs.Data());
+		revent->CreateTriggerBranch(sbname.Data());
+
 		i++;
 	}
 	revent->DumpListOfBranches();

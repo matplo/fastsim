@@ -19,6 +19,7 @@ public:
 	void Init(const char *tname = "t");
 	void Write();
 	void CreateBranch(const char* name);
+	void CreateTriggerBranch(const char* name);
 	void FillBranch(const char* name, std::vector <fastjet::PseudoJet> in, unsigned int maxn = -1);
 	void FillBranch(const char *name, std::vector <RawPatch> in);
 	void FillTrigger(const char* name, TriggerMaker *tm, Bool_t patches = kFALSE);

@@ -55,6 +55,17 @@ void REvent::CreateBranch(const char* name)
 	delete pv;
 }
 
+void REvent::CreateTriggerBranch(const char* name)
+{
+	double tinfo[12];
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &tinfo[0], "maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+	}
+	b->SetAddress(&tinfo[0]);
+}
+
 void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsigned int maxn)
 {
 	//std::vector<TLorentzVector> *pv = new std::vector<TLorentzVector>;
