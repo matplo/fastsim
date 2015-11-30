@@ -12,10 +12,10 @@ import sys
 
 def reformat(chlist, fout=None):
 	print >> fout, 'Int_t AliAnalysisM::fgBadChannels[] = {'
-	for i, ich in enumerate(chlist):
+	for i, ich in enumerate(sorted(chlist)):
 		if i % 10 == 0 and i!=0:
 			print >> fout
-		sich = '{}'.format(ich).zfill(5)
+		sich = '{}'.format(ich).rjust(6) #zfill(5)
 		if i < len(chlist) - 1:
 			print >> fout,sich+',',
 	print >> fout, '-1};'
