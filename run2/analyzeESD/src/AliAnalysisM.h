@@ -31,6 +31,8 @@ private:
     AliAnalysisM(const AliAnalysisM& obj) {;}
     AliAnalysisM& operator=(const AliAnalysisM& other) {;}
 
+    void Jets(void *cells, double R=0.2);
+
     void *fREvent;  //!
     void *fTM;      //!
     AliEMCALGeometry *fGeom; //!

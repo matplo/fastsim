@@ -75,43 +75,39 @@ void AliAnalysisM::UserCreateOutputObjects()
 
 void AliAnalysisM::UserExec(Option_t* /*option*/)
 {
-	REvent *revent = (REvent*)fREvent;
-
-	TTree *t = (TTree*)revent->GetTree();
-
 	TString ts = InputEvent()->GetFiredTriggerClasses();
 
-	Int_t kTtype = kOther;
+	Int_t iEvType = kOther;
 	TString tsIs = "other";
 
 	if (ts.Contains("CINT7-"))
 	{
 		tsIs = "CINT7";
-		kTtype = kCINT7;
+		iEvType = kCINT7;
 	}
 
 	if (ts.Contains("CINT7EJ1"))
 	{
 		tsIs = "EJ1";
-		kTtype = kEJ1;
+		iEvType = kEJ1;
 	}
 
 	if (ts.Contains("CINT7EG1"))
 	{
 		tsIs = "EG1";
-		kTtype = kEG1;
+		iEvType = kEG1;
 	}
 
 	if (ts.Contains("CINT7DJ1"))
 	{
 		tsIs = "DJ1";
-		kTtype = kDJ1;
+		iEvType = kDJ1;
 	}
 
 	if (ts.Contains("CINT7DG1"))
 	{
 		tsIs = "DG1";
-		kTtype = kDG1;
+		iEvType = kDG1;
 	}
 
 	if (fGeom == 0)
@@ -160,27 +156,34 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		//cout << "dE=" << fjc.e() - amp << endl;
 	}
 
-	double R     = 0.2;
+	REvent *revent = (REvent*)fREvent;
+
+	revent->FillTrigger("trig", tm, iEvType, kFALSE);
+	Jets(&fjcells, 0.1);
+	Jets(&fjcells, 0.2);
+	Jets(&fjcells, 0.4);
+	revent->FinishEvent();
+
+	TTree *t = (TTree*)revent->GetTree();
+	PostData(1, t);
+	PostData(2, fHManager->GetListOfHistograms() );
+}
+
+void AliAnalysisM::Jets(void *cells, double R)
+{
 	int    power = -1;
 	double pTmin = 1;
 
+	std::vector <fj::PseudoJet> &fjcells = *((std::vector <fj::PseudoJet>*)cells);
 	TString sbname;
-
 	fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
 	fj::ClusterSequence 	clust_seq(fjcells, jet_def);
 	vector <fj::PseudoJet> 	inclusive_jets = clust_seq.inclusive_jets(pTmin);
 	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 
-	sbname = TString::Format("jets");
+	REvent *revent = (REvent*)fREvent;
+	sbname = TString::Format("jets0%d", R*10.);
 	revent->FillBranch(sbname.Data(),  sorted_jets);
-	sbname = TString::Format("maxEjet");
+	sbname = TString::Format("maxEjet0%d", R*10.);
 	revent->FillBranch(sbname.Data(),  sorted_jets, 1);
-
-	sbname = TString::Format("trig");
-	revent->FillTrigger(sbname.Data(), tm, kTtype, kFALSE);
-
-	revent->FinishEvent();
-
-	PostData(1, t);
-	PostData(2, fHManager->GetListOfHistograms() );
 }
