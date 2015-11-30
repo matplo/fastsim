@@ -14,30 +14,30 @@ public:
 	CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det);
 	virtual ~CaloVector();
 
-	inline void SetEtaPhiE(Double_t eta, Double_t phi, Double_t e);
-	inline void GetEtaPhiE(Double_t &eta, Double_t &phi, Double_t &e) const;
-	inline void GetTLV(TLorentzVector &v);
-	inline TLorentzVector TLV() { TLorentzVector v; GetTLV(v); return v;}
-	inline Double_t Phi() {return fPhi;}
-	inline Double_t Eta() {return fEta;}
-	inline Double_t E()   {return fE;}
-	inline Double_t Pt();
-	inline Int_t 	Det() {return fDet;}
+	void SetEtaPhiE(Double_t eta, Double_t phi, Double_t e);
+	void GetEtaPhiE(Double_t &eta, Double_t &phi, Double_t &e) const;
+	void GetTLV(TLorentzVector &v);
+	TLorentzVector TLV() { TLorentzVector v; GetTLV(v); return v;}
+	Double_t Phi() 	{return fPhi;}
+	Double_t Eta() 	{return fEta;}
+	Double_t E()   	{return fE;}
+	Double_t Pt();
+	Int_t 	Det() 	{return fDet;}
 
-	inline CaloVector & operator = (const CaloVector &);
-	inline Bool_t 		operator == (const CaloVector & v) const ;
+	CaloVector & operator = (const CaloVector &);
+	Bool_t 		operator == (const CaloVector & v) const ;
 
-	inline Bool_t IsEMCAL();
-	inline Bool_t IsEMCAL02pi();
-	inline Bool_t IsDCAL();
-	inline Bool_t IsDCAL02pi();
+	Bool_t IsEMCAL();
+	Bool_t IsEMCAL02pi();
+	Bool_t IsDCAL();
+	Bool_t IsDCAL02pi();
 
-	inline Int_t GetDet();
-	inline Int_t GetDet02pi();
+	Int_t GetDet();
+	Int_t GetDet02pi();
 
 private:
 
-	inline void ResetPhi();
+	void ResetPhi();
 
 	Double_t fPhi;
 	Double_t fEta;
@@ -47,90 +47,5 @@ private:
 
 	ClassDef(CaloVector, 1)
 };
-
-inline Bool_t CaloVector::IsEMCAL02pi()
-{
-	return ( (fE > -0.668305) && (fE < 0.668305) && (fPhi > 1.40413) && (fPhi < 3.26149) );
-}
-
-inline Bool_t CaloVector::IsDCAL02pi()
-{
-	return ( (fE > -0.668305) && (fE < 0.668305) && (fPhi > 4.54573) && (fPhi < 5.70495) );
-}
-
-inline Bool_t CaloVector::IsEMCAL()
-{
-	// this is for -pi - pi
-	return ( (fEta > -0.668305) && (fEta < 0.668305) && (fPhi > 1.40413 - PI ) && (fPhi < 3.26149 - PI ) );
-}
-
-inline Bool_t CaloVector::IsDCAL()
-{
-	return ( (fEta > -0.668305) && (fEta < 0.668305) && (fPhi > 4.54573 - PI ) && (fPhi < 5.70495 - PI ) );
-}
-
-inline void CaloVector::ResetPhi()
-{
-	if (fPhi < 0)
-		fPhi = fPhi + PI * 2.;
-}
-
-inline CaloVector & CaloVector::operator = (const CaloVector &v)
-{
-	fEta = v.fEta;
-	fPhi = v.fPhi;
-	fE   = v.fE;
-	fDet = v.fDet;
-	ResetPhi();
-	return *this;
-}
-
-inline Bool_t CaloVector::operator == (const CaloVector & v) const
-{
-	return ( fEta == v.fEta && fPhi == v.fPhi && fE == v.fE);
-}
-
-inline void CaloVector::GetEtaPhiE(Double_t &eta, Double_t &phi, Double_t &e) const
-{
-	phi = fPhi;
-	eta = fEta;
-	e   = fE;
-}
-
-inline void CaloVector::SetEtaPhiE(Double_t eta, Double_t phi, Double_t e)
-{
-	fPhi = phi;
-	fEta = eta;
-	fE   = e;
-	ResetPhi();
-	fDet = GetDet02pi();
-}
-
-inline Int_t CaloVector::GetDet()
-{
-	fDet = -1;
-	if (IsEMCAL()) fDet = 0;
-	if (IsDCAL())  fDet = 1;
-	return fDet;
-}
-
-inline Int_t CaloVector::GetDet02pi()
-{
-	fDet = -1;
-	if (IsEMCAL02pi()) fDet = 0;
-	if (IsDCAL02pi())  fDet = 1;
-	return fDet;
-}
-
-inline void CaloVector::GetTLV(TLorentzVector &v)
-{
-	Double_t pT = fE / TMath::CosH(fEta);
-	v.SetPtEtaPhiE(pT, fEta, fPhi, fE);
-}
-
-inline Double_t CaloVector::Pt()
-{
-	return fE / TMath::CosH(fEta);
-}
 
 #endif //CALOVECTOR_HH
