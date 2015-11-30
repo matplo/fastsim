@@ -199,7 +199,7 @@ void REvent::FillTrigger(const char* name, TriggerMaker *tm, Int_t etype, Bool_t
 	tinfo[7]  = tm->GetMedianJetEMCAL();
 	tinfo[8]  = tm->GetMedianJetDCALPHOS();
 	tinfo[9]  = tm->GetMedianJetEMCAL8x8();  		// NOTE: median is calculated based on 8x8 FOR not 16x16
-	tinfo[10]  = tm->GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
+	tinfo[10] = tm->GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
 	tinfo[11] = tm->GetMedianGammaEMCAL();
 	tinfo[12] = tm->GetMedianGammaDCALPHOS();
 	b->Fill();

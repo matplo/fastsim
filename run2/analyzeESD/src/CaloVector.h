@@ -32,8 +32,8 @@ public:
 	inline Bool_t IsDCAL();
 	inline Bool_t IsDCAL02pi();
 
-	inline void GetDet();
-	inline void GetDet02pi();
+	inline Int_t GetDet();
+	inline Int_t GetDet02pi();
 
 private:
 
@@ -97,7 +97,7 @@ inline void CaloVector::SetEtaPhiE(Double_t eta, Double_t phi, Double_t e)
 	fDet = GetDet02pi();
 }
 
-inline void CaloVector::GetDet()
+inline Int_t CaloVector::GetDet()
 {
 	fDet = -1;
 	if (IsEMCAL()) fDet = 0;
@@ -105,7 +105,7 @@ inline void CaloVector::GetDet()
 	return fDet;
 }
 
-inline void CaloVector::GetDet02pi();
+inline Int_t CaloVector::GetDet02pi()
 {
 	fDet = -1;
 	if (IsEMCAL02pi()) fDet = 0;
