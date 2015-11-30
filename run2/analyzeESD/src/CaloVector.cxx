@@ -64,7 +64,7 @@ Bool_t CaloVector::IsDCAL()
 void CaloVector::ResetPhi()
 {
 	if (fPhi < 0)
-		fPhi = fPhi + PI * 2.;
+		fPhi = TVector2::Phi_0_2pi(fPhi);
 }
 
 CaloVector & CaloVector::operator = (const CaloVector &v)
@@ -111,7 +111,7 @@ Int_t CaloVector::GetDet02pi()
 	fDet = -1;
 	if (IsEMCAL02pi()) fDet = 0;
 	if (IsDCAL02pi())  fDet = 1;
-	//cout << "setting det to " << fDet << endl;
+	// cout << "setting det to " << fDet << endl;
 	return fDet;
 }
 

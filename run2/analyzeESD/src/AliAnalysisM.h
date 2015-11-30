@@ -9,12 +9,12 @@ class THistManager;
 class AliAnalysisM : public AliAnalysisTaskSE
 {
     enum {
-        kOther = 0,
-        kCINT7 = 1,
-        kEJ1 = 10,
-        kEG1 = 11,
-        kDJ1 = 20,
-        kDG1 = 21
+        kOther = 0x0,
+        kCINT7 = 0x1,
+        kEJ1   = 0x2,
+        kEG1   = 0x3,
+        kDJ1   = 0x4,
+        kDG1   = 0x5
     };
 
 public:
@@ -35,6 +35,7 @@ private:
 
     void *fREvent;  //!
     void *fTM;      //!
+    void *fTM0;      //!
     AliEMCALGeometry *fGeom; //!
 
     THistManager *fHManager;
