@@ -6,7 +6,6 @@ void runLocalSample(const char *fileList = "files_000244982.txt")
 	gROOT->Macro( Form("%s/ANALYSIS/macros/train/AddESDHandler.C", gSystem->Getenv("ALICE_ROOT")) );
 
 	gSystem->Load( Form("%s/lib/libEMCALTriggerFast", gSystem->Getenv("RUN2AESDDIR")) );
-	gSystem->Load( Form("%s/lib/libRAnalyzeESD", gSystem->Getenv("RUN2AESDDIR")) );
 	gSystem->Load( Form("%s/lib/libAnalyzeESD", gSystem->Getenv("RUN2AESDDIR")) );
 
 	AliAnalysisM *task = new AliAnalysisM("my task");

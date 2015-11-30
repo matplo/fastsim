@@ -62,7 +62,7 @@ add_library("R${PROJECT_NAME}" SHARED ${RSRCS} ${RHDRS} ${RDICT}.cxx)
 set(DICT ${PROJECT_NAME}_Dict )
 set(LINKDEFS "${PROJECT_NAME}LinkDef.hh" )
 ROOT_GENERATE_DICTIONARY(${DICT} ${AHDRS} LINKDEF ${LINKDEFS} OPTIONS )
-add_library(${PROJECT_NAME} SHARED ${ASRCS} ${AHDRS} ${DICT}.cxx)
+add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS} ${DICT}.cxx)
 
 #set(EXEC1 filter_single_entries)
 #set(SOURCES_EXE "${EXEC1}.cxx")
