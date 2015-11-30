@@ -40,7 +40,7 @@ def get_var(h, cut=False):
 			hout.Fill(v)
 
 	print '[i] bad channels from:',h.GetName()
-	rmscut = hout.GetRMS() * 2.
+	rmscut = hout.GetRMS() * 3.
 	newname = h.GetName() + '_map'
 	hc = h.Clone(newname)
 	for ibx in range(1, h.GetNbinsX() + 1):
@@ -101,23 +101,30 @@ def main(fname):
 	hlrm200.normalize_self(False, to_max=True)
 	rmss200 = addRMStoTitle(hlrm200)
 
-	hls.append(hl)
-	hls.append(hl200)
-	hls.append(hlrm)
-	hls.append(hlrm200)
+	hls.prepend(hl)
+	hls.prepend(hl200)
+	hls.prepend(hlrm)
+	hls.prepend(hlrm200)
 	hls.legend_position(x1=0.3)
-	hls.draw_all(logy=True, orient=0)
+	hls.draw_all(logy=True, orient=1)
 
-	hls.tcanvas.cd(5)
+	hls.tcanvas.cd(2)
 	for i, rms in enumerate(rmss):
 		rmscut = rms * 3.
-		du.draw_line(rmscut, 0, rmscut, 0.05, col=2-i, width=4, alpha=0.8, style=1)
-		du.draw_line(rms, 0, rms, 0.05, col=2-i, width=4, alpha=0.8, style=2)
-	hls.tcanvas.cd(6)
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=1)
+		rmscut = rms * 2.
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=2)
+		rmscut = rms * 1.
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=3)
+	hls.tcanvas.cd(1)
 	for i,rms in enumerate(rmss200):
 		rmscut = rms * 3.
-		du.draw_line(rmscut, 0, rmscut, 0.05, col=2-i, width=4, alpha=0.8, style=1)
-		du.draw_line(rms, 0, rms, 0.05, col=2-i, width=4, alpha=0.8, style=2)
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=1)
+		rmscut = rms * 2.
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=2)
+		rmscut = rms * 1.
+		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=3)
+	hls.set_grid_x()
 	hls.update()
 
 if __name__ == '__main__':

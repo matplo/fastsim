@@ -139,7 +139,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	TriggerMaker *tm = (TriggerMaker*)fTM;
 	tm->Reset();
 
-	// jet finder
+	// cells for the jet finder
 	std::vector <fj::PseudoJet> fjcells; // signal from pythia
 	// loop over cells...
 	AliVCaloCells *cells = InputEvent()->GetEMCALCells();
