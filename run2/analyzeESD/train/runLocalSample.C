@@ -32,7 +32,7 @@ void runLocalSample(const char *fileList = "files_000244982.txt")
 	TChain* pChain = 0;
 	gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
 	//pChain = CreateESDChain(fileList, 1234567890, 0, kFALSE);
-	pChain = CreateESDChain(fileList, 100, 0, kFALSE);
+	pChain = CreateESDChain(fileList, 10, 0, kFALSE);
 
 	// start analysis
 	Printf("Starting Analysis...");

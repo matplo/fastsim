@@ -50,7 +50,7 @@ void REvent::CreateTriggerBranch(const char* name)
 	TBranch *b = tree->GetBranch(name);
 	if (b == 0)
 	{
-		b = tree->Branch(name, &tinfo[0], "type/I:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+		b = tree->Branch(name, &tinfo[0], "type/D:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
 	}
 	b->SetAddress(&tinfo[0]);
 }
@@ -186,10 +186,10 @@ void REvent::FillTrigger(const char* name, TriggerMaker *tm, Int_t etype, Bool_t
 	TBranch *b = tree->GetBranch(name);
 	if (b == 0)
 	{
-		b = tree->Branch(name, &tinfo[0], "type/I:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+		b = tree->Branch(name, &tinfo[0], "type/D:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
 	}
 	b->SetAddress(&tinfo[0]);
-	tinfo[0]  = etype;
+	tinfo[0]  = etype * 1.;
 	tinfo[1]  = tm->GetMaxJetEMCAL().GetADC();
 	tinfo[2]  = tm->GetMaxJetDCALPHOS().GetADC();
 	tinfo[3]  = tm->GetMaxJetEMCAL8x8().GetADC();
