@@ -66,6 +66,7 @@ inline CaloVector & CaloVector::operator = (const CaloVector &v)
 	fEta = v.fEta;
 	fPhi = v.fPhi;
 	fE   = v.fE;
+	return *this;
 }
 
 inline Bool_t CaloVector::operator == (const CaloVector & v) const
