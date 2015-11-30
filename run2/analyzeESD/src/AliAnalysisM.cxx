@@ -58,6 +58,7 @@ void AliAnalysisM::UserCreateOutputObjects()
 	REvent *revent = (REvent*)fREvent;
 	revent->Init();
 	TTree *t = (TTree*)revent->GetTree();
+	CreateBranches();
 
 	fHManager = new THistManager("histos");
 	fHManager->CreateTH1("fHcellsN", "fHcellsN;absId", 20000., 0, 20000.);
@@ -67,6 +68,24 @@ void AliAnalysisM::UserCreateOutputObjects()
 
 	PostData(1, t);
 	PostData(2, fHManager->GetListOfHistograms());
+}
+
+void AliAnalysisM::CreateBranches()
+{
+	REvent *revent = (REvent*)fREvent;
+	const char *ts[] = {"other", "CINT7", "EJ1", "EG1", "DJ1", "DG1", 0};
+	int i = 0;
+	while (ts[i]!=0)
+	{
+		TString tsIs = ts[i];
+		TString sbname;
+		sbname = TString::Format("jets_%s", tsIs.Data());
+		revent->CreateBranch(sbname.Data());
+		sbname = TString::Format("maxEjet_%s", tsIs.Data());
+		revent->CreateBranch(sbname.Data());
+		i++;
+	}
+	revent->DumpListOfBranches();
 }
 
 void AliAnalysisM::UserExec(Option_t* /*option*/)

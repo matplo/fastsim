@@ -32,6 +32,29 @@ void REvent::Write()
 	;
 }
 
+void REvent::DumpListOfBranches()
+{
+	TObjArray *arr = tree->GetListOfBranches();
+	cout << "[i] Dump list of branches of " << tree->GetName() << endl;
+	for (Int_t i = 0; i < arr->GetEntries(); i++)
+	{
+		TBranch *b = (TBranch*)arr->At(i);
+		cout << "    Branch: " << b->GetName() << endl;
+	}
+}
+
+void REvent::CreateBranch(const char* name)
+{
+	std::vector<TLorentzVector> *pv = 0;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pv, 1);
+	}
+	b->SetAddress(&pv);
+	delete pv;
+}
+
 void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsigned int maxn)
 {
 	//std::vector<TLorentzVector> *pv = new std::vector<TLorentzVector>;

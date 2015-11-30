@@ -22,6 +22,8 @@ private:
     AliAnalysisM(const AliAnalysisM& obj) {;}
     AliAnalysisM& operator=(const AliAnalysisM& other) {;}
 
+    void CreateBranches();
+
     void *fREvent;  //!
     void *fTM;      //!
     AliEMCALGeometry *fGeom; //!
