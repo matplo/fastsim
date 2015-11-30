@@ -60,7 +60,6 @@ void AliAnalysisM::UserCreateOutputObjects()
 	REvent *revent = (REvent*)fREvent;
 	revent->Init();
 	TTree *t = (TTree*)revent->GetTree();
-	CreateBranches();
 
 	fHManager = new THistManager("histos");
 	fHManager->CreateTH1("fHcellsN", "fHcellsN;absId", 20000., 0, 20000.);
@@ -70,64 +69,49 @@ void AliAnalysisM::UserCreateOutputObjects()
 
 	PostData(1, t);
 	PostData(2, fHManager->GetListOfHistograms());
-}
 
-void AliAnalysisM::CreateBranches()
-{
-	REvent *revent = (REvent*)fREvent;
-	const char *ts[] = {"other", "CINT7", "EJ1", "EG1", "DJ1", "DG1", 0};
-	int i = 0;
-	while (ts[i] != 0)
-	{
-		TString tsIs = ts[i];
-		TString sbname;
-
-		sbname = TString::Format("jets_%s", tsIs.Data());
-		revent->CreateBranch(sbname.Data());
-
-		sbname = TString::Format("maxEjet_%s", tsIs.Data());
-		revent->CreateBranch(sbname.Data());
-
-		sbname = TString::Format("trig_%s", tsIs.Data());
-		revent->CreateTriggerBranch(sbname.Data());
-
-		i++;
-	}
-	revent->DumpListOfBranches();
+	cout << "[i] Number of bad channels: " << GetNumberOfBadChannels() << endl;
 }
 
 void AliAnalysisM::UserExec(Option_t* /*option*/)
 {
 	REvent *revent = (REvent*)fREvent;
+
 	TTree *t = (TTree*)revent->GetTree();
 
 	TString ts = InputEvent()->GetFiredTriggerClasses();
 
+	Int_t kTtype = kOther;
 	TString tsIs = "other";
 
 	if (ts.Contains("CINT7-"))
 	{
 		tsIs = "CINT7";
+		kTtype = kCINT7;
 	}
 
 	if (ts.Contains("CINT7EJ1"))
 	{
 		tsIs = "EJ1";
+		kTtype = kEJ1;
 	}
 
 	if (ts.Contains("CINT7EG1"))
 	{
 		tsIs = "EG1";
+		kTtype = kEG1;
 	}
 
 	if (ts.Contains("CINT7DJ1"))
 	{
 		tsIs = "DJ1";
+		kTtype = kDJ1;
 	}
 
 	if (ts.Contains("CINT7DG1"))
 	{
 		tsIs = "DG1";
+		kTtype = kDG1;
 	}
 
 	if (fGeom == 0)
@@ -187,13 +171,13 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	vector <fj::PseudoJet> 	inclusive_jets = clust_seq.inclusive_jets(pTmin);
 	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 
-	sbname = TString::Format("jets_%s", tsIs.Data());
+	sbname = TString::Format("jets");
 	revent->FillBranch(sbname.Data(),  sorted_jets);
-	sbname = TString::Format("maxEjet_%s", tsIs.Data());
+	sbname = TString::Format("maxEjet");
 	revent->FillBranch(sbname.Data(),  sorted_jets, 1);
 
-	sbname = TString::Format("trig_%s", tsIs.Data());
-	revent->FillTrigger(sbname.Data(), tm, kFALSE);
+	sbname = TString::Format("trig");
+	revent->FillTrigger(sbname.Data(), tm, kTtype, kFALSE);
 
 	revent->FinishEvent();
 

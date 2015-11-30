@@ -28,7 +28,7 @@ public:
 	void FillBranch(const char* name, std::vector <fastjet::PseudoJet> in, unsigned int maxn = -1);
 	void FillBranch(const char *name, std::vector <RawPatch> in);
 
-	void FillTrigger(const char* name, TriggerMaker *tm, Bool_t patches = kFALSE);
+	void FillTrigger(const char* name, TriggerMaker *tm, Int_t etype, Bool_t patches = kFALSE);
 	void FinishEvent();
 	void DumpListOfBranches();
 	TTree *GetTree() {return tree;}

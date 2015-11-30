@@ -46,11 +46,11 @@ void REvent::DumpListOfBranches()
 
 void REvent::CreateTriggerBranch(const char* name)
 {
-	double tinfo[12];
+	double tinfo[13];
 	TBranch *b = tree->GetBranch(name);
 	if (b == 0)
 	{
-		b = tree->Branch(name, &tinfo[0], "maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+		b = tree->Branch(name, &tinfo[0], "type/I:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
 	}
 	b->SetAddress(&tinfo[0]);
 }
@@ -180,27 +180,28 @@ void REvent::FinishEvent()
 	tree->SetEntries(n + 1);
 }
 
-void REvent::FillTrigger(const char* name, TriggerMaker *tm, Bool_t patches)
+void REvent::FillTrigger(const char* name, TriggerMaker *tm, Int_t etype, Bool_t patches)
 {
-	double tinfo[12];
+	double tinfo[13];
 	TBranch *b = tree->GetBranch(name);
 	if (b == 0)
 	{
-		b = tree->Branch(name, &tinfo[0], "maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+		b = tree->Branch(name, &tinfo[0], "type/I:maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
 	}
 	b->SetAddress(&tinfo[0]);
-	tinfo[0]  = tm->GetMaxJetEMCAL().GetADC();
-	tinfo[1]  = tm->GetMaxJetDCALPHOS().GetADC();
-	tinfo[2]  = tm->GetMaxJetEMCAL8x8().GetADC();
-	tinfo[3]  = tm->GetMaxJetDCALPHOS8x8().GetADC();
-	tinfo[4]  = tm->GetMaxGammaEMCAL().GetADC();
-	tinfo[5]  = tm->GetMaxGammaDCALPHOS().GetADC();
-	tinfo[6]  = tm->GetMedianJetEMCAL();
-	tinfo[7]  = tm->GetMedianJetDCALPHOS();
-	tinfo[8]  = tm->GetMedianJetEMCAL8x8();  		// NOTE: median is calculated based on 8x8 FOR not 16x16
-	tinfo[9]  = tm->GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
-	tinfo[10] = tm->GetMedianGammaEMCAL();
-	tinfo[11] = tm->GetMedianGammaDCALPHOS();
+	tinfo[0]  = etype;
+	tinfo[1]  = tm->GetMaxJetEMCAL().GetADC();
+	tinfo[2]  = tm->GetMaxJetDCALPHOS().GetADC();
+	tinfo[3]  = tm->GetMaxJetEMCAL8x8().GetADC();
+	tinfo[4]  = tm->GetMaxJetDCALPHOS8x8().GetADC();
+	tinfo[5]  = tm->GetMaxGammaEMCAL().GetADC();
+	tinfo[6]  = tm->GetMaxGammaDCALPHOS().GetADC();
+	tinfo[7]  = tm->GetMedianJetEMCAL();
+	tinfo[8]  = tm->GetMedianJetDCALPHOS();
+	tinfo[9]  = tm->GetMedianJetEMCAL8x8();  		// NOTE: median is calculated based on 8x8 FOR not 16x16
+	tinfo[10]  = tm->GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
+	tinfo[11] = tm->GetMedianGammaEMCAL();
+	tinfo[12] = tm->GetMedianGammaDCALPHOS();
 	b->Fill();
 
 	if (patches == kTRUE)

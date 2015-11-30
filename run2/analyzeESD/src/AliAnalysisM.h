@@ -8,6 +8,15 @@ class THistManager;
 
 class AliAnalysisM : public AliAnalysisTaskSE
 {
+    enum {
+        kOther = 0,
+        kCINT7 = 1,
+        kEJ1 = 10,
+        kEG1 = 11,
+        kDJ1 = 20,
+        kDG1 = 21
+    };
+
 public:
     AliAnalysisM();
     AliAnalysisM(const char* name);
@@ -21,8 +30,6 @@ private:
 
     AliAnalysisM(const AliAnalysisM& obj) {;}
     AliAnalysisM& operator=(const AliAnalysisM& other) {;}
-
-    void CreateBranches();
 
     void *fREvent;  //!
     void *fTM;      //!
@@ -42,6 +49,13 @@ private:
             i++;
         }
         return kFALSE;
+    }
+
+    inline Int_t GetNumberOfBadChannels()
+    {
+        int i = 0;
+        while (fgBadChannels[i++]!=-1);
+        return i;
     }
 
     ClassDef(AliAnalysisM, 1); // Analysis task for standard jet analysis
