@@ -18,45 +18,51 @@ message( "FASTJET_LIBS: ${FASTJET_LIBS}")
 
 set(CMAKE_MACOSX_RPATH 1)
 
-set(RSRCS
+set(ASRCS
 	AliAnalysisM.cxx
+)
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" AHDRS "${ASRCS}")
+
+set(RSRCS
+	CaloVector.cxx
 )
 # Headers from sources
 string(REPLACE ".cxx" ".h" RHDRS "${RSRCS}")
 
 set(SRCS
 	${RSRCS}
+	${ASRCS}
 	REvent.cxx
 )
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-# generate dictionaries
-set(DICT ${PROJECT_NAME}_Dict )
-set(LINKDEFS "${PROJECT_NAME}LinkDef.hh" )
-#message("linkdef file is: ${LINKDEFS}")
-# the dot below is needed for the ROOT_GENERATE_DICTIONARY
 include_directories(${ROOT_INCLUDE_DIR} 
 	${FASTJET_DIR}/include 
 	$ENV{ALICE_PHYSICS}/include 
 	$ENV{ALICE_ROOT}/include 
 	$ENV{RUN2AESDDIR}/include
 	${PROJECT_SOURCE_DIR})
-# if root not build with cmake the following does not work
-ROOT_GENERATE_DICTIONARY(${DICT} ${RHDRS} LINKDEF ${LINKDEFS} OPTIONS )
-# workaround
-#ADD_CUSTOM_COMMAND(
-#    OUTPUT ${DICT}.cxx
-#    COMMAND ${ROOTCINT_EXECUTABLE} -f ${DICT}.cxx -c ${HDRS} ${LINKDEFS}
-#    DEPENDS ${HDRS} )
-#message ("[info] ${DICT} ${ROOTCINT_EXECUTABLE}")
 
 set(ALILIBS -L$ENV{ALICE_ROOT}/lib -L$ENV{ALICE_PHYSICS}/lib )
 link_libraries(${ROOT_LIBRARIES} 
 	${ALILIBS} 
 	${FASTJET_LIBS} 
 	-L$ENV{RUN2AESDDIR}/lib -lEMCALTriggerFast)
-add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS} ${DICT}.cxx)
+
+# generate dictionaries
+set(RDICT "R${PROJECT_NAME}_Dict" )
+set(RLINKDEFS "R${PROJECT_NAME}LinkDef.hh" )
+ROOT_GENERATE_DICTIONARY(${RDICT} ${RHDRS} LINKDEF ${RLINKDEFS} OPTIONS )
+add_library("R${PROJECT_NAME}" SHARED ${RSRCS} ${RHDRS} ${RDICT}.cxx)
+
+# generate dictionaries
+set(DICT ${PROJECT_NAME}_Dict )
+set(LINKDEFS "${PROJECT_NAME}LinkDef.hh" )
+ROOT_GENERATE_DICTIONARY(${DICT} ${AHDRS} LINKDEF ${LINKDEFS} OPTIONS )
+add_library(${PROJECT_NAME} SHARED ${ASRCS} ${AHDRS} ${DICT}.cxx)
 
 #set(EXEC1 filter_single_entries)
 #set(SOURCES_EXE "${EXEC1}.cxx")
@@ -67,7 +73,7 @@ add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS} ${DICT}.cxx)
 #install(TARGETS ${PROJECT_NAME}
 #        RUNTIME DESTINATION bin)
 
-install(TARGETS ${PROJECT_NAME} #${EXEC1}
+install(TARGETS ${PROJECT_NAME} R${PROJECT_NAME} #${EXEC1}
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 install(FILES ${HDRS} DESTINATION include)

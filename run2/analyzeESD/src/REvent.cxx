@@ -1,4 +1,5 @@
 #include "REvent.h"
+#include "CaloVector.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -43,18 +44,6 @@ void REvent::DumpListOfBranches()
 	}
 }
 
-void REvent::CreateBranch(const char* name)
-{
-	std::vector<TLorentzVector> *pv = 0;
-	TBranch *b = tree->GetBranch(name);
-	if (b == 0)
-	{
-		b = tree->Branch(name, &pv, 1);
-	}
-	b->SetAddress(&pv);
-	delete pv;
-}
-
 void REvent::CreateTriggerBranch(const char* name)
 {
 	double tinfo[12];
@@ -66,9 +55,20 @@ void REvent::CreateTriggerBranch(const char* name)
 	b->SetAddress(&tinfo[0]);
 }
 
-void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsigned int maxn)
+void REvent::CreateBranchTLV(const char* name)
 {
-	//std::vector<TLorentzVector> *pv = new std::vector<TLorentzVector>;
+	std::vector<TLorentzVector> *pv = 0;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pv, 1);
+	}
+	b->SetAddress(&pv);
+	delete pv;
+}
+
+void REvent::FillBranchTLV(const char* name, std::vector <fj::PseudoJet> in, unsigned int maxn)
+{
 	std::vector<TLorentzVector> *pv = 0;
 	TBranch *b = tree->GetBranch(name);
 	if (b == 0)
@@ -90,7 +90,7 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsign
 	delete pv;
 }
 
-void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
+void REvent::FillBranchTLV(const char *name, std::vector<RawPatch> in)
 {
 	//cout << "[i] Fill branch: " << name << " n = " << in.size() << endl;
 	std::vector<TLorentzVector> *pv = 0;
@@ -115,6 +115,64 @@ void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
 	delete pv;
 }
 
+void REvent::CreateBranch(const char* name)
+{
+	std::vector<CaloVector> *pv = 0;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pv, 1);
+	}
+	b->SetAddress(&pv);
+	delete pv;
+}
+
+void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsigned int maxn)
+{
+	std::vector<CaloVector> *pv = 0;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pv, 1);
+	}
+	b->SetAddress(&pv);
+	std::vector<CaloVector> &v  = *pv;
+	CaloVector tlv;
+	for (int i = 0; i < in.size(); ++i)
+	{
+		if (maxn > 0 && i >= maxn)
+			break;
+		tlv.SetEtaPhiE(in[i].eta(), in[i].phi_02pi(), in[i].e());
+		v.push_back(tlv);
+	}
+	b->Fill();
+	pv->clear();
+	delete pv;
+}
+
+void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
+{
+	//cout << "[i] Fill branch: " << name << " n = " << in.size() << endl;
+	std::vector<CaloVector> *pv = 0;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pv, 1);
+	}
+	b->SetAddress(&pv);
+	std::vector<CaloVector> &v  = *pv;
+	CaloVector tlv;
+	for (int i = 0; i < in.size(); ++i)
+	{
+		tlv.SetEtaPhiE(in[i].GetRowStart() / 64., // phi will not be accurate for DCal
+		               in[i].GetColStart() / 48., // fixed 48
+		               in[i].GetADC());
+		v.push_back(tlv);
+	}
+	b->Fill();
+	pv->clear();
+	delete pv;
+}
 void REvent::FinishEvent()
 {
 	//tree->Fill();
