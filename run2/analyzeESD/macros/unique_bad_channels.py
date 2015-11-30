@@ -42,6 +42,7 @@ def main(fname, foutname=None):
 				#print ich
 				output.append(ich)
 	print '// doubled:',doubled
+	print '// number of masks:',len(output)
 	fout = sys.stdout
 	if foutname != None:
 		fout = open(foutname, 'w')

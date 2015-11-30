@@ -40,7 +40,7 @@ def get_var(h, cut=False):
 			hout.Fill(v)
 
 	print '[i] bad channels from:',h.GetName()
-	rmscut = hout.GetRMS() * 3.
+	rmscut = hout.GetRMS() * 2.
 	newname = h.GetName() + '_map'
 	hc = h.Clone(newname)
 	for ibx in range(1, h.GetNbinsX() + 1):
