@@ -1,0 +1,7 @@
+set_env.sh
+make_module.sh
+get_trigger_package.sh
+cleanup.sh
+build_r2aesd.sh
+testETF
+channelmaptester
