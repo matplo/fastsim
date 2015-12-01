@@ -220,32 +220,32 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		double e      = 0;
 		std::vector<RawPatch> v;
 
-		v = tm0->GetPatches(RawPatch::kEMCALpatchJE8x8);
-		median = tm0->GetMedianJetDCALPHOS8x8();
+		v = tm->GetPatches(RawPatch::kEMCALpatchJE8x8);
+		median = tm->GetMedianJetDCALPHOS8x8();
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
 			fHManager->FillTH1("fEJ1subMedian", e - median);
 		}
 
-		v = tm0->GetPatches(RawPatch::kEMCALpatchGA);
-		median = tm0->GetMedianGammaDCALPHOS();
+		v = tm->GetPatches(RawPatch::kEMCALpatchGA);
+		median = tm->GetMedianGammaDCALPHOS();
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
 			fHManager->FillTH1("fEG1subMedian", e - median);
 		}
 
-		v = tm0->GetPatches(RawPatch::kDCALpatchJE8x8);
-		median = tm0->GetMedianJetEMCAL8x8();
+		v = tm->GetPatches(RawPatch::kDCALpatchJE8x8);
+		median = tm->GetMedianJetEMCAL8x8();
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
 			fHManager->FillTH1("fDJ1subMedian", e - median);
 		}
 
-		v = tm0->GetPatches(RawPatch::kDCALpatchGA);
-		median = tm0->GetMedianGammaEMCAL();
+		v = tm->GetPatches(RawPatch::kDCALpatchGA);
+		median = tm->GetMedianGammaEMCAL();
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
