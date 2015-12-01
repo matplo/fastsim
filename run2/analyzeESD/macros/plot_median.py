@@ -84,8 +84,7 @@ def main(dname):
 	hlp.pdf()
 	tu.gList.append(hlp)
 
-def subtr():
-	fname = 'Hist.root'
+def subtr(fname):
 	hs = [ 'histos/fEJ1subMedian', 'histos/fEG1subMedian', 'histos/fDJ1subMedian', 'histos/fDG1subMedian']
 	hst = [ 'EJ1', 'EG1', 'DJ1', 'DG1']
 	hl = dlist.dlist(fname)
@@ -128,6 +127,8 @@ if __name__ == '__main__':
 	if '--2d' in sys.argv:
 		main(dname)
 	if '--subtr' in sys.argv:
-		subtr()
+		if dname==None:
+			dname = 'Hist.root'
+		subtr(dname)
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
