@@ -10,20 +10,41 @@ import IPython
 import math
 import sys
 
+import draw_ntuple
+
+kOther=1
+kCINT7=2
+kEJ1=4
+kEG1=8
+kDJ1=16
+kDG1=32
+
 def get_jets(indir, var='', cuts='', bwidth=10, xlow= 0, xhigh=300):
 	print '[i] get_jets:',var
 	tu.getTempCanvas().cd()
-	tname = 't'	
-	refcuts = None
+	ntname = 't'	
 	tu.getTempCanvas().cd()
-	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=5, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
+	hl = draw_ntuple.h1d_from_ntuple_dir(indir, ntname, var, cuts, bwidth, xlow, xhigh, 
+								title='h', modname='', nev=-1, fpatt='Tree_*.root')
 	return hl
 
 def main(dname):
-	hl = get_jets('./', 't.jets00.fE', '(trig.type=0x1)')
+	ls = dlist.ListStorage('jets')
+
+	hl = get_jets(dname, 'jets00.fE', '(trig.type && 4)')
+	ls.append(hl)
+
+	ls.draw_all(logy=True)
+	ls.pdf()
+	#ls.write_all(mod='modn:')
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
+	envdir = os.getenv('RUN2AESDDIR')
+	libs = ['libEMCALTriggerFast', 'libRAnalyzeESD']
+	for l in libs:
+		lib = os.path.join(envdir, 'lib', l)
+		ROOT.gSystem.Load(lib)
 	dname = ut.get_arg_with('--in')
 	if dname==None:
 		dname = './'
