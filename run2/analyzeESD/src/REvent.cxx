@@ -144,7 +144,6 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsign
 			break;
 		tlv.SetEtaPhiE(in[i].eta(), in[i].phi_02pi(), in[i].e());
 		tlv.SetArea(in[i].area());
-		cout << tlv.Area() << endl;
 		v.push_back(tlv);
 	}
 	b->Fill();
