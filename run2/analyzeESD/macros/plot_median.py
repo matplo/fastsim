@@ -92,14 +92,28 @@ def subtr():
 	for i,hn in enumerate(hs):
 		hl.add_from_file(hn, fname, hst[i], 'hist')
 	hl.reset_axis_titles('Ei-median', 'counts')
-	hl.zoom_axis(0, -30, 30)
-	hl.make_canvas()
+	hl.zoom_axis(0, -30, 100)
+	hl.make_canvas(w=600, h=600)
 	hl.draw(logy=True)
 	ROOT.gPad.SetLogy()
 	hl.self_legend()
 	hl.update()
 	hl.pdf()
 	tu.gList.append(hl)
+
+	hlr = dlist.fractional_yats(hl)
+	hlr.reset_axis_titles('[Ei-median] < thr', 'rejection')
+	hlr.zoom_axis(0, -30, 100)
+	hlr.make_canvas(w=600, h=600)
+	hlr.draw(logy=True)
+	ROOT.gPad.SetLogy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetGridy()	
+	hlr.self_legend()
+	hlr.update()
+	hlr.pdf()
+	tu.gList.append(hlr)
+
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
