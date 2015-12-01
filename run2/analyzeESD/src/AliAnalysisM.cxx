@@ -53,10 +53,12 @@ AliAnalysisM::AliAnalysisM(const char* name)
 	TriggerMaker *tm = 0;
 	tm = (TriggerMaker*)fTM;
 	tm->SetTriggerSetup(tsetup);
+	tm->SetAcceptPHOSPatches(false);
 
 	TriggerMaker *tm0 = 0;
 	tm0 = (TriggerMaker*)fTM0;
 	tm0->SetTriggerSetup(tsetup);
+	tm0->SetAcceptPHOSPatches(false);
 
 }
 
