@@ -11,7 +11,7 @@ class CaloVector : public TObject
 public:
 	CaloVector();
 	CaloVector(const CaloVector &);
-	CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det);
+	CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det, Double_t a);
 	virtual ~CaloVector();
 
 	void SetEtaPhiE(Double_t eta, Double_t phi, Double_t e);
