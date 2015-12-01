@@ -9,12 +9,12 @@ class THistManager;
 class AliAnalysisM : public AliAnalysisTaskSE
 {
     enum {
-        kOther = 0x0,
-        kCINT7 = 0x1,
-        kEJ1   = 0x2,
-        kEG1   = 0x3,
-        kDJ1   = 0x4,
-        kDG1   = 0x5
+        kOther = 0x1,
+        kCINT7 = 0x1 << 1,
+        kEJ1   = 0x1 << 2,
+        kEG1   = 0x1 << 3,
+        kDJ1   = 0x1 << 4,
+        kDG1   = 0x1 << 5
     };
 
 public:
