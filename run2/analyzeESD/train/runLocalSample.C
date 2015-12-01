@@ -1,5 +1,6 @@
-void runLocalSample(const char *fileList = "files_000244982.txt")
+void runLocalSample(const char *fileList = "filelists/files_000245146.txt", Int_t nfiles = 100, Int_t nskip = 0)
 {
+	cout << "nfiles=" << nfiles << " nskip=" << nskip << endl;
 	AliAnalysisManager *mgr = new AliAnalysisManager("EMC");
 
 	// Adding handler
@@ -18,12 +19,12 @@ void runLocalSample(const char *fileList = "files_000244982.txt")
 
 	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("containerName",
 	                                     TTree::Class(), AliAnalysisManager::kOutputContainer,
-	                                     Form("Tree_%s", AliAnalysisManager::GetCommonFileName()));
+	                                     Form("Tree_%d_%s", nskip, AliAnalysisManager::GetCommonFileName()));
 	mgr->ConnectOutput (task, 1, coutput1 );
 
 	AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("histos",
 	                                     TList::Class(), AliAnalysisManager::kOutputContainer,
-	                                     Form("Hist_%s", AliAnalysisManager::GetCommonFileName()));
+	                                     Form("Hist_%d_%s", nskip, AliAnalysisManager::GetCommonFileName()));
 	mgr->ConnectOutput (task, 2, coutput2 );
 
 	if (!mgr->InitAnalysis()) return;
@@ -33,7 +34,7 @@ void runLocalSample(const char *fileList = "files_000244982.txt")
 	gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/CreateESDChain.C");
 	//pChain = CreateESDChain(fileList, 1234567890, 0, kFALSE);
 	//pChain = CreateESDChain(fileList, 10, 0, kFALSE);
-	pChain = CreateESDChain(fileList, 20, 0, kFALSE);
+	pChain = CreateESDChain(fileList, nfiles, nskip, kFALSE);
 
 	// start analysis
 	Printf("Starting Analysis...");

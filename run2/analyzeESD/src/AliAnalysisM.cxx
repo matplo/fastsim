@@ -169,7 +169,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		tm0->FillChannelMap(eta, phi, amp);
 		fHManager->FillTH2("fCells0", eta, phi);
 
-		if (iEvType == kCINT7)
+		if (iEvType & kCINT7)
 		{
 			fHManager->FillTH1("fHcellsN0", absId);
 			fHManager->FillTH1("fHcellsW0", absId, amp);
@@ -184,7 +184,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 			continue;
 		tm->FillChannelMap(eta, phi, amp);
 
-		if (iEvType == kCINT7)
+		if (iEvType & kCINT7)
 		{
 			fHManager->FillTH1("fHcellsN", absId);
 			fHManager->FillTH1("fHcellsW", absId, amp);
@@ -214,7 +214,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	revent->FillTrigger("trig", 	tm, 	iEvType, kFALSE);
 	revent->FillTrigger("trig0", 	tm0, 	iEvType, kFALSE);
 
-	if (iEvType == kCINT7)
+	if (iEvType & kCINT7)
 	{
 		double median = 0;
 		double e      = 0;

@@ -1,6 +1,7 @@
 #! /bin/bash
 
-rID=000244982
+#rID=000244982
+rID=000245146
 OUTDIR=$PWD/output$rID
 
 FILENAME=`readlink -f $0`
