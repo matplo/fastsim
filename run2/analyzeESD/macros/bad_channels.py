@@ -107,8 +107,13 @@ def main(fname):
 	hls.prepend(hl200)
 	hls.prepend(hlrm)
 	hls.prepend(hlrm200)
-	hls.legend_position(x1=0.3)
+	hls.legend_position(x1=0.3, y1=0.3, y2=0.4)
 	hls.draw_all(logy=True, orient=1)
+
+	hls.lists[0].adjust_maxima(miny=1e-4, maxy=2.)
+	hls.lists[1].adjust_maxima(miny=1e-4, maxy=2.)
+	hls.lists[2].adjust_maxima(miny=1e-5, maxy=1e-3)
+	hls.lists[3].adjust_maxima(miny=1e-5, maxy=1e-3)
 
 	hls.tcanvas.cd(2)
 	for i, rms in enumerate(rmss):

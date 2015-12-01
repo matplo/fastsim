@@ -13,15 +13,14 @@ import sys
 def get_jets(indir, var='', cuts='', bwidth=10, xlow= 0, xhigh=300):
 	print '[i] get_jets:',var
 	tu.getTempCanvas().cd()
-	tname = 't'
-	
+	tname = 't'	
 	refcuts = None
 	tu.getTempCanvas().cd()
 	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=5, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
 	return hl
 
 def main(dname):
-	hl = get_jets('./', 't.jets_CINT7.fE', '')
+	hl = get_jets('./', 't.jets00.fE', '(trig.type=0x1)')
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
