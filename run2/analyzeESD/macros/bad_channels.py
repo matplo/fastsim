@@ -20,7 +20,7 @@ def get_var(h, cut=False):
 		if h.GetBinContent(ibx) > 0:
 			nbins += 1
 	mean = sum / nbins
-	print sum, nbins, mean
+	print "#",sum, nbins, mean
 
 	minv = 0
 	maxv = 0
@@ -41,7 +41,7 @@ def get_var(h, cut=False):
 
 	nrms = 3.
 	rmscut = hout.GetRMS() * nrms
-	print '[i] bad channels from:',h.GetName(),'cut n-RMS:',nrms
+	print '# [i] bad channels from:',h.GetName(),'cut n-RMS:',nrms
 	newname = h.GetName() + '_map'
 	hc = h.Clone(newname)
 	for ibx in range(1, h.GetNbinsX() + 1):
@@ -78,7 +78,8 @@ def main(fname):
 	#hl.normalize_self(False, to_max=True)
 	hl200.normalize_self(False)
 
-	hls = dlist.ListStorage('bad_channels')
+	hlsname = ut.to_file_name('bad_channels{}'.format(fname))
+	hls = dlist.ListStorage(hlsname)
 
 	hlrm = dlist.dlist('vars')
 	hvs = get_var(hl[0].obj)
@@ -127,6 +128,9 @@ def main(fname):
 		du.draw_line(rmscut, 1., rmscut, 2.5, col=2-i, width=4, alpha=0.8, style=3)
 	hls.set_grid_x()
 	hls.update()
+
+	if '--print' in sys.argv:
+		hls.pdf()
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
