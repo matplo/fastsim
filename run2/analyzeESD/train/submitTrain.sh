@@ -9,4 +9,4 @@ BASE=`dirname $FILENAME`
 
 filelistdir=$BASE/filelists
 filelist="$filelistdir/files_$rID.txt"
-python $BASE/submit.py -i $filelist -o $OUTDIR -n 100 -m $BASE/runLocal.C
+python $BASE/submit.py -i $filelist -o $OUTDIR -n 200 -m $BASE/runLocal.C
