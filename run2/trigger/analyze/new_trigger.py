@@ -44,7 +44,7 @@ def main_patches(X = '', cent=''):
 
 	ls = dlist.ListStorage('main')
 	indir = './test'
-	indir = './hardQCD/mtune1.2'
+	indir = './hardQCD/mtune10k1.2'
 
 	dvars = [
 		'tgXEJE.fE-tgX.medjDCAL8x8*4',
@@ -92,7 +92,7 @@ def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
 
 	ls = dlist.ListStorage(tu.make_unique_name('jetpt', X, thr))
 	indir = './test'
-	indir = './hardQCD/mtune1.2'
+	indir = './hardQCD/mtune10k1.2'
 
 	dcuts = [
 		'tgXEJE.fE-tgX.medjDCAL8x8*4 > THR',
@@ -289,7 +289,7 @@ def main_centrality_patch(X = ''):
 	]
 	vary = [v.replace('X',X) for v in dvarsy]
 
-	lfiles = ut.find_files('./hardQCD/mtune1.2', 'tree-*.root')
+	lfiles = ut.find_files('./hardQCD/mtune10k1.2', 'tree-*.root')
 
 	hlt = dlist.dlist('main_centrality_patch_{}'.format(X))
 	print '[i] main_centrality_patch'
