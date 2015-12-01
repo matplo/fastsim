@@ -29,7 +29,7 @@ def get_jets(indir, var='', cuts='', bwidth=5, xlow= 0, xhigh=300):
 	ntname = 't'	
 	tu.getTempCanvas().cd()
 	hl = draw_ntuple.h1d_from_ntuple_dir(indir, ntname, var, cuts, bwidth, xlow, xhigh, 
-								title='h', modname='', nev=1000, fpatt='Tree_*.root')
+								title='h', modname='', nev=-1, fpatt='Tree_*.root')
 	return hl.sum()
 
 def get_n_events(indir, ttype, bwidth=100, xlow= 0, xhigh=300):
@@ -39,7 +39,7 @@ def get_n_events(indir, ttype, bwidth=100, xlow= 0, xhigh=300):
 	tu.getTempCanvas().cd()
 	tu.getTempCanvas().cd()
 	hl = draw_ntuple.h1d_from_ntuple_dir(indir, ntname, var, cuts, bwidth, xlow, xhigh, 
-										title='h', modname='', nev=1000, fpatt='Tree_*.root')
+										title='h', modname='', nev=-1, fpatt='Tree_*.root')
 	nentries = hl.sum().obj.GetEntries()
 	print '[i] get_n_events:',var,cuts,nentries
 	return nentries
@@ -124,6 +124,9 @@ def draw():
 
 	ls.draw_all(logy=True)
 	lsr.draw_all(logy=True, maxy=2.e5)
+	if '--print' in sys.argv:
+		ls.pdf()
+		lsr.pdf()
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
