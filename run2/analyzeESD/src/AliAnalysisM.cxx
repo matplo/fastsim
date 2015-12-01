@@ -169,7 +169,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		tm0->FillChannelMap(eta, phi, amp);
 		fHManager->FillTH2("fCells0", eta, phi);
 
-		if (iEvType == kCINT7)
+		if (iEvType & kCINT7)
 		{
 			fHManager->FillTH1("fHcellsN0", absId);
 			fHManager->FillTH1("fHcellsW0", absId, amp);
@@ -184,7 +184,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 			continue;
 		tm->FillChannelMap(eta, phi, amp);
 
-		if (iEvType == kCINT7)
+		if (iEvType & kCINT7)
 		{
 			fHManager->FillTH1("fHcellsN", absId);
 			fHManager->FillTH1("fHcellsW", absId, amp);
@@ -214,7 +214,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 	revent->FillTrigger("trig", 	tm, 	iEvType, kFALSE);
 	revent->FillTrigger("trig0", 	tm0, 	iEvType, kFALSE);
 
-	if (iEvType == kCINT7)
+	if (iEvType & kCINT7)
 	{
 		double median = 0;
 		double e      = 0;
@@ -249,7 +249,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
-			fHManager->FillTH1("fDG1subMedian", e - median);	
+			fHManager->FillTH1("fDG1subMedian", e - median);
 		}
 	}
 
@@ -271,8 +271,13 @@ void AliAnalysisM::Jets(void *cells, double R)
 
 	std::vector <fj::PseudoJet> &fjcells = *((std::vector <fj::PseudoJet>*)cells);
 	TString sbname;
-	fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
-	fj::ClusterSequence 	clust_seq(fjcells, jet_def);
+	//fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
+	//fj::ClusterSequence 	clust_seq(fjcells, jet_def);
+
+	fj::JetDefinition jet_def(fj::antikt_algorithm, R);
+	fj::GhostedAreaSpec area_spec(1.);
+	fj::AreaDefinition area_def(fj::active_area, area_spec);
+	fj::ClusterSequenceArea clust_seq(fjcells, jet_def, area_def);
 	vector <fj::PseudoJet> 	inclusive_jets = clust_seq.inclusive_jets(pTmin);
 	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 

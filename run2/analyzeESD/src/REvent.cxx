@@ -143,6 +143,7 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in, unsign
 		if (maxn > 0 && i >= maxn)
 			break;
 		tlv.SetEtaPhiE(in[i].eta(), in[i].phi_02pi(), in[i].e());
+		tlv.SetArea(in[i].area());
 		v.push_back(tlv);
 	}
 	b->Fill();

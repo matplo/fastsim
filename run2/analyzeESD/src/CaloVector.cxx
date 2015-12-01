@@ -11,26 +11,29 @@ CaloVector::CaloVector()
 , fEta(0)
 , fE(0)
 , fDet(-1)
+, fA(0)
 {
 	;
 }
 
-CaloVector::CaloVector(const CaloVector &v)
-: TObject()
-, fPhi(v.fPhi)
-, fEta(v.fEta)
-, fE(v.fE)
-, fDet(v.fDet)
-{
-	;
-}
+//CaloVector::CaloVector(const CaloVector &v)
+//: TObject()
+//, fPhi(v.fPhi)
+//, fEta(v.fEta)
+//, fE(v.fE)
+//, fDet(v.fDet)
+//, fA(v.fA)
+//{
+//	;
+//}
 
-CaloVector::CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det)
+CaloVector::CaloVector(Double_t eta, Double_t phi, Double_t e, Int_t det, Double_t a)
 : TObject()
 , fPhi(phi)
 , fEta(eta)
 , fE(e)
 , fDet(det)
+, fA(a)
 {
 	;
 }
@@ -73,6 +76,7 @@ CaloVector & CaloVector::operator = (const CaloVector &v)
 	fPhi = v.fPhi;
 	fE   = v.fE;
 	fDet = v.fDet;
+	fA   = v.fA;
 	ResetPhi();
 	return *this;
 }
