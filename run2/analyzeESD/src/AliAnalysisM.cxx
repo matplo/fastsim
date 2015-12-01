@@ -249,7 +249,7 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		for (Int_t i = 0; i < v.size(); i++)
 		{
 			e = v[i].GetADC();
-			fHManager->FillTH1("fDG1subMedian", e - median);	
+			fHManager->FillTH1("fDG1subMedian", e - median);
 		}
 	}
 
@@ -271,8 +271,13 @@ void AliAnalysisM::Jets(void *cells, double R)
 
 	std::vector <fj::PseudoJet> &fjcells = *((std::vector <fj::PseudoJet>*)cells);
 	TString sbname;
-	fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
-	fj::ClusterSequence 	clust_seq(fjcells, jet_def);
+	//fj::JetDefinition 		jet_def(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
+	//fj::ClusterSequence 	clust_seq(fjcells, jet_def);
+
+	fj::JetDefinition jet_def(fj::antikt_algorithm, R);
+	fj::GhostedAreaSpec area_spec(1.);
+	fj::AreaDefinition area_def(fj::active_area, area_spec);
+	fj::ClusterSequenceArea clust_seq(fjcells, jet_def, area_def);
 	vector <fj::PseudoJet> 	inclusive_jets = clust_seq.inclusive_jets(pTmin);
 	vector <fj::PseudoJet> 	sorted_jets    = fj::sorted_by_pt(inclusive_jets);
 

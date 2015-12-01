@@ -22,7 +22,10 @@ public:
 	Double_t Eta() 	{return fEta;}
 	Double_t E()   	{return fE;}
 	Double_t Pt();
-	Int_t 	Det() 	{return fDet;}
+	Int_t 	 Det() 	{return fDet;}
+	Double_t Area() {return fA;}
+
+	void     SetArea(Double_t a) {fA = a;}
 
 	CaloVector & operator = (const CaloVector &);
 	Bool_t 		operator == (const CaloVector & v) const ;
@@ -35,6 +38,7 @@ public:
 	Int_t GetDet();
 	Int_t GetDet02pi();
 
+
 private:
 
 	void ResetPhi();
@@ -44,6 +48,8 @@ private:
 	Double_t fE;
 
 	Int_t	 fDet; //0 for EMCal; 1 for DCal
+
+	Double_t fA;
 
 	ClassDef(CaloVector, 1)
 };
