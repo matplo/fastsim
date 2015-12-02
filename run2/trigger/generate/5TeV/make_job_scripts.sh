@@ -84,7 +84,8 @@ function write_script
     echo "#!/bin/bash" > ./submit.sh
     if is_arg_set "pdsf" ;
     then
-	echo "qsub -l h_vmem=2G -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov $PWD/$jobfile" >> ./submit.sh
+	#echo "qsub -l h_vmem=2G -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov $PWD/$jobfile" >> ./submit.sh
+	echo "qsub -P alice -o $PWD -e $PWD -m e -M mploskon@lbl.gov $PWD/$jobfile" >> ./submit.sh
     else
 	echo "qsub -o $PWD -e $PWD $PWD/$jobfile" >> ./submit.sh
     fi
