@@ -45,9 +45,10 @@ def get_n_events(indir, ttype, bwidth=100, xlow= 0, xhigh=300):
 	return nentries
 
 def main_area_sub(dname):
-	ls = dlist.ListStorage('jets')
-
-	area = [ 0.0316*0.0316*ROOT.TMath.Pi(), 0.2*0.2*ROOT.TMath.Pi(), 0.4*0.4*ROOT.TMath.Pi()]
+	ls = dlist.ListStorage('jets_sub')
+	parea = 0.012*0.012*16.*16.
+	print '[i] patch area is:',parea
+	#area  = [ 0.0316*0.0316*ROOT.TMath.Pi(), 0.2*0.2*ROOT.TMath.Pi(), 0.4*0.4*ROOT.TMath.Pi()]
 	for fdet in [0, 1]:
 		for ij,jets in enumerate([ 'jets00.fE', 'jets02.fE', 'jets04.fE' ]):
 			for ttype in ['kCINT7', 'kEJ1', 'kEG1', 'kDJ1', 'kDG1']:
@@ -57,11 +58,11 @@ def main_area_sub(dname):
 				detcondition = jets.replace('.fE', '.fDet=={}'.format(fdet))
 				sdet = 'EMCAL'
 				if fdet > 0: sdet = 'DCAL'
-				print '    ',sdet,detcondition,ttype,jets
-				median = 'trig.medjECAL8x8/0.05'
+				median = 'trig.medjECAL8x8/{}'.format(parea)
 				if fdet == 0:
-					median = 'trig.medjDCAL8x8/0.05'
-				var = '{} - {} * {}'.format(jets, median, area[ij])
+					median = 'trig.medjDCAL8x8/{}'.format(parea)
+				var = '{} - {} * {}'.format(jets, median, jets.replace('fE', 'fA'))#area[ij])
+				print '    ',sdet,detcondition,ttype,var
 				h = get_jets(dname, var, '(trig.type & {})&&({})'.format(bit, detcondition), xlow=-200)
 				h.obj.Scale(1./get_n_events(dname, bit))
 				ls.add_to_list(sdet+' '+jets+'_m', h, '{} {}'.format(ttype, sdet), 'hist')
@@ -91,7 +92,7 @@ def main(dname):
 	ls.pdf()
 	ls.write_all(mod='modn:')
 
-def draw():
+def draw(opt=None):
 	rebin = ut.get_arg_with('--rebin')
 	if rebin != None:
 		rebin = int(rebin)
@@ -107,10 +108,13 @@ def draw():
 	lsr = dlist.ListStorage('jets_draw_ratios')
 
 	for fn in files:
-		hl = dlist.dlist(fn)
-		hl.add_from_file('o_0', fn, 'kCINT7', 	'hist')
-		hl.add_from_file('o_1', fn, 'JE', 		'hist')
-		hl.add_from_file('o_2', fn, 'GA', 		'hist')
+		fns = fn
+		if opt != None:
+			fns = fn.replace('.root', '{}.root'.format(opt))
+		hl = dlist.dlist(fns)
+		hl.add_from_file('o_0', fns, 'kCINT7', 	'hist')
+		hl.add_from_file('o_1', fns, 'JE', 		'hist')
+		hl.add_from_file('o_2', fns, 'GA', 		'hist')
 		if rebin:
 			hl.rebin(rebin)
 			hl.scale(1./rebin)
@@ -124,9 +128,13 @@ def draw():
 
 	ls.draw_all(logy=True)
 	lsr.draw_all(logy=True, maxy=2.e5)
+	lsr.set_grid_x()
+	lsr.set_grid_y()	
 	if '--print' in sys.argv:
 		ls.pdf()
 		lsr.pdf()
+	ls.write_all(mod='modn:')
+	lsr.write_all(mod='modn:')
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
@@ -139,8 +147,14 @@ if __name__ == '__main__':
 	if dname==None:
 		dname = './245146'
 	if '--make' in sys.argv:
-		main(dname)
+		if '--sub' in sys.argv:
+			main_area_sub(dname)
+		else:
+			main(dname)
 	if '--draw' in sys.argv:
-		draw()
+		if '--sub' in sys.argv:
+			draw('_m')
+		else:
+			draw()
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
