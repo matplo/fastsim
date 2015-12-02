@@ -54,13 +54,21 @@ def main_patches(X = '', cent=''):
 		'tgXDGA.fE-tgX.medgECAL'		
 	]
 
-	#dvars = [
-	#	'tgX.maxjEJE-tgX.medjDCAL8x8*4',
-	#	'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
-	#	'tgX.maxjDJE8x8-tgX.medjECAL8x8',
-	#	'tgX.maxgEGA.fE-tgX.medgDCAL',
-	#	'tgX.maxgDGA-tgX.medgECAL'		
-	#]
+	dvars = [
+		'tgX.maxjEJE-tgX.medjDCAL8x8*4',
+		'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
+		'tgX.maxjDJE8x8-tgX.medjECAL8x8',
+		'tgX.maxgEGA.fE-tgX.medgDCAL',
+		'tgX.maxgDGA-tgX.medgECAL'		
+	]
+
+	dvars = [
+		#'(tgXEJE.fE-tgX.medjDCAL8x8*4)',
+		'(tgXEJE8x8.fE-tgX.medjDCAL8x8)',
+		'(tgXDJE8x8.fE-tgX.medjECAL8x8)',
+		#'(tgXEGA.fE-tgX.medgDCAL)',
+		#'(tgXDGA.fE-tgX.medgECAL)'		
+	]
 
 	print '[i] main_patches'
 	for var in [v.replace('X',X) for v in dvars]:
@@ -85,7 +93,7 @@ def get_Ei_jetpt(indir, var='tgEJE.fE-tg.medjDCAL8x8*4', bwidth=15, xlow=0, xhig
 		cuts    = '(xsec)'
 		refcuts = '(1)'
 	tu.getTempCanvas().cd()
-	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=1, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
+	hl = draw_ntuple.h1d_from_ntuple_dir_filter(indir, tname, var, cuts, bwidth, xlow, xhigh, refcuts=refcuts, nev=-1, thr=0, fpatt='tree-*.root') #nev=10000, thr = 1 * bwidth/2.) #thr was 100!
 	return hl
 
 def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
@@ -95,11 +103,11 @@ def main_bias(X = '', cent='', thr=[15,8,9,4,4]):
 	indir = './hardQCD/mtune1.2'
 
 	dcuts = [
-		'tgXEJE.fE-tgX.medjDCAL8x8*4 > THR',
-		'tgXEJE8x8.fE-tgX.medjDCAL8x8 > THR',
-		'tgXDJE8x8.fE-tgX.medjECAL8x8 > THR',
-		'tgXEGA.fE-tgX.medgDCAL > THR',
-		'tgXDGA.fE-tgX.medgECAL > THR'		
+		'(tgXEJE.fE-tgX.medjDCAL8x8*4) > THR',
+		'(tgXEJE8x8.fE-tgX.medjDCAL8x8) > THR',
+		'(tgXDJE8x8.fE-tgX.medjECAL8x8) > THR',
+		'(tgXEGA.fE-tgX.medgDCAL) > THR',
+		'(tgXDGA.fE-tgX.medgECAL) > THR'		
 	]
 
 	dcuts = [
@@ -220,13 +228,21 @@ def main_rejections(X = '', cent=''):
 		'tgXDGA.fE-tgX.medgECAL'		
 	]
 
-	#dvars = [
-	#	'tgX.maxjEJE-tgX.medjDCAL8x8*4',
-	#	'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
-	#	'tgX.maxjDJE8x8-tgX.medjECAL8x8',
-	#	'tgX.maxgEGA.fE-tgX.medgDCAL',
-	#	'tgX.maxgDGA-tgX.medgECAL'		
-	#]
+	dvars = [
+		#'tgX.maxjEJE-tgX.medjDCAL8x8*4',
+		'tgX.maxjEJE8x8-tgX.medjDCAL8x8',
+		'tgX.maxjDJE8x8-tgX.medjECAL8x8',
+		#'tgX.maxgEGA.fE-tgX.medgDCAL',
+		#'tgX.maxgDGA-tgX.medgECAL'		
+	]
+
+	dvars = [
+		#'(tgXEJE.fE-tgX.medjDCAL8x8*4)',
+		'(tgXEJE8x8.fE-tgX.medjDCAL8x8)',
+		'(tgXDJE8x8.fE-tgX.medjECAL8x8)',
+		'(tgXEGA.fE-tgX.medgDCAL)',
+		'(tgXDGA.fE-tgX.medgECAL)'		
+	]
 
 	fdir = './patch_rfiles'
 
@@ -259,8 +275,10 @@ def main_rejections(X = '', cent=''):
 	hlr = dlist.fractional_yats(hl)
 	hlr.make_canvas(600,600)
 	hlr.draw(logy=True, miny=1e-5, maxy=3e2)
-	rejection_table(hlr, 8./8000.)
-	rejection_table(hlr, 30./8000.)
+	rejection_table(hlr, 1.4e-3)#8./8000.)
+	rejection_table(hlr, 1.75e-3)#20./8000.)
+	rejection_table(hlr, 2.5e-3)#20./8000.)
+	rejection_table(hlr, 4.5e-4)#20./8000.)
 	hlr.zoom_axis(0, -5, 45)
 	hlr.reset_axis_titles('E_{i}^{A} - median{E_{j}^{B}} (GeV)', 'rejection')
 	hlr.self_legend(1, 'dead channel map [{}]'.format(X), x1=0.2,x2=0.9)
@@ -392,21 +410,24 @@ if __name__ == '__main__':
 		#main_bias(X='2', 	cent='', 	thr=zerothr )
 		#main_bias(X='3', 	cent='', 	thr=zerothr )
 
-		main_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4] )
-		main_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4] )
-		main_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4] )
-		main_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4] )
+		#main_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4] )
+		#main_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4] )
+		#main_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4] )
+		#main_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4] )
+		main_bias(X='3', 	cent='', 	thr=[25, 20, 6, 4, 4] )
 
 	if '--bias' in sys.argv:
 		show_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4], det='EMC')
 		show_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4], det='EMC')
 		show_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4], det='EMC')
 		show_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4], det='EMC')
+		show_bias(X='3', 	cent='', 	thr=[25, 20, 6, 4, 4], det='EMC')
 
 		show_bias(X='', 	cent='', 	thr=[15,  8, 9, 4, 4], det='DMC')
 		show_bias(X='1', 	cent='', 	thr=[18,  9, 8, 4, 4], det='DMC')
 		show_bias(X='2', 	cent='', 	thr=[20, 10, 7, 4, 4], det='DMC')
 		show_bias(X='3', 	cent='', 	thr=[25, 11, 6, 4, 4], det='DMC')
+		show_bias(X='3', 	cent='', 	thr=[25, 16, 6, 4, 4], det='DMC')
 
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
