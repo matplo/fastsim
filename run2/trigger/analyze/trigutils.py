@@ -25,6 +25,11 @@ def DCalKeepOutFactor(R=0.4):
 	print '[i] using DCalKeepOutFactor with R=', R, retval
 	return retval
 
+def EDscaleA():
+	emc = 0.7 * 2. * 110. / 360. * math.pi * 2.
+	dmc = 0.7 * 2. * 80. / 360. * math.pi * 2. * 0.66
+	print dmc/emc
+
 def to_file_name(s):
 	return "".join([x if x.isalnum() else "_" for x in s])
 
@@ -36,7 +41,7 @@ def rejection_table(hl, rej = 1.e-3):
 		for ib in range(1, h.GetNbinsX()):
 			if h.GetBinContent(ib) <= rej:
 				print '    ', h.GetTitle(), h.GetBinLowEdge(ib), h.GetBinContent(ib)
-				newtitle = '{} [{:.0e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
+				newtitle = '{} [{:.1e}@{:.1f}]'.format(h.GetTitle(), rej, h.GetBinLowEdge(ib))
 				h.SetTitle(newtitle)
 				retvals.append(h.GetBinLowEdge(ib))
 				break
