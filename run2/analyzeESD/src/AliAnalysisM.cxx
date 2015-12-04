@@ -141,6 +141,8 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 		fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(runNo);
 	}
 
+	Double_t totalE = 0.0;
+
 	TriggerMaker *tm = (TriggerMaker*)fTM;
 	tm->Reset();
 
@@ -197,6 +199,8 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 
 		fHManager->FillTH2("fCells", eta, phi);
 
+		totalE += amp;
+
 		if (amp < 0.200)
 		{
 			continue;
@@ -211,8 +215,8 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 
 	REvent *revent = (REvent*)fREvent;
 
-	revent->FillTrigger("trig", 	tm, 	iEvType, kFALSE);
-	revent->FillTrigger("trig0", 	tm0, 	iEvType, kFALSE);
+	revent->FillTrigger("trig", 	tm, 	iEvType, totalE, kFALSE);
+	revent->FillTrigger("trig0", 	tm0, 	iEvType, totalE, kFALSE);
 
 	if (iEvType & kCINT7)
 	{
