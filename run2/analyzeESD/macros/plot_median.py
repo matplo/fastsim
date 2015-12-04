@@ -38,7 +38,7 @@ def main(dname):
 			print ttype
 
 			bit = tbit(ttype)
-			nbins = 60
+			nbins = 600
 			xlow  = 0
 			xhigh = 30
 			hname_tmp = 'htmp({0},{1},{2},{0},{1},{2})'.format(nbins, xlow, xhigh)
@@ -51,6 +51,8 @@ def main(dname):
 			ROOT.gPad.SetGridy()
 			tu.gList.append(tc)
 			hret = ROOT.gDirectory.Get('htmp')
+			if hret==None:
+				continue
 			hret.SetDirectory(0)
 			hret.GetXaxis().SetTitle('medjDCAL8x8')
 			hret.GetYaxis().SetTitle('medjECAL8x8')
@@ -60,7 +62,7 @@ def main(dname):
 			for vs in var.split(':'):
 				xlow = 0
 				xhigh = 30
-				nbins = 120
+				nbins = 3000
 				hname_tmp = 'htmp({0},{1},{2})'.format(nbins, xlow, xhigh)
 				svar = '{}>>{}'.format(vs, hname_tmp)
 				condition = '(trig.type & {})'.format(bit)
@@ -69,8 +71,6 @@ def main(dname):
 				hret = ROOT.gDirectory.Get('htmp')
 				hret.SetDirectory(0)
 				hlp.add(hret, '{} {}'.format(vs, ttype), 'hist')
-
-	tu.gList.append(hl)
 
 	hlp.make_canvas(600,600)
 	hlp.tcanvas.cd()
@@ -82,7 +82,13 @@ def main(dname):
 	ROOT.gPad.SetGridy()
 	hlp.update()
 	hlp.pdf()
-	tu.gList.append(hlp)
+	#tu.gList.append(hlp)
+	#tu.gList.append(hl)
+
+	hls = dlist.ListStorage('medians')
+	hls.append(hl)
+	hls.append(hlp)
+	hls.write_all('modn:')
 
 def subtr(fname):
 	hs = [ 'histos/fEJ1subMedian', 'histos/fEG1subMedian', 'histos/fDJ1subMedian', 'histos/fDG1subMedian']
@@ -113,7 +119,6 @@ def subtr(fname):
 	hlr.pdf()
 	tu.gList.append(hlr)
 
-
 if __name__ == '__main__':
 	tu.setup_basic_root()
 	envdir = os.getenv('RUN2AESDDIR')
@@ -122,13 +127,17 @@ if __name__ == '__main__':
 		lib = os.path.join(envdir, 'lib', l)
 		ROOT.gSystem.Load(lib)
 	dname = ut.get_arg_with('--in')
-	if dname==None:
-		dname = './245146'
 	if '--2d' in sys.argv:
+		if dname==None:
+			dname = './245146'
 		main(dname)
 	if '--subtr' in sys.argv:
 		if dname==None:
 			dname = 'Hist.root'
 		subtr(dname)
+	if '--percent' in sys.argv:
+		if dname == None:
+			dname = 'medians1d.root'
+		percentiles(dname)
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	

@@ -44,6 +44,18 @@ def get_n_events(indir, ttype, bwidth=100, xlow= 0, xhigh=300):
 	print '[i] get_n_events:',var,cuts,nentries
 	return nentries
 
+def get_n_events_cent(indir, ttype, centrality, bwidth=100, xlow= 0, xhigh=300):
+	cuts = '(trig.type & {}) && ({})'.format(ttype, centrality)
+	var =  'trig.type'
+	ntname = 't'	
+	tu.getTempCanvas().cd()
+	tu.getTempCanvas().cd()
+	hl = draw_ntuple.h1d_from_ntuple_dir(indir, ntname, var, cuts, bwidth, xlow, xhigh, 
+										title='h', modname='', nev=-1, fpatt='Tree_*.root')
+	nentries = hl.sum().obj.GetEntries()
+	print '[i] get_n_events:',var,cuts,nentries
+	return nentries
+
 def main_area_sub(dname):
 	ls = dlist.ListStorage('jets_sub')
 	parea = 0.012*0.012*16.*16.
@@ -87,6 +99,45 @@ def main(dname):
 				h = get_jets(dname, jets, '(trig.type & {})&&({})'.format(bit, detcondition), xlow=0)
 				h.obj.Scale(1./get_n_events(dname, bit))
 				ls.add_to_list(sdet+' '+jets, h, '{} {}'.format(ttype, sdet), 'hist')
+
+	ls.draw_all(logy=True)
+	ls.pdf()
+	ls.write_all(mod='modn:')
+
+def main_cent(dname):
+	ls = dlist.ListStorage('jets')
+
+	import EMCalCentrality
+	import DCalCentrality
+
+	for fdet in [0, 1]:
+		#for ij,jets in enumerate([ 'jets00.fE', 'jets02.fE', 'jets04.fE' ]):
+		for ij,jets in enumerate([ 'jets00.fE' ]): #, 'jets02.fE', 'jets04.fE' ]):
+			#for ttype in ['kCINT7', 'kEJ1', 'kEG1', 'kDJ1', 'kDG1']:
+			for ttype in ['kCINT7', 'kEG1']:
+				bit = tbit(ttype)
+				if fdet == 0 and 'kD' in ttype: continue
+				if fdet == 1 and 'kE' in ttype: continue
+				detcondition = jets.replace('.fE', '.fDet=={}'.format(fdet))
+				sdet = 'EMCAL'
+				if fdet > 0: sdet = 'DCAL'
+				print '    ',sdet,detcondition,ttype,jets
+				if fdet == 0:
+					median = 'medjDCAL8x8'
+					cbins  = DCalCentrality.Bins
+				if fdet == 1:
+					median = 'medjECAL8x8'
+					cbins  = DCalCentrality.Bins
+				for b in cbins:
+					median_min = b[1]
+					median_max = b[0]
+					centrality = '{} >= {} && {} <= {}'.format(median, median_min, median, median_max)
+					cut = '(trig.type & {})&&({})&&({})'.format(bit, detcondition, centrality)
+					h = get_jets(dname, jets, cut, xlow=0)
+					nev = get_n_events_cent(dname, bit, centrality)
+					if nev > 0:
+						h.obj.Scale(1./nev)
+						ls.add_to_list(sdet+' '+jets, h, '{} {} {}'.format(ttype, sdet, centrality), 'hist')
 
 	ls.draw_all(logy=True)
 	ls.pdf()
@@ -149,6 +200,8 @@ if __name__ == '__main__':
 	if '--make' in sys.argv:
 		if '--sub' in sys.argv:
 			main_area_sub(dname)
+		if '--cent' in sys.argv:
+			main_cent(dname)
 		else:
 			main(dname)
 	if '--draw' in sys.argv:
