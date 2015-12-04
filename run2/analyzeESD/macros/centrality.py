@@ -124,14 +124,27 @@ def show_percentiles_from_totalE(fname):
 	print '[i] show_percentiles_from_totalE:',fname
 	hl = dlist.load_file(fname, names_not_titles=False, draw_opt='')
 	print hl
-	hl.make_canvas()
+	hl.make_canvas(w=600, h=600)
+	hl.rebin(10)
+	hl.scale(1/10.)
 	hl.draw(logy=True)
 	hl.self_legend()
 	ROOT.gPad.SetLogy()
 	hl.update()
+	hl.pdf()
 	tu.gList.append(hl)
 
 	import TotalECentrality as cent
+
+	hlcent = dlist.dlist(hl.name + '_cent')
+	for i,o in enumerate(hl.l):
+		h = o.obj
+		title = h.GetTitle()
+		name = h.GetName() + '_cent'
+		nbins = len(cent.Bins)
+		hnew = ROOT.TH1D(name, title, nbins, 0, nbins * 10.)
+		hlcent.add(hnew, '', 'hist +l1')
+	hlcent.reset_axis_titles('centrality bins in % from total energy in E+DCal', 'fraction of events')
 
 	fractions = []
 	for ib,b in enumerate(cent.Bins):
@@ -144,10 +157,33 @@ def show_percentiles_from_totalE(fname):
 			nev = h.Integral(xmin, xmax)
 			if i==0:
 				nmb = nev
-			else:
-				fraction = nev / nmb
-				fractions.append([h.GetTitle(), ib, fraction])
-	print fractions
+			fraction = nev / nmb
+			fractions.append([h.GetTitle(), ib, fraction])
+			hlcent.l[i].obj.SetBinContent(ib+1, fraction)
+
+	hlcent.make_canvas(w=600,h=600)
+	hlcent.draw(logy=True, maxy=2, miny=1e-4)
+	for i,o in enumerate(hlcent.l):
+		if i == 0:
+			continue
+		h = o.obj
+		mean = h.GetMean()
+		x1 = mean
+		x2 = mean
+		y1 = 1e-4
+		y2 = 1
+		col = h.GetLineColor()
+		du.draw_line(x1, y1, x2, y2, col, style=7, width=3, alpha=0.7)
+		newtitle = h.GetTitle() + 'average: {:1.1f} %'.format(mean)
+		h.SetTitle(newtitle)
+	hlcent.self_legend(x1=0.55, y1=0.7, y2=0.85)		
+	ROOT.gPad.SetGridy()
+	ROOT.gPad.SetGridx()
+	ROOT.gPad.SetLogy()
+	hlcent.update()
+	tu.gList.append(hlcent)
+	hlcent.pdf()
+	#print fractions
 
 if __name__ == '__main__':
 	tu.setup_basic_root()
