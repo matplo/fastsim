@@ -9,13 +9,16 @@
 #include <TTree.h>
 #include <TF1.h>
 
+#include <AliGlauberNucleon.h>
+
 #include "GlauberPy.h"
 
 using std::flush;
-ClassImp(AliGlauberPy)
+ClassImp(GlauberPy);
 
 //______________________________________________________________________________
-GlauberPy::GlauberPy(Option_t* NA, Option_t* NB, Double_t xsect) :
+GlauberPy::GlauberPy(Option_t* NA, Option_t* NB, Double_t xsect) 
+  : AliGlauberMC(NA, NB, xsect)
 {
 
   SetName(Form("GlauberPy_%s_%s", fANucleus.GetName(), fBNucleus.GetName()));
@@ -30,7 +33,8 @@ GlauberPy::~GlauberPy()
 }
 
 //______________________________________________________________________________
-GlauberPy::GlauberPy(const GlauberPy& in):
+GlauberPy::GlauberPy(const GlauberPy& in)
+  : AliGlauberMC(in)
 {
   ;
 }
@@ -38,7 +42,7 @@ GlauberPy::GlauberPy(const GlauberPy& in):
 //______________________________________________________________________________
 GlauberPy& GlauberPy::operator=(const GlauberPy& in)
 {
-  ;
+  return *this;
 }
 
 //______________________________________________________________________________
@@ -145,4 +149,9 @@ void GlauberPy::Reset()
   //delete the ntuple
   delete fnt;
   fnt = NULL;
+}
+
+void GlauberPy::Run(Int_t nevents)
+{
+  
 }

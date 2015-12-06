@@ -119,7 +119,7 @@ public:
                             Bool_t verbose,
                             const char *fname);
 
-private:
+protected:
    AliGlauberNucleus fANucleus;       //Nucleus A
    AliGlauberNucleus fBNucleus;       //Nucleus B
    Double_t     fXSect;          //Nucleon-nucleon cross section
