@@ -9,4 +9,7 @@
 
 #pragma link C++ class GlauberPy+;
 
+#pragma link C++ class Collision+;
+#pragma link C++ class std::vector<Collision>+;
+
 #endif

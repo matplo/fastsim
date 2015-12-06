@@ -27,6 +27,7 @@ set(SRCS
 	RndSource.cxx
 	RndSource2D.cxx
 	GlauberPy.cxx
+	Collision.cxx
 )
 
 set(SOURCES_EXE 

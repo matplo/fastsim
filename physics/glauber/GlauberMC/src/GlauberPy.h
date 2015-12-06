@@ -1,9 +1,13 @@
 #ifndef GLAUBERPY_H
 #define GLAUBERPY_H
 
-#include "AliGlauberMC.h"
+#include <AliGlauberMC.h>
 #include <Riostream.h>
 #include <TNamed.h>
+#include "Collision.h"
+#include <vector>
+
+class TTree;
 
 class GlauberPy : public AliGlauberMC
 {
@@ -14,11 +18,20 @@ public:
    GlauberPy& operator              =(const GlauberPy& in);
    void                             Run(Int_t nevents);
    Bool_t                           CalcEvent(Double_t bgen);
+   Bool_t                           NextEvent(Double_t bgen);
    void                             Reset();
 
    static void                      PrintVersion()             {std::cout << "GlauberPy " << Version() << std::endl;}
    static const char *              Version()                  {return "v1.0";}
 
+   TTree *                          GetTree() {return fTree;}
+protected:
+
+   void FillCollisions(const char *name = "cls");
+   void FinishEvent();
+
+   std::vector<Collision>           fCollisions;
+   TTree *                          fTree; //!
    ClassDef(GlauberPy, 1)
 };
 

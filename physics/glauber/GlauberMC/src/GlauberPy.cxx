@@ -17,8 +17,9 @@ using std::flush;
 ClassImp(GlauberPy);
 
 //______________________________________________________________________________
-GlauberPy::GlauberPy(Option_t* NA, Option_t* NB, Double_t xsect) 
+GlauberPy::GlauberPy(Option_t* NA, Option_t* NB, Double_t xsect)
   : AliGlauberMC(NA, NB, xsect)
+  , fTree(0)
 {
 
   SetName(Form("GlauberPy_%s_%s", fANucleus.GetName(), fBNucleus.GetName()));
@@ -29,12 +30,13 @@ GlauberPy::GlauberPy(Option_t* NA, Option_t* NB, Double_t xsect)
 GlauberPy::~GlauberPy()
 {
   //dtor
-  delete fnt;
+  delete fTree;
 }
 
 //______________________________________________________________________________
 GlauberPy::GlauberPy(const GlauberPy& in)
   : AliGlauberMC(in)
+  , fTree(0)
 {
   ;
 }
@@ -122,13 +124,15 @@ Bool_t GlauberPy::CalcEvent(Double_t bgen)
         ++Nco;
         nucleonB->Collide();
         nucleonA->Collide();
+        fCollisions.push_back(Collision(i, j, 0, 0));
         if (dij < d2 / 4)
           ++Ncohc;
       }
     }
   }
 
-  if (Nco > 0) {
+  if (Nco > 0)
+  {
     fNcollw = Ncohc;
     fBNN = bNN / Nco;
   } else {
@@ -140,18 +144,65 @@ Bool_t GlauberPy::CalcEvent(Double_t bgen)
     fBNN = bNN / Nco;
   else
     fBNN = 0.;
+
   return CalcResults(bgen);
 }
 
 //---------------------------------------------------------------------------------
+
+Bool_t GlauberPy::NextEvent(Double_t bgen)
+{
+  Bool_t retval = AliGlauberMC::NextEvent(bgen);
+  if (retval)
+  {
+    FillCollisions();
+    FinishEvent();
+  }
+  return retval;
+}
+
 void GlauberPy::Reset()
 {
   //delete the ntuple
-  delete fnt;
-  fnt = NULL;
+  delete fTree;
+  fTree = NULL;
 }
 
 void GlauberPy::Run(Int_t nevents)
 {
-  
+  //TString fname = TString::Format("%s_tree.root", GetName());
+  //TFile fout(fname.Data(), "recreate");
+  //fout.cd();
+
+  // directly taken from the base class
+  if (fTree == 0)
+  {
+    fTree = new TTree("t", "t");
+    fTree->SetDirectory(0);
+  }
+
+  AliGlauberMC::Run(nevents);
+
+  //fout.Write();
+  //fout.Close();
+}
+
+void GlauberPy::FillCollisions(const char *name)
+{
+  std::vector<Collision> *pv = &fCollisions;
+  TBranch *b = fTree->GetBranch(name);
+  if (b == 0)
+  {
+    cout << "[i] Creating a branch:" << name << endl;
+    b = fTree->Branch(name, &pv, 1);
+  }
+  b->SetAddress(&pv);
+  b->Fill();
+  pv->clear();
+}
+
+void GlauberPy::FinishEvent()
+{
+  Int_t n = fTree->GetEntries();
+  fTree->SetEntries(n + 1);
 }
