@@ -3,6 +3,7 @@
 #include <Pythia8/Pythia.h>
 
 #include <iostream> // needed for io
+#include <fstream>
 using namespace std;
 
 // this is for root output
@@ -164,4 +165,101 @@ int deltaE( int argc, char *argv[] )
 	runPythia(&pythia, nEvent);
 
 	return 0;
+}
+
+double sqrts(double eA, double eB, double mA, double mB)
+{	
+	double pA = TMath::Sqrt(eA * eA - mA * mA);
+	double pB = TMath::Sqrt(eB * eB - mB * mB);
+	double eCM = TMath::Sqrt( TMath::Power(eA + eB, 2.) - TMath::Power(pA + (-1. * pB), 2.) );	
+	return eCM;	
+}
+
+py::Pythia* createPythia(const char *cfgFile)
+{
+	// Read in commands from external file.
+	TString spath = gSystem->ExpandPathName(gSystem->Getenv("GLAUBERDIR"));
+	TString pycfg = spath + "/GlauberMC/config/pythia8.cfg";
+	if (cfgFile != 0)
+	{
+		pycfg = cfgFile;
+	}
+	cout << "[i] using pythia config: " << pycfg << endl;
+	py::Pythia *ppythia = new py::Pythia;
+	ppythia->readFile(pycfg.Data());
+
+	fstream outset("pysettings.conf", std::fstream::out);
+	ppythia->settings.listAll(outset);
+	outset.close();
+
+	return ppythia;
+}
+
+void eventAB(py::Pythia *ppythia, double& eA, double& eB)
+{
+	if (ppythia == 0)
+	{
+		return;
+	}
+
+	// assume protons
+	double mA = 0.93827;
+	double mB = 0.93827;
+	double eCM = sqrts(eA, eB, mA, mB);
+
+	py::Pythia &pythia = *ppythia;
+	py::Info&   info   = pythia.info;
+	py::Event&  event  = pythia.event;
+	py::Settings sets  = pythia.settings;
+
+	pythia.readString("Beams:frameType = 2");
+	pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
+	pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
+	pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
+	//sets.mode("Beams:frameType = 2");// collision not in CM
+	//sets.parm(TString::Format("Beams::eA = %f", eA).Data());
+	//sets.parm(TString::Format("Beams::eA = %f", eB).Data());
+
+	pythia.init();
+
+	double eAcheck   = sets.parm("Beams:eA");
+	double eBcheck   = sets.parm("Beams:eB");
+	int    frameType = sets.mode("Beams:frameType");
+
+	cout << TString::Format("    eA=%1.3f eB=%1.3f frame=%d eCM=%1.3f", eAcheck, eBcheck, frameType, eCM) << endl;
+
+	while (1)
+	{
+		if (!pythia.next()) continue;
+		double xsec   = info.sigmaGen();
+		double hardE  = getHardE(event);
+		int    nFinal = info.nFinal();
+		if (nFinal > 2)
+		{
+			cout << "    number of final partons:" << nFinal << endl;
+		}
+		//double deltaE1 = eA - event[5].e();
+		//double deltaE2 = eB - event[6].e();
+		eA = eA - event[5].e();
+		eB = eB - event[6].e();
+		break;
+	}
+	pythia.readString("Init:showChangedSettings = off");
+
+}
+
+void testNcoll(double eCM, int ncoll)
+{
+	double eA = eCM / 2.;
+	double eB = eCM / 2.;
+
+	py::Pythia *p = createPythia();
+
+	for (int n = 0; n < ncoll; n++)
+	{
+		cout << "[i] Event " << n << endl;
+		eventAB(p, eA, eB);
+	}
+
+	delete p;
 }
