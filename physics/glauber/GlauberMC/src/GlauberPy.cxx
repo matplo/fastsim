@@ -155,6 +155,7 @@ Bool_t GlauberPy::NextEvent(Double_t bgen)
   Bool_t retval = AliGlauberMC::NextEvent(bgen);
   if (retval)
   {
+    FillEventInfo();
     FillCollisions();
     FinishEvent();
   }
@@ -201,6 +202,33 @@ void GlauberPy::FillCollisions(const char *name)
   pv->clear();
 }
 
+void GlauberPy::FillEventInfo(const char *name)
+{
+  // Fill event info
+  Double_t v[7];
+  TBranch *b = fTree->GetBranch(name);
+  if (b == 0)
+  {
+    cout << "[i] Creating a branch:" << name << endl;
+    b = fTree->Branch(name, &v[0], "npart/D:ncoll/D:bMC/D:xsect/D:taa/D:bNN/D:ncollw/D");
+  }
+  b->SetAddress(&v[0]);
+  v[0]  = GetNpart();
+  v[1]  = GetNcoll();
+  if (GetNcoll() != fCollisions.size())
+  {
+    cerr << "[e] something is not ok with the event; ncoll inconsistency!" << endl;
+    cerr << "    ncoll: " << v[1] << " number of collisions from nucleon array:" << fCollisions.size() << endl;
+  }
+  v[2]  = fBMC;
+  v[3] = fXSect;
+  Float_t mytAA = -999;
+  if (GetNcoll() > 0) mytAA = GetNcoll() / fXSect;
+  v[4] = mytAA;
+  v[5] = fBNN;
+  v[6] = fNcollw;
+  b->Fill();
+}
 void GlauberPy::FinishEvent()
 {
   Int_t n = fTree->GetEntries();

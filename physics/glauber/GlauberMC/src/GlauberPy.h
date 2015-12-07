@@ -28,6 +28,7 @@ public:
 protected:
 
    void FillCollisions(const char *name = "cls");
+   void FillEventInfo(const char *name = "ev");
    void FinishEvent();
 
    std::vector<Collision>           fCollisions;
