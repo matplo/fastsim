@@ -7,6 +7,7 @@
 #include <TriggerMaker.h>
 
 #include <AliEMCALGeometry.h>
+#include <AliMultSelection.h>
 #include <THistManager.h>
 
 #include <fastjet/PseudoJet.hh>
@@ -97,6 +98,12 @@ void AliAnalysisM::UserCreateOutputObjects()
 
 void AliAnalysisM::UserExec(Option_t* /*option*/)
 {
+	// centrality code from : https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentralityCodeSnippets
+	AliMultSelection *multSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+	Double_t cent = multSelection->GetMultiplicityPercentile("V0M", false); // returns centrality for any event
+	//Int_t    qual = multSelection->GetEvSelCode();
+	//if (qual ! = 0) cent = qual;
+
 	TString ts = InputEvent()->GetFiredTriggerClasses();
 
 	Int_t iEvType = kOther;
@@ -215,8 +222,8 @@ void AliAnalysisM::UserExec(Option_t* /*option*/)
 
 	REvent *revent = (REvent*)fREvent;
 
-	revent->FillTrigger("trig", 	tm, 	iEvType, totalE, kFALSE);
-	revent->FillTrigger("trig0", 	tm0, 	iEvType, totalE, kFALSE);
+	revent->FillTrigger("trig", 	tm, 	iEvType, totalE, cent, kFALSE);
+	revent->FillTrigger("trig0", 	tm0, 	iEvType, totalE, cent, kFALSE);
 
 	if (iEvType & kCINT7)
 	{
