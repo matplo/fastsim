@@ -112,6 +112,8 @@ Bool_t GlauberPy::CalcEvent(Double_t bgen)
       Double_t dx = nucleonB->GetX() - nucleonA->GetX();
       Double_t dy = nucleonB->GetY() - nucleonA->GetY();
       Double_t dij = dx * dx + dy * dy;
+      Double_t rA = TMath::Sqrt(nucleonA->GetX() * nucleonA->GetX() + nucleonA->GetY() * nucleonA->GetY());
+      Double_t rB = TMath::Sqrt(nucleonB->GetX() * nucleonB->GetX() + nucleonB->GetY() * nucleonB->GetY());
       if (fDoFluc) {
         //fXSect = nucleonA->GetSigNN();
         //fXSect = (nucleonA->GetSigNN()+nucleonB->GetSigNN())/2.;
@@ -124,7 +126,7 @@ Bool_t GlauberPy::CalcEvent(Double_t bgen)
         ++Nco;
         nucleonB->Collide();
         nucleonA->Collide();
-        fCollisions.push_back(Collision(i, j, 0, 0));
+        fCollisions.push_back(Collision(i, j, rA, rB, 0, 0));
         if (dij < d2 / 4)
           ++Ncohc;
       }

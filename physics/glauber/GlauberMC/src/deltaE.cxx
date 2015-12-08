@@ -168,11 +168,11 @@ int deltaE( int argc, char *argv[] )
 }
 
 double sqrts(double eA, double eB, double mA, double mB)
-{	
+{
 	double pA = TMath::Sqrt(eA * eA - mA * mA);
 	double pB = TMath::Sqrt(eB * eB - mB * mB);
-	double eCM = TMath::Sqrt( TMath::Power(eA + eB, 2.) - TMath::Power(pA + (-1. * pB), 2.) );	
-	return eCM;	
+	double eCM = TMath::Sqrt( TMath::Power(eA + eB, 2.) - TMath::Power(pA + (-1. * pB), 2.) );
+	return eCM;
 }
 
 py::Pythia* createPythia(const char *cfgFile)
@@ -220,13 +220,26 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB)
 	//sets.parm(TString::Format("Beams::eA = %f", eA).Data());
 	//sets.parm(TString::Format("Beams::eA = %f", eB).Data());
 
+	sets.parm("PhaseSpace:pTHatMin", 0);
+	sets.parm("PhaseSpace:pTHatMax", -1);
+	sets.parm("PhaseSpace:pTHatMinDiverge", 0.5);
+	
+	pythia.readString("HardQCD:all = off");
+	//pythia.readString("SoftQCD:all = on");
+	pythia.readString("SoftQCD:nonDiffractive = on");
+
 	pythia.init();
 
-	double eAcheck   = sets.parm("Beams:eA");
-	double eBcheck   = sets.parm("Beams:eB");
+	double eAcheck   = pythia.info.eA(); 		//sets.parm("Beams:eA");
+	double eBcheck   = pythia.info.eB(); 		//sets.parm("Beams:eB");
 	int    frameType = sets.mode("Beams:frameType");
+	double pThatmin  = sets.parm("PhaseSpace:pTHatMin");
+	double eCMcheck =  sqrts(eAcheck, eBcheck, mA, mB);
 
-	cout << TString::Format("    eA=%1.3f eB=%1.3f frame=%d eCM=%1.3f", eAcheck, eBcheck, frameType, eCM) << endl;
+	cout << pythia.info.eCM() << endl;
+
+	cout << TString::Format("    eA=%1.3f eB=%1.3f frame=%d eCM=%1.3f", eA, eB, frameType, eCM) << endl;
+	cout << TString::Format("    -> eA=%1.3f eB=%1.3f pTHatMin=%1.3f eCM=%1.3f", eAcheck, eBcheck, pThatmin, eCMcheck) << endl;
 
 	while (1)
 	{
@@ -238,6 +251,14 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB)
 		{
 			cout << "    number of final partons:" << nFinal << endl;
 		}
+		double pTHat  = info.pTHat();
+		double weight = info.weight();
+		double sigma  = info.sigmaGen();
+		cout << "   "
+		     << " pTHat=" << pTHat
+		     << " weight=" << weight
+		     << " sigma=" << sigma
+		     << endl;
 		//double deltaE1 = eA - event[5].e();
 		//double deltaE2 = eB - event[6].e();
 		eA = eA - event[5].e();
@@ -245,7 +266,6 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB)
 		break;
 	}
 	pythia.readString("Init:showChangedSettings = off");
-
 }
 
 void testNcoll(double eCM, int ncoll)
@@ -257,7 +277,10 @@ void testNcoll(double eCM, int ncoll)
 
 	for (int n = 0; n < ncoll; n++)
 	{
-		cout << "[i] Event " << n << endl;
+		cout << "[i] Event " << n
+		     << " eA = " << eA
+		     << " eB = " << eB
+		     << endl;
 		eventAB(p, eA, eB);
 	}
 

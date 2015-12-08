@@ -10,17 +10,21 @@ public:
     : TObject()
     , nA(-1)
     , nB(-1)
+    , rA(0)
+    , rB(0)
     , eA(-1)
     , eB(-1)
     {
       ;
     }
     
-  Collision(Int_t ia, Int_t ib, Double_t ea, Double_t eb)
+  Collision(Int_t ia, Int_t ib, Double_t ra, Double_t rb, Double_t ea, Double_t eb)
     : TObject()
     {
       nA = ia;
       nB = ib;
+      rA = ra;
+      rB = rb;
       eA = ea;
       eB = eb;
     }
@@ -31,6 +35,9 @@ public:
   Double_t GetEA() {return eA;}
   Double_t GetEB() {return eB;}
 
+  Double_t GetRA() {return rA;}
+  Double_t GetRB() {return rB;}
+
   virtual ~Collision()
   { 
     ;
@@ -38,6 +45,8 @@ public:
 private:
   Int_t     nA;
   Int_t     nB;
+  Double_t  rA;
+  Double_t  rB;
   Double_t  eA;
   Double_t  eB;
   ClassDef(Collision, 1)
