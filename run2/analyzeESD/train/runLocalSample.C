@@ -6,13 +6,20 @@ void runLocalSample(const char *fileList = "filelists/files_000245146.txt", Int_
 	// Adding handler
 	gROOT->Macro( Form("%s/ANALYSIS/macros/train/AddESDHandler.C", gSystem->Getenv("ALICE_ROOT")) );
 
-	gSystem->Load( Form("%s/lib/libEMCALTriggerFast", gSystem->Getenv("RUN2AESDDIR")) );
-	gSystem->Load( Form("%s/lib/libAnalyzeESD", gSystem->Getenv("RUN2AESDDIR")) );
+	// centrality
+	gROOT->LoadMacro( "$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C" );
+	AliMultSelectionTask *tCent = AddTaskMultSelection(kFALSE);
 
-	AliAnalysisM *task = new AliAnalysisM("my task");
-
+	// emcal setup /<-> AODB
 	gROOT->LoadMacro( Form("%s/PWG/EMCAL/macros/AddTaskEmcalSetup.C", gSystem->Getenv("ALICE_PHYSICS")) );
 	AliEmcalSetupTask *t = AddTaskEmcalSetup(0,0, "local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+
+	//my stuff
+	gSystem->Load( Form("%s/lib/libEMCALTriggerFast", 	gSystem->Getenv("RUN2AESDDIR")) );
+	gSystem->Load( Form("%s/lib/libRAnalyzeESD", 		gSystem->Getenv("RUN2AESDDIR")) );
+	gSystem->Load( Form("%s/lib/libAnalyzeESD", 		gSystem->Getenv("RUN2AESDDIR")) );
+
+	AliAnalysisM *task = new AliAnalysisM("my task");
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

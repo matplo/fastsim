@@ -1,0 +1,11 @@
+1. within the tree the collisions have:
+- number of nucleon A and B
+- energy of nucleon A and B
+
+2. loop over collisions:
+- keep list of nucleon A and nucleon B
+- for each collision 
+-- use the nA and nB to identify the nucleons
+-- generate a pythia event with eA and eB
+-- modify the nucleon eA and eB post collision
+

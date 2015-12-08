@@ -3,6 +3,7 @@
 #include <Pythia8/Pythia.h>
 
 #include <iostream> // needed for io
+#include <fstream>
 using namespace std;
 
 // this is for root output
@@ -19,7 +20,7 @@ using namespace std;
 //using namespace Pythia8; - conflicts with root
 namespace py = Pythia8;
 
-#include "util.h"
+#include "glauberutil.h"
 
 int verbosity = 0;
 
@@ -164,4 +165,136 @@ int deltaE( int argc, char *argv[] )
 	runPythia(&pythia, nEvent);
 
 	return 0;
+}
+
+double sqrts(double eA, double eB, double mA, double mB)
+{
+	double pA = TMath::Sqrt(eA * eA - mA * mA);
+	double pB = TMath::Sqrt(eB * eB - mB * mB);
+	double eCM = TMath::Sqrt( TMath::Power(eA + eB, 2.) - TMath::Power(pA + (-1. * pB), 2.) );
+	return eCM;
+}
+
+py::Pythia* createPythia(const char *cfgFile)
+{
+	// Read in commands from external file.
+	TString spath = gSystem->ExpandPathName(gSystem->Getenv("GLAUBERDIR"));
+	TString pycfg = spath + "/GlauberMC/config/pythia8.cfg";
+	if (cfgFile != 0)
+	{
+		pycfg = cfgFile;
+	}
+	cout << "[i] using pythia config: " << pycfg << endl;
+	py::Pythia *ppythia = new py::Pythia;
+	ppythia->readFile(pycfg.Data());
+
+	fstream outset("pysettings.conf", std::fstream::out);
+	ppythia->settings.listAll(outset);
+	outset.close();
+
+	return ppythia;
+}
+
+void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
+{
+	if (ppythia == 0)
+	{
+		return;
+	}
+
+	// assume protons
+	double mA = 0.93827;
+	double mB = 0.93827;
+	double eCM = sqrts(eA, eB, mA, mB);
+
+	py::Pythia &pythia = *ppythia;
+
+	pythia.readString("Beams:frameType = 2");
+	pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
+	pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
+	pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
+
+	pythia.readString("PhaseSpace:pTHatMin = 0");
+	pythia.readString("PhaseSpace:pTHatMax = -1");
+	pythia.readString("PhaseSpace:pTHatMinDiverge = 0.5");
+
+	pythia.readString("HardQCD:all = off");
+	//pythia.readString("SoftQCD:all = on");
+	pythia.readString("SoftQCD:nonDiffractive = on");
+
+	pythia.readString("Init:showChangedSettings = off");
+
+	pythia.init();
+	//pythia.init( 2212, 2212, eA, eB);
+
+	py::Info&   info   = pythia.info;
+	py::Event&  event  = pythia.event;
+	py::Settings sets  = pythia.settings;
+
+	while (1)
+	{
+		if (!pythia.next()) continue;
+
+		if (verbosity > 0)
+		{
+			double eAcheck   = sets.parm("Beams:eA"); //info.eA();
+			double eBcheck   = sets.parm("Beams:eB"); //info.eB();
+			int    frameType = sets.mode("Beams:frameType");
+			double pThatmin  = sets.parm("PhaseSpace:pTHatMin");
+			double eCMcheck =  sets.parm("Beams:eCM"); //sqrts(eAcheck, eBcheck, mA, mB);
+			cout << TString::Format("    SET: eA=%1.3f eB=%1.3f eCM=%1.3f frame=%d", eA, eB, eCM, frameType) << endl;
+			cout << TString::Format("    GOT: eA=%1.3f eB=%1.3f eCM=%1.3f pTHatMin=%1.3f ", eAcheck, eBcheck, eCMcheck, pThatmin) << endl;
+			if (verbosity > 9)
+				sets.listChanged(cout);
+		}
+
+		double xsec   = info.sigmaGen();
+		double hardE  = getHardE(event);
+		int    nFinal = info.nFinal();
+		if (nFinal > 2 && verbosity > 0)
+		{
+			cout << "    number of final partons:" << nFinal << endl;
+		}
+		double pTHat  = info.pTHat();
+		double weight = info.weight();
+		double sigma  = info.sigmaGen();
+		if (verbosity > 1)
+		{
+			cout << "   "
+			     << " pTHat=" << pTHat
+			     << " weight=" << weight
+			     << " sigma=" << sigma
+			     << endl;
+		}
+		//double deltaE1 = eA - event[5].e();
+		//double deltaE2 = eB - event[6].e();
+		eA = eA - event[5].e();
+		eB = eB - event[6].e();
+		break;
+	}
+	if (verbosity > 9)
+	{
+		fstream outset("pysettings.conf", std::fstream::out);
+		pythia.settings.listAll(outset);
+		outset.close();
+	}
+}
+
+void testNcoll(double eCM, int ncoll)
+{
+	double eA = eCM / 2.;
+	double eB = eCM / 2.;
+
+	py::Pythia *p = createPythia();
+
+	for (int n = 0; n < ncoll; n++)
+	{
+		cout << "[i] Event " << n
+		     << " eA = " << eA
+		     << " eB = " << eB
+		     << endl;
+		eventAB(p, eA, eB);
+	}
+
+	delete p;
 }

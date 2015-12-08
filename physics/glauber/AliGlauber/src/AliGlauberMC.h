@@ -39,9 +39,9 @@ public:
    AliGlauberMC& operator=(const AliGlauberMC& in);
    void         Draw(Option_t* option);
 
-   void         Run(Int_t nevents);
-   Bool_t       NextEvent(Double_t bgen = -1);
-   Bool_t       CalcEvent(Double_t bgen);
+   virtual void         Run(Int_t nevents);
+   virtual Bool_t       NextEvent(Double_t bgen = -1);
+   virtual Bool_t       CalcEvent(Double_t bgen);
 
    //various ways to calculate multiplicity
    Double_t     GetdNdEta() const;
@@ -119,7 +119,7 @@ public:
                             Bool_t verbose,
                             const char *fname);
 
-private:
+protected:
    AliGlauberNucleus fANucleus;       //Nucleus A
    AliGlauberNucleus fBNucleus;       //Nucleus B
    Double_t     fXSect;          //Nucleon-nucleon cross section

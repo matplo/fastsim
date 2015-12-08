@@ -8,4 +8,4 @@ const char *getArg(const char *what, int argc, char **argv);
 double      getArgD(const char *what, int argc, char **argv, double defret);
 };
 
-#endif // GENERUTIL_HH
+#endif // GLAUBERUTIL_HH
