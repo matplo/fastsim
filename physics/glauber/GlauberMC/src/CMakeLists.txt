@@ -33,6 +33,7 @@ set(SRCS
 set(SOURCES_EXE 
 	deltaE.cxx
 	util.cxx
+	gen_from_coll.cxx
 	main.cxx
 )
 
