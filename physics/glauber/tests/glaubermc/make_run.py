@@ -26,8 +26,9 @@ class Jobs(object):
 			outnames.append(foutname)
 			wdir = dname
 			with open(foutname, 'w') as fout:
-				print >> fout, '#!/bin/bash'
+				print >> fout, '#!/bin/bash -l'
 				print >> fout, 'date'
+				print >> fout, 'module load use.own'
 				print >> fout, 'module use $HOME/devel/rootutils/python/modules'
 				print >> fout, 'module load pyrut'
 				print >> fout, 'module load hepsoft/latest'
