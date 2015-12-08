@@ -29,6 +29,8 @@ OutFile::OutFile(const char *name)
 	, pvparts(&vparts)
 {
 	t->Branch("p", &pvparts);
+	Double_t v[6];
+	t->Branch("head", &v[0], "xsec/D:pThat/D:weight/D:eA/D:eB/D:eCM/D");
 }
 
 OutFile::~OutFile()
@@ -47,16 +49,7 @@ void OutFile::AddParticle(py::Particle &p)
 void OutFile::ProcessEvent(py::Pythia &pythia)
 {
 	Double_t v[6];
-	TBranch *b = t->GetBranch("head");
-	if (b == 0)
-	{
-		cout << "[i] Creating a branch: head" << endl;
-		b = t->Branch("head", &v[0], "xsec/D:pThat/D:weight/D:eA/D:eB/D:eCM/D");
-	}
-	else
-	{
-		b->SetAddress(&v[0]);
-	}
+	t->SetBranchAddress("head", &v[0]);
 	v[0] = pythia.info.sigmaGen();
 	v[1] = pythia.info.pTHat();
 	v[2] = pythia.info.weight();
