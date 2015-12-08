@@ -27,8 +27,8 @@ public:
    TTree *                          GetTree() {return fTree;}
 protected:
 
-   void FillCollisions(const char *name = "cls");
-   void FillEventInfo(const char *name = "ev");
+   void FillCollisions(const char *name = "colls");
+   void FillEventInfo(const char *name = "head");
    void FinishEvent();
 
    std::vector<Collision>           fCollisions;

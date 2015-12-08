@@ -11,5 +11,8 @@
 
 #pragma link C++ class Collision+;
 #pragma link C++ class std::vector<Collision>+;
+#pragma link C++ class std::vector<TParticle>+;
+
+#pragma link C++ function gen_from_coll;
 
 #endif

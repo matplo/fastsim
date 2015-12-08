@@ -195,7 +195,7 @@ py::Pythia* createPythia(const char *cfgFile)
 	return ppythia;
 }
 
-void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
+void eventAB(py::Pythia *ppythia, double& eA, double& eB)
 {
 	if (ppythia == 0)
 	{
@@ -208,76 +208,66 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
 	double eCM = sqrts(eA, eB, mA, mB);
 
 	py::Pythia &pythia = *ppythia;
-
-	pythia.readString("Beams:frameType = 2");
-	pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
-	pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
-	pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
-
-	pythia.readString("PhaseSpace:pTHatMin = 0");
-	pythia.readString("PhaseSpace:pTHatMax = -1");
-	pythia.readString("PhaseSpace:pTHatMinDiverge = 0.5");
-
-	pythia.readString("HardQCD:all = off");
-	//pythia.readString("SoftQCD:all = on");
-	pythia.readString("SoftQCD:nonDiffractive = on");
-
-	pythia.readString("Init:showChangedSettings = off");
-
-	pythia.init();
-	//pythia.init( 2212, 2212, eA, eB);
-
 	py::Info&   info   = pythia.info;
 	py::Event&  event  = pythia.event;
 	py::Settings sets  = pythia.settings;
 
+	pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
+	pythia.readString("Beams:frameType = 2"); //collisions not in CM
+	pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
+	pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
+	pythia.readString("HardQCD:all = off");
+	//pythia.readString("SoftQCD:all = on");
+	pythia.readString("SoftQCD:nonDiffractive = on");
+	//sets.parm("PhaseSpace:pTHatMin", 0);
+	//sets.parm("PhaseSpace:pTHatMax", -1);
+	//sets.parm("PhaseSpace:pTHatMinDiverge", 0.5);
+	
+
+	pythia.init();
+
+	double eAcheck   = pythia.info.eA(); 		//sets.parm("Beams:eA");
+	double eBcheck   = pythia.info.eB(); 		//sets.parm("Beams:eB");
+	//int    frameType = sets.mode("Beams:frameType");
+	int frameType = 2;
+	double pThatmin  = sets.parm("PhaseSpace:pTHatMin");
+	double eCMcheck =  pythia.info.eCM(); //sqrts(eAcheck, eBcheck, mA, mB);
+	cout << TString::Format("    set: eA=%1.3f eB=%1.3f eCM=%1.3f frame=%d", eA, eB, eCM, frameType) << endl;
+	cout << TString::Format("    got: eA=%1.3f eB=%1.3f eCM=%1.3f pTHatMin=%1.3f ", eAcheck, eBcheck, eCMcheck, pThatmin) << endl;
+	if (TMath::Abs(eAcheck - eA) > 1e-3 || TMath::Abs(eBcheck - eB) > 1e-3)
+	{
+		cout << eAcheck - eA << " " << eBcheck - eB << endl;
+		cerr << "[f] pythia wrongly set with the beam energies" << endl;
+		exit(-1);
+	}
+
 	while (1)
 	{
 		if (!pythia.next()) continue;
-
-		if (verbosity > 0)
-		{
-			double eAcheck   = sets.parm("Beams:eA"); //info.eA();
-			double eBcheck   = sets.parm("Beams:eB"); //info.eB();
-			int    frameType = sets.mode("Beams:frameType");
-			double pThatmin  = sets.parm("PhaseSpace:pTHatMin");
-			double eCMcheck =  sets.parm("Beams:eCM"); //sqrts(eAcheck, eBcheck, mA, mB);
-			cout << TString::Format("    SET: eA=%1.3f eB=%1.3f eCM=%1.3f frame=%d", eA, eB, eCM, frameType) << endl;
-			cout << TString::Format("    GOT: eA=%1.3f eB=%1.3f eCM=%1.3f pTHatMin=%1.3f ", eAcheck, eBcheck, eCMcheck, pThatmin) << endl;
-			if (verbosity > 9)
-				sets.listChanged(cout);
-		}
-
 		double xsec   = info.sigmaGen();
 		double hardE  = getHardE(event);
 		int    nFinal = info.nFinal();
-		if (nFinal > 2 && verbosity > 0)
+		if (nFinal > 2)
 		{
 			cout << "    number of final partons:" << nFinal << endl;
 		}
 		double pTHat  = info.pTHat();
 		double weight = info.weight();
 		double sigma  = info.sigmaGen();
-		if (verbosity > 1)
-		{
-			cout << "   "
-			     << " pTHat=" << pTHat
-			     << " weight=" << weight
-			     << " sigma=" << sigma
-			     << endl;
-		}
-		//double deltaE1 = eA - event[5].e();
-		//double deltaE2 = eB - event[6].e();
+		double deltaEA = event[5].e();
+		double deltaEB = event[6].e();
+		cout << "   "
+		     << " pTHat=" << pTHat
+		     << " weight=" << weight
+		     << " sigma=" << sigma
+		     << " deltaEA=" << deltaEA
+		     << " deltaEB=" << deltaEB
+		     << endl;
 		eA = eA - event[5].e();
 		eB = eB - event[6].e();
 		break;
 	}
-	if (verbosity > 9)
-	{
-		fstream outset("pysettings.conf", std::fstream::out);
-		pythia.settings.listAll(outset);
-		outset.close();
-	}
+	//pythia.readString("Init:showChangedSettings = off");
 }
 
 void testNcoll(double eCM, int ncoll)

@@ -86,8 +86,7 @@ function build()
 if [ ! -d "$working_dir" ]; then
     echo "[error] $working_dir does not exist."
 else
-    version=$1
-    [ -z $version ] && version=0.1
+    version=0.1
     install_dir="$working_dir"
 
     cd $working_dir
