@@ -1,7 +1,8 @@
-#include "util.h"
+#include "glauberutil.h"
 
 #include <string>
 #include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

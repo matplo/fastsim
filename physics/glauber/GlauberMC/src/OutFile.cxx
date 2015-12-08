@@ -1,4 +1,4 @@
-#include "Outfile.h"
+#include "OutFile.h"
 
 #include <iostream>
 using namespace std;
