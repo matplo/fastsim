@@ -9,6 +9,32 @@
 #include <iostream>
 using namespace std;
 
+
+class Nucleon
+{
+public:
+	Nucleon()
+		: fEnergy(0.0)
+		, fNcoll(0)
+	{ ; }
+	Nucleon(double e, double ncoll = 0)
+		: fEnergy(0.0)
+		, fNcoll(0)
+	{ ; }
+
+	~Nucleon() {;}
+
+	double E() { return fEnergy;}
+	int    NColl() {return fNcoll;}
+
+	void setE(double ve) {fEnergy = ve;}
+	void setNcoll(int nc) {fNcoll = nc;}
+
+private:
+	double fEnergy;
+	int    fNcoll;
+};
+
 // fname is the glauber root tree file
 void gen_from_coll(const char* fname)
 {
@@ -32,6 +58,9 @@ void gen_from_coll(const char* fname)
 		t->GetEntry(i);
 		cout << "[i] Nev "		<< i << endl;
 		cout << "    Ncoll:" 	<< v.size() << endl;
+
+		std::vector<Nucleon> nA;
+		std::vector<Nucleon> nB;
 	}
 
 	fin.Close();
