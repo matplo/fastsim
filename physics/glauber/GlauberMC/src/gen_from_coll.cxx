@@ -85,7 +85,10 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 	{
 		t->GetEntry(i);
 		if (head[1] < ncollmin || head[1] > ncollmax)
+		{
+			cout << "    skip ncoll: " << head[1] << " looking for:" << ncollmin << " - " << ncollmax << endl;
 			continue;
+		}
 
 		cout << "[i] Nev "		<< i;
 		cout << " Ncoll:" 	<< colls.size() << " " << head[1];
@@ -102,8 +105,8 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 			cout << " -  collision " << ic
 			     << " eA = " << eA
 			     << " eB = " << eB
-			     << " ncA = " << nA[iA].NColl()
-			     << " ncB = " << nB[iB].NColl()
+			     << " ncA[" << iA << "] = " << nA[iA].NColl()
+			     << " ncB[" << iB << "] = " << nB[iB].NColl()
 			     << endl;
 			eventAB(p, eA, eB);
 			cout << endl;

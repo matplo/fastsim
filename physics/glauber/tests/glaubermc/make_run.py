@@ -4,8 +4,9 @@ import os
 import stat
 
 class Jobs(object):
-	def __init__(self, ncoll, nev=10000, nperjob=100):
-		self.ncoll = ncoll
+	def __init__(self, ncollmin, ncollmax, nev=10000, nperjob=100):
+		self.ncollmin = ncollmin
+		self.ncollmax = ncollmax
 		self.nev = nev
 		self.nperjob = nperjob
 		self.input_file = '{}/tests/glaubermc/glau_pbpb_ntuple.root'.format(os.getenv('GLAUBERDIR'))
@@ -17,7 +18,7 @@ class Jobs(object):
 		os.fchmod(fd.fileno(), stat.S_IMODE(mode))
 
 	def make_scripts(self):
-		dname = '{}/output_ncoll_{}'.format(os.getcwd(), self.ncoll)
+		dname = '{}/output_ncoll_{}_{}'.format(os.getcwd(), self.ncollmin, self.ncollmax)
 		if not os.path.exists(dname):
 			os.makedirs(dname)
 		outnames = []
@@ -35,7 +36,7 @@ class Jobs(object):
 				print >> fout, 'module load root'
 				print >> fout, 'module load glauber'
 				print >> fout, 'cd {}'.format(wdir)
-				print >> fout, 'GlauberMC.exe --in {} --gen --ncoll {}:{} --nev {}:{}'.format(self.input_file, self.ncoll, self.ncoll, nstart, self.nperjob)
+				print >> fout, 'GlauberMC.exe --in {} --gen --ncoll {}:{} --nev {}:{}'.format(self.input_file, self.ncollmin, self.ncollmax, nstart, self.nperjob)
 				print >> fout, 'date'
 				print >> fout, ''
 				self.make_executable(fout)
@@ -49,7 +50,7 @@ class Jobs(object):
 		print '[i] written:',subms
 
 def main():
-	js = Jobs(1600)
+	js = Jobs(1600, 1600)
 	js.make_scripts()
 	js.input_file = '{}/tests/glaubermc/glau_pbpb_ntuple.root'.format(os.getenv('GLAUBERDIR'))
 
