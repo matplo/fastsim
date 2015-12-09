@@ -6,6 +6,7 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TStopwatch.h>
 
 #include <vector>
 #include <iostream>
@@ -86,13 +87,15 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 		t->GetEntry(i);
 		if (head[1] < ncollmin || head[1] > ncollmax)
 		{
-			cout << "    skip ncoll: " << head[1] << " looking for:" << ncollmin << " - " << ncollmax << endl;
+			cout << TString::Format("    skip ncoll: %4.0f looking for: %4d < ncoll < %4d", head[1], ncollmin, ncollmax) << endl;
 			continue;
 		}
 
 		cout << "[i] Nev "		<< i;
 		cout << " Ncoll:" 	<< colls.size() << " " << head[1];
 		cout << " Npart:"	<< head[0] << endl;
+
+		TStopwatch ts;
 
 		std::vector<Nucleon> nA = make_nucleons(eCM);
 		std::vector<Nucleon> nB = make_nucleons(eCM);
@@ -102,14 +105,19 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 			Int_t iB    = colls[ic].GetNB();
 			Double_t eA = nA[iA].E();
 			Double_t eB = nB[iB].E();
-			cout << " -  collision " << ic
-			     << " eA = " << eA
-			     << " eB = " << eB
-			     << " ncA[" << iA << "] = " << nA[iA].NColl()
-			     << " ncB[" << iB << "] = " << nB[iB].NColl()
-			     << endl;
+			cout << TString::Format("    - collision eA = %4.0f   eB = %4.0f   ncA[%3d] = %3d   ncA[%3d] = %3d",
+			                        eA, eB, iA, nA[iA].NColl(), iB, nB[iB].NColl()) << endl;
+			if (ic == 0) ts.Start();
 			eventAB(p, eA, eB);
-			cout << endl;
+			if (head[1] > 10 && ic % 10 == 0 && ic > 0)
+			{
+				ts.Stop();
+				cout << TString::Format("    Real time per event: %1.1f s => ETA (this event): %1.1f min.",
+				                        ts.RealTime() / 10.,
+				                        ts.RealTime() / 60. * (head[1] - ic) / 10.)
+				     << endl;
+				ts.Start();
+			}
 			out.ProcessEvent(*p);
 			nA[iA].SetNcoll(nA[iA].NColl() + 1);
 			nB[iB].SetNcoll(nB[iB].NColl() + 1);

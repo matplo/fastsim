@@ -28,7 +28,7 @@ class Jobs(object):
 			wdir = dname
 			with open(foutname, 'w') as fout:
 				print >> fout, '#!/bin/bash -l'
-				print >> fout, 'date'
+				print >> fout, 'date | tee    {}.log'.format(foutname)
 				print >> fout, 'module load use.own'
 				print >> fout, 'module use $HOME/devel/rootutils/python/modules'
 				print >> fout, 'module load pyrut'
@@ -36,8 +36,8 @@ class Jobs(object):
 				print >> fout, 'module load root'
 				print >> fout, 'module load glauber'
 				print >> fout, 'cd {}'.format(wdir)
-				print >> fout, 'GlauberMC.exe --in {} --gen --ncoll {}:{} --nev {}:{}'.format(self.input_file, self.ncollmin, self.ncollmax, nstart, self.nperjob)
-				print >> fout, 'date'
+				print >> fout, 'GlauberMC.exe --in {} --gen --ncoll {}:{} --nev {}:{} 2>&1 | tee -a {}.log'.format(self.input_file, self.ncollmin, self.ncollmax, nstart, self.nperjob, foutname)
+				print >> fout, 'date | tee -a {}.log'.format(foutname)
 				print >> fout, ''
 				self.make_executable(fout)
 			print '[i] written:', foutname
@@ -45,12 +45,12 @@ class Jobs(object):
 		with open(subms, 'w') as fout:
 			print >> fout, '#!/bin/bash'
 			for s in outnames:
-				print >> fout, 'qsub {}'.format(s)
+				print >> fout, 'qsub -o {} -e {} {}'.format(dname, dname, s)
 			self.make_executable(fout)
 		print '[i] written:',subms
 
 def main():
-	js = Jobs(1600, 1600)
+	js = Jobs(1500, 1600)
 	js.make_scripts()
 	js.input_file = '{}/tests/glaubermc/glau_pbpb_ntuple.root'.format(os.getenv('GLAUBERDIR'))
 
