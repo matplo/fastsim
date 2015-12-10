@@ -9,7 +9,7 @@ void testNcoll(double eCM = 5000., int ncoll = 10);
 #ifndef __CINT__
 #include <Pythia8/Pythia.h>
 Pythia8::Pythia* createPythia(const char *cfgFile = 0);
-void eventAB(Pythia8::Pythia *ppythia, double &eA, double &eB, int verbosity=0);
+bool eventAB(Pythia8::Pythia *ppythia, double &eA, double &eB, int verbosity=0);
 #endif // __CINT__
 
 #endif // DELTAE_HH

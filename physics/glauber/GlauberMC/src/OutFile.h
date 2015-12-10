@@ -18,7 +18,7 @@ public:
 	OutFile(const char *name);
 	~OutFile();
 	void AddParticle(py::Particle &p);
-	void ProcessEvent(py::Pythia &pythia);
+	void ProcessEvent(py::Pythia &pythia, Double_t npart=2, Double_t ncoll=1);
 private:
 	TFile *f; //!
 	TTree *t; //!

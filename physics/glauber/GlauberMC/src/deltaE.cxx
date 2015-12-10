@@ -188,32 +188,9 @@ py::Pythia* createPythia(const char *cfgFile)
 	py::Pythia *ppythia = new py::Pythia;
 	ppythia->readFile(pycfg.Data());
 
-	fstream outset("pysettings.conf", std::fstream::out);
-	ppythia->settings.listAll(outset);
-	outset.close();
-
-	return ppythia;
-}
-
-void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
-{
-	if (ppythia == 0)
-	{
-		return;
-	}
-
-	// assume protons
-	double mA = 0.93827;
-	double mB = 0.93827;
-	double eCM = sqrts(eA, eB, mA, mB);
-
 	py::Pythia &pythia = *ppythia;
 
 	pythia.readString("Beams:frameType = 2");
-	pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
-	pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
-	pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
-
 	pythia.readString("PhaseSpace:pTHatMin = 0");
 	pythia.readString("PhaseSpace:pTHatMax = -1");
 	pythia.readString("PhaseSpace:pTHatMinDiverge = 0.5");
@@ -224,17 +201,62 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
 
 	pythia.readString("Init:showChangedSettings = off");
 
-	pythia.init();
-	//pythia.init( 2212, 2212, eA, eB);
+	fstream outset("pysettings.conf", std::fstream::out);
+	ppythia->settings.listAll(outset);
+	outset.close();
 
-	py::Info&   info   = pythia.info;
-	py::Event&  event  = pythia.event;
+	return ppythia;
+}
+
+bool eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
+{
+	if (ppythia == 0)
+	{
+		return false;
+	}
+
+	// assume protons
+	double mA = 0.93827;
+	double mB = 0.93827;
+	double eCM = sqrts(eA, eB, mA, mB);
+
+	py::Pythia &pythia = *ppythia;
+
 	py::Settings sets  = pythia.settings;
+	double eAprev   = sets.parm("Beams:eA"); //info.eA();
+	double eBprev   = sets.parm("Beams:eB"); //info.eB();
 
+	if (eAprev == eA && eBprev == eB)
+	{
+		cout << "    reusing the setup pythia" << endl;
+	}
+	else
+	{
+		pythia.readString(TString::Format("Beams:eA = %f", eA).Data());
+		pythia.readString(TString::Format("Beams:eB = %f", eB).Data());
+		pythia.readString(TString::Format("Beams:eCM = %f", eCM).Data());
+
+		pythia.init();		
+	}
+
+	py::Info&   	info   = pythia.info;
+	py::Event&  	event  = pythia.event;
+					sets   = pythia.settings;
+
+	Int_t failCount = 0;
 	while (1)
 	{
-		if (!pythia.next()) continue;
-
+		if (!pythia.next())
+		{
+			failCount++;
+			if (failCount >= 10)
+			{
+				cout << "[w] breaking generation: failed 10 times consequtive eA=" << eA << " eB=" << eB << endl;
+				return false;
+			}
+			continue;
+		}
+		failCount = 0;
 		if (verbosity > 0)
 		{
 			double eAcheck   = sets.parm("Beams:eA"); //info.eA();
@@ -278,6 +300,7 @@ void eventAB(py::Pythia *ppythia, double& eA, double& eB, int verbosity)
 		pythia.settings.listAll(outset);
 		outset.close();
 	}
+	return true;
 }
 
 void testNcoll(double eCM, int ncoll)

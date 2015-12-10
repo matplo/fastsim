@@ -29,8 +29,8 @@ OutFile::OutFile(const char *name)
 	, pvparts(&vparts)
 {
 	t->Branch("p", &pvparts);
-	Double_t v[6];
-	t->Branch("head", &v[0], "xsec/D:pThat/D:weight/D:eA/D:eB/D:eCM/D");
+	Double_t v[8];
+	t->Branch("head", &v[0], "xsec/D:pThat/D:weight/D:eA/D:eB/D:eCM/D:ncoll/D:npart/D");
 }
 
 OutFile::~OutFile()
@@ -46,9 +46,9 @@ void OutFile::AddParticle(py::Particle &p)
 	vparts.push_back(tp);
 }
 
-void OutFile::ProcessEvent(py::Pythia &pythia)
+void OutFile::ProcessEvent(py::Pythia &pythia, Double_t npart, Double_t ncoll)
 {
-	Double_t v[6];
+	Double_t v[8];
 	t->SetBranchAddress("head", &v[0]);
 	v[0] = pythia.info.sigmaGen();
 	v[1] = pythia.info.pTHat();
@@ -65,6 +65,8 @@ void OutFile::ProcessEvent(py::Pythia &pythia)
 		if (event[i].isFinal())
 			AddParticle(event[i]);
 	}
+	v[6] = ncoll;
+	v[7] = npart;
 	t->Fill();
 	vparts.clear();
 }

@@ -108,7 +108,19 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 			cout << TString::Format("    - collision eA = %4.0f   eB = %4.0f   ncA[%3d] = %3d   ncA[%3d] = %3d",
 			                        eA, eB, iA, nA[iA].NColl(), iB, nB[iB].NColl()) << endl;
 			if (ic == 0) ts.Start();
-			eventAB(p, eA, eB);
+			if (eA < 20 || eB < 20)
+			{
+				cout << TString::Format("    * not calling pythia: eA=%1.3f eB=%1.3f", eA, eB) << endl;
+				continue;
+			}
+			else
+			{
+				if (eventAB(p, eA, eB) == false)
+				{
+					cout << "[w] eventAB failed - moving to next collision" << endl;
+					continue;
+				}
+			}
 			if (head[1] > 10 && ic % 10 == 0 && ic > 0)
 			{
 				ts.Stop();
@@ -118,7 +130,7 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 				     << endl;
 				ts.Start();
 			}
-			out.ProcessEvent(*p);
+			out.ProcessEvent(*p, head[0], head[1]); // including npart and ncoll from the event
 			nA[iA].SetNcoll(nA[iA].NColl() + 1);
 			nB[iB].SetNcoll(nB[iB].NColl() + 1);
 			nA[iA].SetE(eA);
