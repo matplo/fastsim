@@ -50,7 +50,7 @@ class Jobs(object):
 		print '[i] written:',subms
 
 def main():
-	js = Jobs(1500, 1600)
+	js = Jobs(10, 20)
 	js.make_scripts()
 	js.input_file = '{}/tests/glaubermc/glau_pbpb_ntuple.root'.format(os.getenv('GLAUBERDIR'))
 
