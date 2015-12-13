@@ -47,6 +47,11 @@ std::vector<Nucleon> make_nucleons(Double_t eCM, Int_t n = 208)
 	return v;
 }
 
+Double_t round_energy(double e, double prec = 1.)
+{
+	return TMath::Ceil( e / prec) * prec;
+}
+
 // fname is the glauber root tree file
 void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncollmin, Int_t ncollmax)
 {
@@ -121,6 +126,8 @@ void gen_from_coll(const char* fname, Int_t nEvStart, Int_t nEvents, Int_t ncoll
 					continue;
 				}
 			}
+			eA = round_energy(eA);
+			eB = round_energy(eB);
 			if (head[1] > 10 && ic % 10 == 0 && ic > 0)
 			{
 				ts.Stop();
