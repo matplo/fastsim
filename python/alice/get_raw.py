@@ -3,6 +3,7 @@
 import pyutils as ut
 import string
 import os
+import sys
 
 def getfileN(fname):
 	print fname
@@ -70,18 +71,26 @@ def list_files(rnumber):
 	lfiles = []
 	for l in lout:
 		lfiles.append(RFile(l))
-	sout = sorted(lfiles, key=RFile.key)
-	print '[i] number of files:',len(sout)
+        if '--no-sort' in sys.argv:
+                sout = lfiles
+                print '[i] number of files:',len(sout),'unsorted'
+        else:
+                sout = sorted(lfiles, key=RFile.key)
+                print '[i] number of files:',len(sout),'sorted'
 	return sout
 
-def get_files(flist, nmax):
+def get_files(flist, nmax=-1):
 	idone = 0
+	if nmax < 0:
+		nmax = len(flist)
+	print '[i] files in array:',len(flist),'try to grab:',nmax
 	for f in flist:
 		if f.run_number() < 0:
 			continue
 		outdir = os.path.join('./', str(f.run_number()))
 		if not os.path.isdir(outdir):
 			os.makedirs(outdir)
+		print '[i] file:',idone,'of',nmax
 		cmd = 'alien_cp alien://{} {}'.format(f.path, outdir)
 		out,err = ut.call_cmnd(cmd, verbose=True)
 		print out
@@ -100,11 +109,14 @@ def main():
 		rnumber = rnumber.zfill(rslen)
 	nfiles = ut.get_arg_with('-n')
 	if nfiles == None:
-		nfiles = 1
+		nfiles = 0
 	else:
 		nfiles = string.atoi(nfiles)
+	if '--all' in sys.argv:
+		nfiles = -1 #all
 	flist = list_files(rnumber)
-	get_files(flist, nfiles)
+	if nfiles > 0 or nfiles == -1:		
+		get_files(flist, nfiles)
 
 if __name__ == '__main__':
 	main()
