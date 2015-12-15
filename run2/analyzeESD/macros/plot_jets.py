@@ -151,8 +151,8 @@ def draw(opt=None):
 		'EMCAL_jets04.fE.root',
 		'EMCAL_jets02.fE.root',
 		'EMCAL_jets00.fE.root',
-		'DCAL_jets04.fE.root',
-		'DCAL_jets02.fE.root',
+		#'DCAL_jets04.fE.root',
+		#'DCAL_jets02.fE.root',
 		'DCAL_jets00.fE.root' ]
 
 	ls = dlist.ListStorage('jets_draw')
@@ -184,6 +184,8 @@ def draw(opt=None):
 	if '--print' in sys.argv:
 		ls.pdf()
 		lsr.pdf()
+		ls.png()
+		lsr.png()
 	ls.write_all(mod='modn:')
 	lsr.write_all(mod='modn:')
 
@@ -196,7 +198,7 @@ if __name__ == '__main__':
 		ROOT.gSystem.Load(lib)
 	dname = ut.get_arg_with('--in')
 	if dname==None:
-		dname = './245146'
+		dname = './output000245146'
 	if '--make' in sys.argv:
 		if '--sub' in sys.argv:
 			main_area_sub(dname)

@@ -151,6 +151,94 @@ def percentiles_from_median_det(fname = 'medians1d.root', idet = 0):
 
 ### TOTAL E ############################################
 
+def cent_totalE(dname):
+	ch = tu.tchain_from_dir('t', dname, 'Tree_*.root')
+	hlp = dlist.dlist('cent_totalE_'+os.path.basename(dname))
+	for t in ['kCINT7']:
+		for svarx in ['trig.totalE', 'trig.cent']:
+			xlow = 0
+			xhigh = 2000
+			nbins = 10000 #2000
+			if 'cent' in svarx:
+				xlow = 0
+				xhigh = 101
+				nbins = 101
+			hname_tmp = 'htmp({0},{1},{2})'.format(nbins, xlow, xhigh)
+			svar = '{}>>{}'.format('{}', hname_tmp).format(svarx)
+			bit = tbit(t)
+			condition = '(trig.type & {})'.format(bit)
+			tu.getTempCanvas()
+			print '[i] percentiles_from_totalE: draw:',svar, condition
+			ch.Draw(svar, condition, 'colz')
+			hret = ROOT.gDirectory.Get('htmp')
+			hret.SetDirectory(0)
+			if hret.GetEntries() > 1e5:
+				hlp.add(hret, '{} [{:1.2f} M]'.format(t, hret.GetEntries() / 1.e6), 'hist')
+			else:
+				hlp.add(hret, '{} [{:1.2f} k]'.format(t, hret.GetEntries() / 1.e3), 'hist')
+
+	for t in ['kCINT7']:
+		xlow = 0
+		xhigh = 2000
+		nbins = 10000
+		hname_tmp = 'htmp({0},{1},{2},{3},{4},{5})'.format(nbins, xlow, xhigh, 101, 0, 101)
+		svar = '{}>>{}'.format('trig.cent:trig.totalE', hname_tmp)
+		bit = tbit(t)
+		condition = '(trig.type & {})'.format(bit)
+		tu.getTempCanvas()
+		print '[i] percentiles_from_totalE: draw:',svar, condition
+		ch.Draw(svar, condition, 'colz')
+		hret = ROOT.gDirectory.Get('htmp')
+		hret.SetDirectory(0)
+		if hret.GetEntries() > 1e5:
+			hlp.add(hret, '{} [{:1.2f} M]'.format(t, hret.GetEntries() / 1.e6), 'hist')
+		else:
+			hlp.add(hret, '{} [{:1.2f} k]'.format(t, hret.GetEntries() / 1.e3), 'hist')
+
+	hlp.reset_axis_titles('total E+DCal energy (GeV)', 'V0M centrality')
+	hlp.make_canvas(w=600,h=600)
+	hlp.draw(logy=True)
+	hlp.self_legend()
+	hlp.zoom_axis(0, 0, 1200)
+	ROOT.gPad.SetLogy()
+	hlp.update()
+	hlp.pdf()
+	hlp.write_to_file(name_mod='modn:')
+	tu.gList.append(hlp)
+
+def draw_cent_totalE(fname):
+	for i in range(3):
+		hl = dlist.dlist('cent_totalE_{}'.format(i))
+		dopt = 'hist'
+		if i == 2:
+			dopt = 'colz'
+		hl.add_from_file('o_{}'.format(i), fname, '', dopt)
+		hl.reset_axis_titles('total E+DCal energy (GeV)', 'N events')
+		if i == 1:
+			hl.reset_axis_titles('V0M centrality (%)', 'N events')
+		if i == 2:
+			hl.reset_axis_titles('Total E+DCal energy (GeV)', 'V0M centrality (%)')
+		if i==1:
+			hl.zoom_axis(0, 0, 1200)
+		if i==0:
+			miny = 1
+			maxy = 1e6
+		h=600
+		if i<2:
+			h=300
+		hl.make_canvas(w=600,h=h)
+		hl.draw(miny=miny, maxy=maxy, logy=True)
+		#hl.self_legend()
+		if i!=2:
+			ROOT.gPad.SetLogy()
+		else:
+			ROOT.gPad.SetLogz()
+		hl.update()
+		hl.pdf()
+		hl.png()
+		tu.gList.append(hl)
+
+
 def percentiles_from_totalE(dname):
 	# dump the totalE into a single histogram for MinBias -> gets the percentiles
 	ch = tu.tchain_from_dir('t', dname, 'Tree_*.root')
@@ -292,5 +380,15 @@ if __name__ == '__main__':
 				show_percentiles_from_totalE(dname)				
 			else:
 				percentiles_from_totalE_cent(dname)
+	if '--cent' in sys.argv:
+		if '--make' in sys.argv:
+			if dname == None:
+				dname = './output000245146'
+			cent_totalE(dname)
+		else:
+			if dname == None:
+				dname = 'cent_totalE_output000245146.root'
+			draw_cent_totalE(dname)
+
 	if not ut.is_arg_set('-b'):
 		IPython.embed()	
