@@ -33,15 +33,20 @@ def main(dname):
 	for fn in flist:
 		ch.AddFile(fn)
 
-	for ij,var in enumerate(['medjECAL8x8:medjDCAL8x8']):
-		for ttype in ['kCINT7', 'kEJ1', 'kEG1', 'kDJ1', 'kDG1']:
+	for ij,var in enumerate(['medjDCAL8x8:medjECAL8x8']): #, 'cent:medjECAL8x8']):
+	#for ij,var in enumerate(['medjDCAL8x8:medjECAL8x8', 'cent:medjECAL8x8']):
+		#for ttype in ['kCINT7']: #, 'kEJ1', 'kEG1', 'kDJ1', 'kDG1']:
+		for ttype in ['kCINT7', 'kEG1']: #, 'kEJ1', 'kEG1', 'kDJ1', 'kDG1']:
 			print ttype
 
 			bit = tbit(ttype)
-			nbins = 600
+			nbins = 400
 			xlow  = 0
-			xhigh = 30
-			hname_tmp = 'htmp({0},{1},{2},{0},{1},{2})'.format(nbins, xlow, xhigh)
+			xhigh = 20
+			if 'cent' in var:
+				hname_tmp = 'htmp({0},{1},{2},{3},{4},{5})'.format(nbins, xlow, xhigh, 101, 0, 101)
+			else:
+				hname_tmp = 'htmp({0},{1},{2},{0},{1},{2})'.format(nbins, xlow, xhigh)
 			svar = '{}>>{}'.format(var, hname_tmp)
 			condition = '(trig.type & {})'.format(bit)
 			tc = du.canvas(ut.to_file_name(svar+condition), ut.to_file_name(svar+condition), 600, 600)
@@ -54,15 +59,18 @@ def main(dname):
 			if hret==None:
 				continue
 			hret.SetDirectory(0)
-			hret.GetXaxis().SetTitle('medjDCAL8x8')
-			hret.GetYaxis().SetTitle('medjECAL8x8')
+			hret.GetXaxis().SetTitle('medjECAL8x8 (GeV)')
+			if 'cent' in var:
+				hret.GetYaxis().SetTitle('V0M centrality (%)')				
+			else:
+				hret.GetYaxis().SetTitle('medjDCAL8x8 (GeV)')
 			hl.add(hret, 'median', 'colz')
 			tc.pdf()
 
 			for vs in var.split(':'):
 				xlow = 0
-				xhigh = 30
-				nbins = 3000
+				xhigh = 20
+				nbins = 2000
 				hname_tmp = 'htmp({0},{1},{2})'.format(nbins, xlow, xhigh)
 				svar = '{}>>{}'.format(vs, hname_tmp)
 				condition = '(trig.type & {})'.format(bit)
@@ -82,6 +90,7 @@ def main(dname):
 	ROOT.gPad.SetGridy()
 	hlp.update()
 	hlp.pdf()
+	hlp.png()
 	#tu.gList.append(hlp)
 	#tu.gList.append(hl)
 
