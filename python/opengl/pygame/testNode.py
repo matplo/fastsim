@@ -37,7 +37,11 @@ def demoNodes():
     na5 = Node('na5', parent = ax2)
     na5.set_translation(0.0, 0.1, -0.5)
 
-    #rcs = RandomCubes('rcs', parent = n0)
+    if '--rcs' in sys.argv:
+        rcs = RandomCubes('rcs', parent = n0)
+
+    if '--wall' in sys.argv:
+        wall = Wall('wall', parent = n0)
 
     return n0
 

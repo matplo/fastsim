@@ -295,12 +295,12 @@ class Wall(Node):
             self.request_update(n)
         dbg.debug_obj(self)
         
-    def add_option(self, opt):
-        for n in self.children:
-            #print 'adding option to n',n,opt
-            n.add_option(opt)
-            #dbg.debug_obj(n)
-        super(Wall,self).add_option(opt)
+#    def add_option(self, opt):
+#        for n in self.children:
+#            #print 'adding option to n',n,opt
+#            n.add_option(opt)
+#            #dbg.debug_obj(n)
+#        super(Wall,self).add_option(opt)
 
 class RandomCubes(Node):
     def __init__(self, name='RandomCubes', parent = None):
