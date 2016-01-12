@@ -122,10 +122,11 @@ class Node(NodeBase):
         GL.glLineWidth(1.0);
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
-        GLUT.glutWireCube(0.1)
         if 'wire' in self.option.lower():
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_LINE )
             GLUT.glutWireCube(0.1)
         else:            
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_FILL )
             GLUT.glutSolidCube(0.1)        
 
 class RootNode(Node):
@@ -144,13 +145,15 @@ class Cube(Node):
         GL.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
         #GLUT.glutSolidOctahedron()
         if 'wire' in self.option.lower():
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_LINE )
             GLUT.glutWireCube(1.0)
         else:            
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_FILL )
             GLUT.glutSolidCube(1.0)        
     
-class LSCNode(Node):
-    def __init__(self, name = 'LSCNode', parent = None):
-        super(LSCNode, self).__init__(name, parent)
+class Arrow(Node):
+    def __init__(self, name = 'Arrow', parent = None):
+        super(Arrow, self).__init__(name, parent)
     
     def glCode(self):
         #dbg.debug('glCode')
@@ -181,23 +184,23 @@ class Axes(Node):
         rotations = [ (0, 90, 0), (270, 0, 0), (0, 0, 0) ]
         colors    = [ NodeColor.red, NodeColor.green, NodeColor.blue ]
         for i in range(3):
-            na = LSCNode(names[i], self)
+            na = Arrow(names[i], self)
             na.set_color(colors[i])
             na.set_scale(scale)
             na.set_atranslation(translations[i])
             na.set_arotation(rotations[i])
 
-        #nx = LSCNode('nx', self)
+        #nx = Arrow('nx', self)
         #nx.set_color(NodeColor.red)
         #nx.set_scale(0.1)
         #nx.set_translation(0.2,0,0)
         #nx.set_rotation(0, 90, 0)
-        #ny = LSCNode('ny', self)
+        #ny = Arrow('ny', self)
         #ny.set_color(NodeColor.green)
         #ny.set_scale(0.1)
         #ny.set_translation(0,0.2,0)        
         #ny.set_rotation(270, 0, 0)
-        #nz = LSCNode('nz', self)
+        #nz = Arrow('nz', self)
         #nz.set_color(NodeColor.blue)
         #nz.set_scale(0.1)
         #nz.set_translation(0,0,0.2)
@@ -205,6 +208,7 @@ class Axes(Node):
 class Surface(Node):
     def __init__(self, name = 'Surface', parent = None, w=1, h=1, igran=5):
         super(Surface, self).__init__(name, parent)
+        self.add_option('wire')
         self.vertices      = []
         self.quad_vertices = []
         if w<=h:
@@ -220,7 +224,7 @@ class Surface(Node):
             x = -w/2. + icol * self.csize
             y = -h/2. + irow * self.csize
             z = 0
-            self.vertices.append([x,y,z])
+            #self.vertices.append([x,y,z])
             wd = self.csize / 3.
             self.quad_vertices.append([x-wd, y-wd, z])
             self.quad_vertices.append([x-wd, y+wd, z])
@@ -244,6 +248,10 @@ class Surface(Node):
         GL.glPointSize(1.0);
         GL.glColor3f(self.color[0], self.color[1], self.color[2])
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+        if 'wire' in self.option:
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_LINE )
+        else:
+            GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_FILL )
         GL.glBegin(GL.GL_POINTS)
         for v in self.vertices:
             GL.glVertex3f(v[0], v[1], v[2])
@@ -251,7 +259,7 @@ class Surface(Node):
 
         GL.glBegin(GL.GL_QUADS)
         for v in self.quad_vertices:            
-            GL.glColor3f(self.color[0], self.color[1], self.color[2])        
+            #GL.glColor3f(self.color[0], self.color[1], self.color[2])    
             GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
             GL.glVertex3f(v[0], v[1], v[2])
         GL.glEnd();

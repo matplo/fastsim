@@ -10,6 +10,7 @@ from OpenGL.GLU import *
 
 import random
 import sys
+import math
 
 def demoNodes():
     n0 = Node('n0', parent = None)
@@ -37,40 +38,61 @@ def demoNodes():
     na5 = Node('na5', parent = ax2)
     na5.set_translation(0.0, 0.1, -0.5)
 
-    if '--rcs' in sys.argv:
-        rcs = RandomCubes('rcs', parent = n0)
-
-    if '--wall' in sys.argv:
-        wall = Wall('wall', parent = n0)
-
     return n0
+
+def sinus(x):
+    return x[0], x[1], x[2]*x[2]
 
 def main():
     pygame.init()
-    display = (800,600)
-    pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+    psize         = 700
+    display       = (psize, psize)
+    screen        = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
-
-    max_distance = 100
+    max_distance = 1000
     
     gluPerspective(45, (display[0]/display[1]), 0.1, max_distance)
 
-    glTranslatef(random.randrange(-5,5),random.randrange(-5,5), -40)
+    #glTranslatef(random.randrange(-5,5),random.randrange(-5,5), -40)
+    glTranslatef(0, 0, -100)
 
     n = demoNodes()
     n.set_scale(10.)
+    fill = True
+
+    if '--rcs' in sys.argv:
+        rcs = RandomCubes('rcs', parent = n)
+
+    if '--wall' in sys.argv:
+        wall = Wall('wall', parent = n)
+
     if '--wire' in sys.argv:
         n.add_option('wire', subnodes = True)
-    #object_passed = False
 
+    if '--surf' in sys.argv:
+        surface = Surface('surf', parent = n, w = 10, h = 10, igran = 100)
+        if '--sin' in sys.argv:
+            surface.t_function(sinus)
     n.dump()
 
     x_move = 0
     y_move = 0
+    z_move = 0
 
-    #glRotatef(25, 2, 1, 0)
+    x_rot = 0
+    y_rot = 0
+    z_rot = 0
+
+    x_rot_total = -60
+    y_rot_total = 0
+    z_rot_total = -60
 
     exit_flag = False
+
+    glRotatef(x_rot_total, 1, 0, 0)
+    glRotatef(z_rot_total, 0, 0, 1)
+
+    iter = 0
 
     while exit_flag == False:
         for event in pygame.event.get():
@@ -78,7 +100,13 @@ def main():
                 pygame.quit()
                 quit()
 
+            if pygame.key.get_mods() & 1024 or pygame.key.get_mods() & 2048:
+                sign = +1
+            else:
+                sign = -1
+
             if event.type == pygame.KEYDOWN:
+
                 if event.key == pygame.K_LEFT:
                     x_move = 0.3
                 if event.key == pygame.K_RIGHT:
@@ -88,6 +116,20 @@ def main():
                     y_move = -0.3
                 if event.key == pygame.K_DOWN:
                     y_move = 0.3
+
+                if event.key == pygame.K_UP:
+                    if sign > 0:
+                        z_move = 0.3
+                if event.key == pygame.K_DOWN:
+                    if sign > 0:
+                        z_move = -0.3
+
+                if event.key == pygame.K_x:
+                    x_rot =  sign * 1.0
+                if event.key == pygame.K_y:
+                    y_rot = sign * 1.0
+                if event.key == pygame.K_z:
+                    z_rot = sign * 1.0
 
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
@@ -99,6 +141,16 @@ def main():
 
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     y_move = 0
+                    z_move = 0
+
+                if event.key == pygame.K_x:
+                    x_rot = 0
+
+                if event.key == pygame.K_y:
+                    y_rot = 0
+
+                if event.key == pygame.K_z:
+                    z_rot = 0
 
 ##            if event.type == pygame.MOUSEBUTTONDOWN:
 ##                if event.button == 4:
@@ -116,13 +168,24 @@ def main():
     
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
-        #glTranslatef(x_move, y_move, 0) #,.50)
-        glRotatef(x_move, 1, 0, 0)
-        glRotatef(y_move, 0, 1, 0)
+        x_rot_total += x_rot
+        y_rot_total += y_rot
+        z_rot_total += z_rot
 
+        glTranslatef(x_move, y_move, z_move) #,.50)
+        glRotatef(x_rot, 1, 0, 0)
+        glRotatef(y_rot, 0, 1, 0)
+        glRotatef(z_rot, 0, 0, 1)
+
+        #print 'rotations:',x_rot_total,y_rot_total,z_rot_total
         #ground()
 
         n.gl()
+
+        if '--rec' in sys.argv:
+            fname = 'frame_{}'.format(iter) + '.jpg'
+            pygame.image.save(screen, fname)
+        iter = iter + 1
 
         pygame.display.flip()
         pygame.time.wait(10)
