@@ -49,7 +49,7 @@ def main():
     display       = (psize, psize)
     screen        = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
-    max_distance = 1000
+    max_distance  = 1000
     
     gluPerspective(45, (display[0]/display[1]), 0.1, max_distance)
 
