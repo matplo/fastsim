@@ -30,7 +30,7 @@ void HFGun::InitOutput()
 	fOutput->Add(h);
 	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid:w");
 	fOutput->Add(tne);
-	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:hpt:hy:id:nd:w");
+	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:qid:hpt:hy:id:nd:w");
 	fOutput->Add(tnh);
 }
 
@@ -72,7 +72,7 @@ void HFGun::FillOutput()
 				vector<int> electrons = GetDaughters(decayH[ih], 11, 11, !fDebug);
 				Particle &hadron = event[decayH[ih]];
 				int hDaughters = GetDaughters(decayH[ih], hadronIDmin, hadronIDmax, !fDebug).size();
-				tnh->Fill(parton.pT(), hadron.pT(), hadron.y(), hadron.id(), hDaughters, fWeight);
+				tnh->Fill(parton.pT(), parton.id(), hadron.pT(), hadron.y(), hadron.id(), hDaughters, fWeight);
 				for (unsigned int ip = 0; ip < electrons.size(); ip++)
 				{
 					if (fDebug) PrintParticle(electrons[ip]);

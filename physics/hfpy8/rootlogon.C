@@ -21,7 +21,8 @@
   char *clibs[] =
     {
       //"$PYTHIA8LOCATION/lib/liblhapdfdummy",  not anymore there in new pythia8 ?
-      "$PYTHIA8LOCATION/lib/libpythia8",      
+      //"$PYTHIA8LOCATION/lib/libpythia8",      
+      "$PYTHIA8DIR/lib/libpythia8",      
       "./libhfpy8",
       0
     };
