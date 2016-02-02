@@ -71,6 +71,7 @@ function write_script
             replace_line "PromptPhoton:all"     "PromptPhoton:all = off"    "$cmndfile"
         fi
     fi
+    cp $spwd/emctrig.cmnd $spwd/toymcpy8.cmnd
     spwd="${spwd//\//\\/}"
     sed -i -e "s/rundir=XXX/rundir=${spwd}/" $jobfile
     sed -i -e "s/mult=XXX/mult=${4}/" $jobfile

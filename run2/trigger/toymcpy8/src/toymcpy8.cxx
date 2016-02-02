@@ -151,6 +151,7 @@ int toymcpy8 ( int argc, char *argv[] )
   TNtuple *tnj_hard = new TNtuple("jets_hard", "jets_hard", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
   TNtuple *tnj_full = new TNtuple("jets_full", "jets_full", "nEv:xsec:pT:eta:phi:lead:pTmatched:pTraw:area:rho:sigma");
   TNtuple *tnp = new TNtuple("p", "p", "nEv:xsec:pT:eta:phi");
+  TNtuple *tnf = new TNtuple("f", "f", "nEv:xsec:pT:eta:phi:id");
 
   double lead_pT    = 0;
   double matched_pT = 0;
@@ -167,6 +168,7 @@ int toymcpy8 ( int argc, char *argv[] )
     tnj_hard->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
     tnj_full->Fill(iEvent, xsec, -1, -9.9, -99, -1, -1, -1, -1, -1, -1);
     tnp->Fill(iEvent, xsec, -1, -9.9, -99);
+    tnf->Fill(iEvent, xsec, -1, -9.9, -99, 0);
 
     // Begin FastJet analysis: extract particles from event record.
 
@@ -178,6 +180,12 @@ int toymcpy8 ( int argc, char *argv[] )
     double eta = 0;
     double phi = 0;
     double pt  = 0;
+
+    // fill the parton spectrum
+    for (Int_t i = 5; i < 7; i++)
+    {
+      tnf->Fill(     -1, xsec, event[i].pT(), event[i].eta(), event[i].phi(), event[i].id());
+    }
 
     for (int i = 0; i < event.size(); ++i)
     {
