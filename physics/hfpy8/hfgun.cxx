@@ -6,6 +6,7 @@ using namespace Pythia8;
 #include <TObjArray.h>
 #include <TH1F.h>
 #include <TNtuple.h>
+#include <TFile.h>
 
 enum {kin, kqpt, ktne, ktnh};
 
@@ -28,9 +29,13 @@ void HFGun::InitOutput()
 	fOutput->Add(fSpectrum->Clone("input"));
 	TH1F *h = new TH1F("qpt", "qpt", 100, 0, 100);
 	fOutput->Add(h);
+	fOutputFile->cd();
 	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid:w");
+	tne->SetDirectory(fOutputFile);
 	fOutput->Add(tne);
+	fOutputFile->cd();
 	TNtuple *tnh = new TNtuple("tnh", "tnh", "qpt:qid:hpt:hy:id:nd:w");
+	tnh->SetDirectory(fOutputFile);
 	fOutput->Add(tnh);
 }
 

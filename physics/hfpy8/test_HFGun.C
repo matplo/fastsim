@@ -7,13 +7,14 @@ void test_HFGun_pid(int partonID = 5)
 	tc->cd();
 	//Note: QUARKS d 1 u 2 s 3 c 4 b 5 t 6 b' 7 t' 8
 	//      GLUE is 21 and is is default
-	TH1D *h = new TH1D("h","h",1,20,21);
+	//TH1D *h = new TH1D("h","h",1,20,21);
+	TH1D *h = new TH1D("h","h",1,0,100);
 	h->Fill(20.5);
 	HFGun p;
 	p.SetOutputFileName(sfname.Data());
 	p.SetSpectrum(h, partonID); // set the input spectrum and the fPartonID
 	//p.SetPartonID(2) - alternative...
-	Int_t nevents = 10000;
+	Int_t nevents = 1000000;
 	p.Generate(nevents);
 
 	TFile *fin = new TFile(sfname.Data());

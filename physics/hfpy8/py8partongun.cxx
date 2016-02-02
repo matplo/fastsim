@@ -142,14 +142,14 @@ int PGun::Generate(int nEvent)
 		    // Generate events. Quit if failure.
 			if (!pythia.next()) 
 			{
-				cout << " Event generation aborted prematurely, owing to error!\n";
+				cout << "[i] Event generation aborted prematurely, owing to error in ::next !\n";
 				break;
 			}
 
 		    //  first few events.
 			if (iEvent < fPrintN) 
 			{
-				cout << "printing because " << iEvent << "< " << fPrintN << endl;
+				cout << "[i] printing because " << iEvent << "< " << fPrintN << endl;
 				event.list();
 			// Also  junctions.
 				event.listJunctions();
