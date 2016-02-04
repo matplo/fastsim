@@ -224,6 +224,7 @@ class Surface(Node):
             x = -w/2. + icol * self.csize
             y = -h/2. + irow * self.csize
             z = 0
+            # dots in the middle of the quads
             #self.vertices.append([x,y,z])
             wd = self.csize / 3.
             self.quad_vertices.append([x-wd, y-wd, z])

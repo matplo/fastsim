@@ -41,11 +41,11 @@ def demoNodes():
     return n0
 
 def sinus(x):
-    return x[0], x[1], x[2]*x[2]
+    return x[0], x[1], x[2] + math.sin((x[0] * x[1])) / 4.
 
 def main():
     pygame.init()
-    psize         = 1000
+    psize         = 700
     display       = (psize, psize)
     screen        = pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
@@ -61,7 +61,7 @@ def main():
     glViewport(0, 0, psize, psize); #glViewport(0, 0, width_of_window_rendering_area, height_of_window_rendering area);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    #gluPerspective(45.0,  (GLfloat)400/400, 0.1, 100); #Sets the frustum to perspective mode, sets up the way in which objects
+    #gluPerspective(45.0,  400/400, 0.1, 100); #Sets the frustum to perspective mode, sets up the way in which objects
     gluPerspective(45, (display[0]/display[1]), 0.1, max_distance)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -69,7 +69,7 @@ def main():
     #gluPerspective(45, (display[0]/display[1]), 0.1, max_distance)
 
     #glTranslatef(random.randrange(-5,5),random.randrange(-5,5), -40)
-    glTranslatef(0, 0, -50)
+    #glTranslatef(0, 0, -50)
 
     n = demoNodes()
     n.set_scale(10.)
@@ -79,16 +79,18 @@ def main():
         rcs = RandomCubes('rcs', parent = n)
 
     if '--wall' in sys.argv:
-        wall = Wall('wall', parent = n)
+        wall = Wall('wall', parent = n, w = 1, h = 1, igran = 10)
 
     if '--wire' in sys.argv:
         n.add_option('wire', subnodes = True)
 
     if '--surf' in sys.argv:
         surface = Surface('surf', parent = n, w = 10, h = 10, igran = 100)
+        surface.set_color([0.5,0.5,0.5])
         if '--sin' in sys.argv:
             surface.t_function(sinus)
-    n.dump()
+            n.request_update(surface)
+    #n.dump()
 
     x_move = 0
     y_move = 0
@@ -108,8 +110,8 @@ def main():
 
     exit_flag = False
 
-    glRotatef(x_rot_total, 1, 0, 0)
-    glRotatef(z_rot_total, 0, 0, 1)
+    #glRotatef(x_rot_total, 1, 0, 0)
+    #glRotatef(z_rot_total, 0, 0, 1)
 
     iter = 0
 
@@ -131,17 +133,16 @@ def main():
                 if event.key == pygame.K_RIGHT:
                     x_move = -0.3
 
-                if event.key == pygame.K_UP:
-                    y_move = -0.3
-                if event.key == pygame.K_DOWN:
-                    y_move = 0.3
-
-                if event.key == pygame.K_UP:
-                    if sign > 0:
-                        z_move = 0.3
-                if event.key == pygame.K_DOWN:
-                    if sign > 0:
+                if sign < 0:
+                    if event.key == pygame.K_UP:
+                        y_move = +0.3
+                    if event.key == pygame.K_DOWN:
+                        y_move = -0.3
+                else:
+                    if event.key == pygame.K_UP:
                         z_move = -0.3
+                    if event.key == pygame.K_DOWN:
+                        z_move = +0.3
 
                 if event.key == pygame.K_x:
                     x_rot =  sign * 1.0
@@ -153,6 +154,14 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     quit()
+
+                if event.key == pygame.K_r:
+                    x_move_total = 0
+                    y_move_total = 0
+                    z_move_total = 0
+                    #x_rot_total  = 0
+                    #y_rot_total  = 0
+                    #z_rot_total  = 0
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -187,10 +196,10 @@ def main():
     
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); #if perspective
         glLoadIdentity();
-        gluLookAt(0.0, 0.0, 100.0,  #position
-                    0.0, 0.0, 0.0,  #where we are looking
-                    0.0, 1.0, 0.0); #up vector
-
+        #gluLookAt(0.0, 0.0, 100.0,  #position
+        #            0.0, 0.0, 0.0,  #where we are looking
+        #            0.0, 1.0, 0.0); #up vector
+        gluLookAt( 0, 0, 100, 0, 0, 0, 0, 1, 0 )
         x_rot_total += x_rot
         y_rot_total += y_rot
         z_rot_total += z_rot
@@ -211,7 +220,9 @@ def main():
 
         #print 'rotations:',x_rot_total,y_rot_total,z_rot_total
         #ground()
-
+        #n.set_translation(x_move_total, y_move_total, z_move_total)
+        #n.set_rotation(x_rot_total, y_rot_total, z_rot_total)
+        #n.update = True
         n.gl()
 
         if '--rec' in sys.argv:
