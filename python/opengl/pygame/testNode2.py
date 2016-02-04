@@ -43,6 +43,13 @@ def demoNodes():
 def sinus(x):
     return x[0], x[1], x[2] + math.sin((x[0] * x[1])) / 4.
 
+def sinuscosinus(x):
+    return x[0], x[1], x[2] + (math.sin(x[0]*x[1]) * math.sin(x[0]*x[1]) - math.cos(x[0]*x[1]) * math.cos(x[0]*x[1]) ) / 4.
+
+def spherical(x):
+    r = 2.
+    return r*math.cos(x[0])*math.sin(x[1]), r*math.sin(x[0])*math.sin(x[1]), r*math.cos(x[1])
+
 def main():
     pygame.init()
     psize         = 700
@@ -51,8 +58,9 @@ def main():
 
     max_distance  = 1000
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST)
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
     glEnable(GL_POINT_SMOOTH);
     glPointSize(1.0);
@@ -84,11 +92,18 @@ def main():
     if '--wire' in sys.argv:
         n.add_option('wire', subnodes = True)
 
+    surface = None
     if '--surf' in sys.argv:
         surface = Surface('surf', parent = n, w = 10, h = 10, igran = 100)
         surface.set_color([0.5,0.5,0.5])
         if '--sin' in sys.argv:
             surface.t_function(sinus)
+            n.request_update(surface)
+        if '--sincos' in sys.argv:
+            surface.t_function(sinuscosinus)
+            n.request_update(surface)
+        if '--sph' in sys.argv:
+            surface.t_function(spherical)
             n.request_update(surface)
     #n.dump()
 
@@ -129,9 +144,9 @@ def main():
             if event.type == pygame.KEYDOWN:
 
                 if event.key == pygame.K_LEFT:
-                    x_move = 0.3
-                if event.key == pygame.K_RIGHT:
                     x_move = -0.3
+                if event.key == pygame.K_RIGHT:
+                    x_move = +0.3
 
                 if sign < 0:
                     if event.key == pygame.K_UP:
@@ -179,6 +194,15 @@ def main():
 
                 if event.key == pygame.K_z:
                     z_rot = 0
+
+                if event.key == pygame.K_p:
+                    if surface != None:
+                        surface.switch_pq()
+
+                if event.key == pygame.K_w:
+                    n.add_option('wire', subnodes = True)
+                if event.key == pygame.K_e:
+                    n.remove_option('wire', subnodes = True)
 
 ##            if event.type == pygame.MOUSEBUTTONDOWN:
 ##                if event.button == 4:
@@ -231,7 +255,7 @@ def main():
         iter = iter + 1
 
         pygame.display.flip()
-        pygame.time.wait(10)
+        #pygame.time.wait(10)
 
 main()
 pygame.quit()

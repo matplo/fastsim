@@ -63,10 +63,18 @@ class NodeBase(object):
 
     def add_option(self, opt, subnodes = False):
         self.option = self.option + ' ' + opt
-        print 'add_option:',self.name,self.option
+        #print 'add_option:',self.name,self.option
         if subnodes == True:
             for n in self.children:
                 n.add_option(opt, subnodes)
+        self.update = True
+        
+    def remove_option(self, opt, subnodes = False):
+        self.option = self.option.replace(opt, ' ')
+        if subnodes == True:
+            for n in self.children:
+                n.remove_option(opt, subnodes)
+        self.update = True
 
     def dump(self, sublevel=0):
         for i in range(sublevel):
@@ -209,6 +217,8 @@ class Surface(Node):
     def __init__(self, name = 'Surface', parent = None, w=1, h=1, igran=5):
         super(Surface, self).__init__(name, parent)
         self.add_option('wire')
+        self.points = False
+        self.quads  = True
         self.vertices      = []
         self.quad_vertices = []
         if w<=h:
@@ -225,12 +235,33 @@ class Surface(Node):
             y = -h/2. + irow * self.csize
             z = 0
             # dots in the middle of the quads
-            #self.vertices.append([x,y,z])
+            self.vertices.append([x,y,z])
             wd = self.csize / 3.
             self.quad_vertices.append([x-wd, y-wd, z])
             self.quad_vertices.append([x-wd, y+wd, z])
             self.quad_vertices.append([x+wd, y+wd, z])
             self.quad_vertices.append([x+wd, y-wd, z])                                    
+
+    def switch_to_points(self):
+        self.points = True
+        self.quads = False
+        self.update = True
+
+    def switch_to_quads(self):
+        self.points = False
+        self.quads = True
+        self.update = True
+
+    def switch_pq(self):
+        if self.points == False:
+            self.points = True
+        else:
+            self.points = False
+        if self.quads == False:
+            self.quads = True
+        else:
+            self.quads = False
+        self.update = True
             
     def t_function(self, f):
         for i,v in enumerate(self.vertices):
@@ -253,17 +284,19 @@ class Surface(Node):
             GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_LINE )
         else:
             GL.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_FILL )
-        GL.glBegin(GL.GL_POINTS)
-        for v in self.vertices:
-            GL.glVertex3f(v[0], v[1], v[2])
-        GL.glEnd();
+        if self.points == True:
+            GL.glBegin(GL.GL_POINTS)
+            for v in self.vertices:
+                GL.glVertex3f(v[0], v[1], v[2])
+            GL.glEnd();
 
-        GL.glBegin(GL.GL_QUADS)
-        for v in self.quad_vertices:            
-            #GL.glColor3f(self.color[0], self.color[1], self.color[2])    
-            GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
-            GL.glVertex3f(v[0], v[1], v[2])
-        GL.glEnd();
+        if self.quads == True:
+            GL.glBegin(GL.GL_QUADS)
+            for v in self.quad_vertices:            
+                #GL.glColor3f(self.color[0], self.color[1], self.color[2])    
+                GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT_AND_DIFFUSE, self.color)
+                GL.glVertex3f(v[0], v[1], v[2])
+            GL.glEnd();
                 
 class Wall(Node):
     def __init__(self, name='Wall', parent=None, w=1, h=1, igran=5):
@@ -315,7 +348,7 @@ class RandomCubes(Node):
     def __init__(self, name='RandomCubes', parent = None):
         super(RandomCubes, self).__init__(name, parent)
         for n in range(0, 500):
-            for rn in range(1, 3):
+            for rn in range(1, 10, 3):
                 cuber = Cube('cuber{}'.format(n), self)
                 cuber.set_scale(0.01 + random.random() / 10.)
                 #r     = 1.-random.random()
