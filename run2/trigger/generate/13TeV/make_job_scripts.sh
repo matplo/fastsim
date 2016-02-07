@@ -51,7 +51,7 @@ function write_script
     chmod +x $newdir/../submit_all.sh
     cd $newdir
     spwd=$PWD
-    cp -v $RUN2EMCTRIGGER/generate/5TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/5TeV/$jobfile $spwd
+    cp -v $RUN2EMCTRIGGER/generate/13TeV/emctrig.cmnd $RUN2EMCTRIGGER/generate/13TeV/$jobfile $spwd
     cmndfile=$spwd/emctrig.cmnd
     replace_line "Main:numberOfEvents" "Main:numberOfEvents = $3" "$cmndfile"
     replace_line "Beams:eCM"           "Beams:eCM = 13000."        "$cmndfile"
