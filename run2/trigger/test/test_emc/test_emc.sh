@@ -31,4 +31,6 @@ fi
 
 #$RUN2EMCTRIGGER/bin/toymcpy8 -v 0 --nev 1000 --mtune 1.2 --emc-test --realbg 	--out realbg.root 2>&1 | tee test_emc.log
 
-$RUN2EMCTRIGGER/bin/toymcpy8 -v 0 --nev 1000 --mtune 1.2 --emc-par --femcpar 2>&1 | tee test_emc.log
+#$RUN2EMCTRIGGER/bin/toymcpy8 -v 0 --nev 1000 --mtune 1.2 --emc-par --femcpar 2>&1 | tee test_emc.log
+
+$RUN2EMCTRIGGER/bin/toymcpy8 -v 0 --nev 1000 --mtune 1.2 --emc-par --femcpar 2>&1 --disable-background --out vacuum.root | tee test_emc_v.log

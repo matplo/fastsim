@@ -99,42 +99,50 @@ int emctrig_par_revent( int argc, char *argv[])
 		return 1;
 	}
 
+	Bool_t disable_background = SysUtil::isSet("--disable-background", argc, argv);
+
+	cout << "[w] *** simulation only for vacuum; background disabled" << endl;
+
 	Bool_t boltzmanBG = kTRUE;
-	if (SysUtil::isSet("--realbg", argc, argv))
+	AliGenFastModelingEvent *pFME = 0;
+	if (disable_background == kFALSE)
 	{
-		boltzmanBG = kFALSE;
-	}
-	if (boltzmanBG)
-	{
-		cout << "[i] boltzman background: " << boltzmanBG << endl;
-	}
-	else
-	{
-		cout << "[i] real data background: " << !boltzmanBG << endl;
-	}
-
-	Double_t multTune = 1.;
-	if (SysUtil::isSet("--mtune", argc, argv))
-	{
-		multTune = SysUtil::getArgD("--mtune", argc, argv, 1.);
-		if (multTune != 1.)
+		if (SysUtil::isSet("--realbg", argc, argv))
 		{
-			outputFname.ReplaceAll(".root", TString::Format("_mtune_%1.1f.root", multTune));
+			boltzmanBG = kFALSE;
 		}
-	}
-	cout << "[i] tune multiplicity factor: " << multTune << endl;
+		if (boltzmanBG)
+		{
+			cout << "[i] boltzman background: " << boltzmanBG << endl;
+		}
+		else
+		{
+			cout << "[i] real data background: " << !boltzmanBG << endl;
+		}
 
-	TString sPathFME = "$RUN2EMCTRIGGER/AliGenFME/inputs";
-	AliGenFastModelingEvent *pFME = GenerUtil::make_par_background(0, 100, sPathFME, boltzmanBG);
-	if (pFME == 0)
-	{
-		cerr << "[e] Response not initialized. Quit here." << endl;
-		return 1;
-	}
-	if (multTune != 1.0)
-	{
-		pFME->SetTuneMeanPt(multTune);
-		pFME->SetTuneMult(multTune);
+		Double_t multTune = 1.;
+		if (SysUtil::isSet("--mtune", argc, argv))
+		{
+			multTune = SysUtil::getArgD("--mtune", argc, argv, 1.);
+			if (multTune != 1.)
+			{
+				outputFname.ReplaceAll(".root", TString::Format("_mtune_%1.1f.root", multTune));
+			}
+		}
+		cout << "[i] tune multiplicity factor: " << multTune << endl;
+
+		TString sPathFME = "$RUN2EMCTRIGGER/AliGenFME/inputs";
+		pFME = GenerUtil::make_par_background(0, 100, sPathFME, boltzmanBG);
+		if (pFME == 0)
+		{
+			cerr << "[e] Response not initialized. Quit here." << endl;
+			return 1;
+		}
+		if (multTune != 1.0)
+		{
+			pFME->SetTuneMeanPt(multTune);
+			pFME->SetTuneMult(multTune);
+		}
 	}
 
 	TString emcalMaskFile1 = gSystem->ExpandPathName("$RUN2EMCTRIGGER/maps/files/emcal_mask.root");
@@ -336,54 +344,57 @@ int emctrig_par_revent( int argc, char *argv[])
 		}
 
 		// generate background particiles
-		Double_t centRandom = gRandom->Rndm() * 99.;
-		pFME->SetCentralityRange(centRandom, centRandom + 1.);
-
-		if (!pFME->InitEvent())
+		if (pFME != 0)
 		{
+			Double_t centRandom          = gRandom->Rndm() * 99.;
+			pFME->SetCentralityRange(centRandom, centRandom + 1.);
+			
+			if (!pFME->InitEvent())
+			{
 			// we do this here just to get the multiplicity
-			cerr << "[e] ::InitEvent failed." << endl;
-			return 1;
-		}
-
-		Double_t bg_event_centrality = pFME->GetCentrality();
-
-		bg_event_tracks        = GenerUtil::param_vectors(pFME, GenerUtil::kTrack);
-		bg_event_clusters_ecal = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
-		bg_event_all           = GenerUtil::param_vectors(pFME, GenerUtil::kAny);
-
-		// now for DCal
-		if (!pFME->InitEvent())
-		{
-			cerr << "[e] ::InitEvent failed." << endl;
+				cerr << "[e] ::InitEvent failed." << endl;
+				return 1;
+			}
+			
+			Double_t bg_event_centrality = pFME->GetCentrality();
+			
+			bg_event_tracks              = GenerUtil::param_vectors(pFME, GenerUtil::kTrack);
+			bg_event_clusters_ecal       = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
+			bg_event_all                 = GenerUtil::param_vectors(pFME, GenerUtil::kAny);
+			
+			// now for DCal
+			if (!pFME->InitEvent())
+			{
+				cerr << "[e] ::InitEvent failed." << endl;
 			//return 1;
-			continue;
-		}
-		bg_event_clusters_dcal = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
+				continue;
+			}
+			bg_event_clusters_dcal       = GenerUtil::param_vectors(pFME, GenerUtil::kCluster);
+			
+			GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_ecal, 0);
+			GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
+			
+			if (verbosity > 7)
+			{
+				cout << "[i] bg event centrality: " << bg_event_centrality << endl;
+				cout << "    number of            clusters in bg_event ECAL : " << bg_event_clusters_ecal.size() << endl;
+				cout << "    number of tracks              in bg_event      : " << bg_event_tracks.size() << endl;
+				cout << "    number of tracks and clusters in bg_event      : " << bg_event_all.size() << endl;
+				cout << "    number of tracks and clusters in bg_event DCAL : " << bg_event_clusters_dcal.size() << endl;
+				cout << "    number of tracks and clusters in bg_event E+DC : " << bg_event_clusters.size() << endl;
+			}
+			
+			hcentmult->Fill(bg_event_centrality, bg_event_tracks.size());
 
-		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_ecal, 0);
-		GenerUtil::add_particles(bg_event_clusters, bg_event_clusters_dcal, 2.8); //rotate in phi by 2.8 rad
-
-		if (verbosity > 7)
-		{
-			cout << "[i] bg event centrality: " << bg_event_centrality << endl;
-			cout << "    number of            clusters in bg_event ECAL : " << bg_event_clusters_ecal.size() << endl;
-			cout << "    number of tracks              in bg_event      : " << bg_event_tracks.size() << endl;
-			cout << "    number of tracks and clusters in bg_event      : " << bg_event_all.size() << endl;
-			cout << "    number of tracks and clusters in bg_event DCAL : " << bg_event_clusters_dcal.size() << endl;
-			cout << "    number of tracks and clusters in bg_event E+DC : " << bg_event_clusters.size() << endl;
-		}
-
-		hcentmult->Fill(bg_event_centrality, bg_event_tracks.size());
-
-		// first set the full event with the pythia event
-		full_event = py_hard_event;
-		for (unsigned int ibg = 0; ibg < bg_event_tracks.size(); ibg++)
-		{
-			fj::PseudoJet v = bg_event_tracks[ibg];
-			v.set_user_index(GenerUtil::gpyParticleOffset + ibg);
-			full_event.push_back(v); //adding only charged tracks to the jet
-		}
+			// first set the full event with the pythia event
+			full_event = py_hard_event;
+			for (unsigned int ibg = 0; ibg < bg_event_tracks.size(); ibg++)
+			{
+				fj::PseudoJet v = bg_event_tracks[ibg];
+				v.set_user_index(GenerUtil::gpyParticleOffset + ibg);
+				full_event.push_back(v); //adding only charged tracks to the jet
+			}
+		} // end if pFME != 0
 
 		if (verbosity > 7)
 		{
@@ -658,7 +669,8 @@ int emctrig_par_revent( int argc, char *argv[])
 		head.sigma = bkgd_estimator.sigma();
 
 		revent.SetPythia(&pythia);
-		revent.SetBackground(pFME);
+		if (pFME != 0)
+			revent.SetBackground(pFME);
 		revent.SetEMCresponse(EMCresponse);
 
 		revent.FillHeader("hd", 	&head);

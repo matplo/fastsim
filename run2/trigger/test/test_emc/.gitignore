@@ -2,3 +2,4 @@
 *-list
 *.outputs
 *-list.sh
+*.log
