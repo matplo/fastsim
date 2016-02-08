@@ -60,3 +60,8 @@ def divide_lists(hl0, hl1):
 		hlr.add_list(hlrtmp)
 	return hlr
 
+def emcal_eta_phi_cut(R=0):
+	return '(({bname}.Eta() > -0.668305 + {R}) && ({bname}.Eta() < 0.668305 - {R}) && ({bname}.Phi() > 1.40413 - {pi} + {R}) && ({bname}.Phi() < 3.26149 - {pi} - {R}))'.format(bname='{bname}', pi=math.pi, R=R)
+
+def dcal_eta_phi_cut(R=0):
+	return '(({bname}.Eta() > -0.668305 + {R}) && ({bname}.Eta() < 0.668305 - {R}) && ({bname}.Phi() > 4.54573 - {pi} + {R}) && ({bname}.Phi() < 5.70495 - {pi} - {R} ))'.format(bname='{bname}', pi=math.pi, R=R)
