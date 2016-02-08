@@ -219,6 +219,7 @@ int emctrig_par_revent( int argc, char *argv[])
 	std::vector <fj::PseudoJet> full_event; //signal+background
 	std::vector <fj::PseudoJet> pi0E;
 	std::vector <fj::PseudoJet> pi0D;	
+	std::vector <fj::PseudoJet> partons;
 
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent)
 	{
@@ -253,6 +254,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		bg_event_clusters_ecal.clear(); // boltzman background
 		bg_event_clusters_dcal.clear(); // boltzman background
 		full_event.clear(); //signal+background
+		partons.clear();
 		pi0E.clear();
 		pi0D.clear();
 
@@ -276,6 +278,13 @@ int emctrig_par_revent( int argc, char *argv[])
 
 		for (int i = 0; i < event.size(); ++i)
 		{
+			// now the partons
+			if ( i == 5 || i == 6)
+			{
+				fj::PseudoJet p = event[i];
+				partons.push_back(p);
+	    	}
+
 			if (event[i].id() == 111)
 			{
 				fj::PseudoJet p = event[i];
@@ -682,6 +691,7 @@ int emctrig_par_revent( int argc, char *argv[])
 		revent.FillBranch("pi0D",  	fj::sorted_by_pt(pi0D));		
 		//revent.FillBranch("bgcl", 	bg_event_clusters);
 		//revent.FillBranch("bgtrk", 	bg_event_tracks);
+		revent.FillBranch("f",		partons);
 
 		revent.FillTrigger("tg", 	tm0);
 		revent.FillTrigger("tg1", 	tm1);

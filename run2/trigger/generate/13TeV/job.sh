@@ -27,6 +27,9 @@ radius=0.4
 #$RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.5 --emc-par --realbg --femcpar 2>&1 | tee run.log
 
 
+radius=0.4
+$RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.2 --emc-par --femcpar --disable-background 2>&1 | tee run.log
+radius=0.2
 $RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.2 --emc-par --femcpar --disable-background 2>&1 | tee run.log
 
 date
