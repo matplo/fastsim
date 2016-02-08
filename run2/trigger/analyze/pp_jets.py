@@ -31,13 +31,13 @@ class GetHL(object):
 		self.var      = ''
 		self.cuts     = ''
 		
-		self.ybwidth  = 1
-		self.ylow     = 0
-		self.yhigh    = 200
+		self.ybwidth  = 1.
+		self.ylow     = 0.
+		self.yhigh    = 200.
 		
 		self.title    = 'h'
 		self.modname  = ''
-		self.fpatt    = '*.root'
+		self.fpatt    = 'tree-*.root'
 		
 		self.outfname = 'hl_out.root'
 		self.name_mod = 'modn:'
@@ -89,6 +89,7 @@ class GetHL(object):
 		tu.gList.append(hl)
 
 	def make_jet_tcut(self, data_dir):
+		print self.var, self.cuts, self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh
 		hl = draw_ntuple.h2d_from_ntuple_dir(data_dir, self.ntname, 
 											self.var, self.cuts, 
 											self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh, 
@@ -191,8 +192,7 @@ if __name__=="__main__":
 		hl = GetHL()
 		hl.nev    = nev
 		hl.var = 'tgEJE.fE:j.Pt()'
-		hl.cuts = emcal_eta_phi_cut(R=0.4)
-
+		hl.cuts = emcal_eta_phi_cut(R=0.4).format(bname='j')
 		hl.make_jet_tcut(data_dir)
 
 	if '--jetfidu' in sys.argv:
