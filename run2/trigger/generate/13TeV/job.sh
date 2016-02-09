@@ -29,7 +29,9 @@ radius=0.4
 
 radius=0.4
 #note R=0.2 is also run in the emc-par (emctrip_par_revent.cxx)
-$RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.2 --emc-par --femcpar --disable-background 2>&1 | tee run$radius.log
+#$RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.2 --emc-par --femcpar --disable-background 2>&1 | tee run$radius.log
+
+$RUN2EMCTRIGGER/bin/toymcpy8 -R $radius --mtune 1.2 --emc-par --femc 0.3 --disable-background 2>&1 | tee run$radius.log
 
 date
 
