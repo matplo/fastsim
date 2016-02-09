@@ -21,13 +21,13 @@ namespace R2Util
 
 	bool IsEMCAL02piR(double eta, double phi, double r)
 	{
-		if ( (eta > -0.668305 + r) && (eta < 0.668305 - r) && (phi + r > 1.40413) && (phi < 3.26149 - r) ) 
+		if ( (eta > -0.668305 + r) && (eta < 0.668305 - r) && (phi > 1.40413 + r ) && (phi < 3.26149 - r) ) 
 			return true;
 		return false;
 	};
 	bool IsDCALPHOS02piR(double eta, double phi, double r)
 	{
-		if ( (eta > -0.668305 + r) && (eta < 0.668305 - r) && (phi + r > 4.54573) && (phi < 5.70495 - r) ) 
+		if ( (eta > -0.668305 + r) && (eta < 0.668305 - r) && (phi > 4.54573 + r ) && (phi < 5.70495 - r) ) 
 			return true;
 		return false;
 	};
