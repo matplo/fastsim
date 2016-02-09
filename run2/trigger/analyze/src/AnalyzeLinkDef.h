@@ -6,6 +6,7 @@
 
 #pragma link C++ class ReadTree++;
 #pragma link C++ class Analysis++;
+#pragma link C++ class Analysis_pp++;
 
 //not really needed nor used within cint
 //#pragma link C++ struct TriggerInfo++;

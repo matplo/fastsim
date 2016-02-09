@@ -589,9 +589,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard[i].phi_02pi();
 			eta = sorted_jets_hard[i].eta();
-			if (R2Util::IsEMCAL02pi(eta, phi))
+			if (R2Util::IsEMCAL02piR(eta, phi, jet_def_hard.R()))
 				ej.push_back(sorted_jets_hard[i]);
-			if (R2Util::IsDCALPHOS02pi(eta, phi))
+			if (R2Util::IsDCALPHOS02piR(eta, phi, jet_def_hard.R()))
 				dj.push_back(sorted_jets_hard[i]);
 		}
 
@@ -601,9 +601,9 @@ int emctrig_par_revent( int argc, char *argv[])
 		{
 			phi = sorted_jets_hard_r[i].phi_02pi();
 			eta = sorted_jets_hard_r[i].eta();
-			if (R2Util::IsEMCAL02pi(eta, phi))
+			if (R2Util::IsEMCAL02piR(eta, phi, jet_def_hard_r.R()))
 				ej_r.push_back(sorted_jets_hard_r[i]);
-			if (R2Util::IsDCALPHOS02pi(eta, phi))
+			if (R2Util::IsDCALPHOS02piR(eta, phi, jet_def_hard_r.R()))
 				dj_r.push_back(sorted_jets_hard_r[i]);
 		}
 

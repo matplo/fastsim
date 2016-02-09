@@ -59,7 +59,8 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in)
 	TLorentzVector tlv;
 	for (int i = 0; i < in.size(); ++i)
 	{
-		tlv.SetPtEtaPhiE(in[i].perp(), in[i].eta(), in[i].phi_02pi(), in[i].e());
+		//tlv.SetPtEtaPhiE(in[i].perp(), in[i].eta(), in[i].phi_02pi(), in[i].e());
+		tlv.SetPtEtaPhiE(in[i].perp(), in[i].eta(), in[i].phi(), in[i].e());
 		v.push_back(tlv);
 	}
 	b->Fill();
@@ -82,8 +83,8 @@ void REvent::FillBranch(const char *name, std::vector<RawPatch> in)
 	for (int i = 0; i < in.size(); ++i)
 	{
 		tlv.SetPtEtaPhiE(in[i].GetADC(),
-		                 in[i].GetRowStart() / 64., // phi will not be accurate for DCal
-		                 in[i].GetColStart() / 48., // fixed 48
+		                 TMath::Pi() / 2., //in[i].GetColStart() / 48., // fixed 48
+		                 0, //in[i].GetRowStart() / 64., // phi will not be accurate for DCal
 		                 in[i].GetADC());
 		v.push_back(tlv);
 	}
