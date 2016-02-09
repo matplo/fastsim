@@ -11,6 +11,8 @@ namespace R2Util
 // these methods are good for jets but for particles lack granularity
 bool 		IsEMCAL02pi(double eta, double phi);
 bool 		IsDCALPHOS02pi(double eta, double phi);
+bool 		IsEMCAL02piR(double eta, double phi, double r);
+bool 		IsDCALPHOS02piR(double eta, double phi, double r);
 bool 		IsEMCAL(double eta, double phi);
 bool 		IsDCALPHOS(double eta, double phi);
 

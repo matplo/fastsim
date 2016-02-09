@@ -31,6 +31,7 @@ set(CMAKE_MACOSX_RPATH 1)
 set(SRCS
 	readtree.cxx
 	analysis.cxx
+	analysis_pp.cxx
 	#rstructures.cxx
 )
 
