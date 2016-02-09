@@ -22,7 +22,7 @@ class GetHL(object):
 		self.reset()
 
 	def reset(self):
-		self.bwidth   = 10
+		self.bwidth   = 5
 		self.xlow     = 0
 		self.xhigh    = 200
 		self.nev      = -1
@@ -32,9 +32,9 @@ class GetHL(object):
 		self.cuts     = ''
 		self.refcuts  = ''
 		
-		self.ybwidth  = 1.
+		self.ybwidth  = 2.
 		self.ylow     = 0.
-		self.yhigh    = 200.
+		self.yhigh    = 100.
 		
 		self.title    = 'h'
 		self.modname  = ''
@@ -87,17 +87,33 @@ class GetHL(object):
 
 		return hl
 
-	def make_jet_tcut(self, data_dir):
+	def make_hl_2d(self, outfname = None, refcuts = False):
 		print self.var, self.cuts, self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh
+		tu.getTempCanvas().cd()
 		hl = draw_ntuple.h2d_from_ntuple_dir(self.data_dir, self.ntname, 
 												self.var, self.cuts, 
 												self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh, 
 												self.title, self.modname, self.nev, self.fpatt)
+		hlref = draw_ntuple.h2d_from_ntuple_dir(self.data_dir, self.ntname, 
+													self.var, self.refcuts, 
+													self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh, 
+													self.title, self.modname, self.nev, self.fpatt)
+		dlist.filter_single_entries(hl, hlref, self.thr)
+		hs = hl.sum()
+		hs.obj.Draw("colz")
+		tu.gList.append(hs)
+
+		hl.add(hs, 'sum', 'hist', prep=True)
+
 		if '--write' in sys.argv:
-			outfname = tu.make_unique_name(self.outfname)
-			hl.write_to_file(outfname, name_mod=self.name_mod)
+			if outfname != None:
+				hl.write_to_file(outfname, name_mod='modn:')
+			else:
+				outfname = tu.make_unique_name('jetpt2D', bname, cuts)
+				hl.write_to_file(fname=outfname, name_mod='modn:')
 
 		tu.gList.append(hl)
+
 		return hl
 
 def fname_to_title(fname):
@@ -161,6 +177,41 @@ def draw_fidu():
 
 	tu.gList.append(hl)
 
+
+def draw_tcut():
+	hname = 'o_16'
+
+	pTmin = 0
+	pTmax = 20
+	step  = 4
+
+	files = [ 	'eje_j.root',
+				#'eje_j_lead.root',
+				'eje_jE.root',
+				#'eje_jE_lead.root',
+				'dje_jDr.root',
+				#'dje_jDr_lead.root' 
+				]
+
+	for fname in files:
+		pTs = []
+		htitle = fname
+		#hl = dlist.get_projectionsX(hname, fname, htitle, pTmin, pTmax, step, 'P L HIST', pTs)
+		hl = dlist.get_projections_axis_lowcut(hname, fname, htitle, pTmin, pTmax, step, opt='p', axis = 0, pTs=pTs)
+		hl.make_canvas()
+		hl.draw(logy=True)
+		hl.self_legend()
+		ROOT.gPad.SetLogy()
+		hl.update()
+		tu.gList.append(hl)
+
+		hlr = hl.ratio_to(0, 'p l')
+		hlr.make_canvas()
+		hlr.draw(miny=0, maxy=2)
+		hlr.self_legend()
+		hlr.update()
+		tu.gList.append(hlr)
+
 if __name__=="__main__":
 	tu.setup_basic_root()
 
@@ -198,11 +249,35 @@ if __name__=="__main__":
 		draw_pt(nev)
 
 	if '--tcut' in sys.argv:
-		hl = GetHL()
-		hl.nev    = nev
-		hl.var = 'tgEJE.fE:j.Pt()'
-		hl.cuts = emcal_eta_phi_cut(R=0.4).format(bname='j')
-		hl.make_hl_2d_tcut(data_dir)
+		hl          = GetHL()
+		hl.data_dir = data_dir
+		hl.nev      = 100
+		#hl.var      = 'tgEJE.fE:j.Pt()' # for whatever reason this doesn't work
+		hl.reset_jet_cuts(bname='j', radius=0.4)
+
+		hl.var      = 'tg.maxEJE.fE:j.Pt()'
+		hl.make_hl_2d('eje_j.root')		
+		#hl.var      = 'tg.maxEJE.fE:j.Pt()[0]'
+		#hl.make_hl_2d('eje_j_lead.root')
+
+		hl.reset_jet_cuts(bname='jE', radius=0.4)
+		hl.var      = 'tg.maxEJE.fE:jE.Pt()'
+		hl.make_hl_2d('eje_jE.root')
+		#hl.var      = 'tg.maxEJE.fE:jE.Pt()[0]'
+		#hl.make_hl_2d('eje_jE_lead.root')
+
+		hl.reset_jet_cuts(bname='jE', radius=0.4)
+		hl.var      = 'tg.maxEJE8x8.fE:jE.Pt()'
+		hl.make_hl_2d('eje_jE.root')
+
+		hl.reset_jet_cuts(bname='jDr', radius=0.2)
+		hl.var      = 'tg.maxDJE8x8.fE:jDr.Pt()'
+		hl.make_hl_2d('dje_jDr.root')
+		#hl.var      = 'tg.maxDJE8x8.fE:jDr.Pt()[0]'
+		#hl.make_hl_2d('dje_jDr_lead.root')
+
+	if '--drawtcut' in sys.argv:
+		draw_tcut()
 
 	if '--jetfidu' in sys.argv:
 		hl          = GetHL()
