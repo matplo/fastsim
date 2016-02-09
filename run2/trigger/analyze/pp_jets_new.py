@@ -98,19 +98,27 @@ class GetHL(object):
 													self.var, self.refcuts, 
 													self.bwidth, self.xlow, self.xhigh, self.ybwidth, self.ylow, self.yhigh, 
 													self.title, self.modname, self.nev, self.fpatt)
-		dlist.filter_single_entries(hl, hlref, self.thr)
+
+		dlist.filter_single_entries_2d(hl, hlref, self.thr)
+
 		hs = hl.sum()
 		hs.obj.Draw("colz")
 		tu.gList.append(hs)
-
 		hl.add(hs, 'sum', 'hist', prep=True)
+
+		hsref = hlref.sum()
+		hs.obj.Draw("colz")
+		tu.gList.append(hsref)
+		hlref.add(hsref, 'sum', 'hist', prep=True)
 
 		if '--write' in sys.argv:
 			if outfname != None:
 				hl.write_to_file(outfname, name_mod='modn:')
+				hlref.write_to_file(outfname.replace('.root', '_ref.root'), name_mod='modn:')
 			else:
 				outfname = tu.make_unique_name('jetpt2D', bname, cuts)
-				hl.write_to_file(fname=outfname, name_mod='modn:')
+				hl.write_to_file(fname=outfname+'.root', name_mod='modn:')
+				hl.write_to_file(fname=outfname+'_ref.root', name_mod='modn:')
 
 		tu.gList.append(hl)
 
@@ -127,10 +135,10 @@ def fname_to_title(fname):
 	return retval
 
 def draw_pt(nev):
-	files = ['jetpt_0.4.root',
+	files = [#'jetpt_0.4.root',
 			 'jetpt_EMCal_0.4.root',
 			 #'jetpt_DCal_0.4.root',
-			 'jetpt_0.2.root',
+			 #'jetpt_0.2.root',
 			 'jetpt_EMCal_0.2.root',
 			 'jetpt_DCal_0.2.root']
 
@@ -144,6 +152,33 @@ def draw_pt(nev):
 	hl.draw_all(orient=1, logy=True)
 
 	tu.gList.append(hl)
+
+def draw_pt_bias():
+	files = [
+			'jetpt_EMCal_0.4_0.root',
+			'jetpt_EMCal_0.4_5.root',
+			'jetpt_EMCal_0.4_10.root',
+			'jetpt_EMCal_0.4_15.root',
+			'jetpt_EMCal_0.4_20.root',
+			'jetpt_EMCal_0.4_25.root',
+			'jetpt_EMCal_0.4_30.root'
+			]
+	hl = dlist.ListStorage('draw_pt_bias_0')
+	for f in files:
+		hl.add_from_file('pt', 'o_0', f, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
+	hl.get('pt').scale(1./nev)
+	hl.get('pt').reset_axis_titles('jet p_{T}', 'xsection (mb)')
+	hl.draw_all(orient=1, logy=True)
+
+	tu.gList.append(hl)
+
+	hlbias = hl.get('pt').ratio_to(0, 'l')
+	hlbias.make_canvas()
+	hlbias.draw(miny=0, maxy=2)
+	hlbias.self_legend()
+
+	tu.gList.append(hlbias)
+
 
 def draw_fidu():
 	feta = ['jeteta_0.2.root',
@@ -249,7 +284,7 @@ if __name__=="__main__":
 		hl          = GetHL()
 		hl.data_dir = data_dir
 		hl.nev      = nev
-		hl.bwidth   = 20. # 20 GeV bins
+		hl.bwidth   = 5. # 20 GeV bins
 
 		hl.var  = 'j.Pt()'
 		hl.reset_jet_cuts(bname='j', radius=0.4)
@@ -258,6 +293,14 @@ if __name__=="__main__":
 		hl.var  = 'jE.Pt()'
 		hl.reset_jet_cuts(bname='jE', radius=0.4)
 		hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4.root')
+		for th in [0, 5, 10, 15, 20, 25, 30]:
+			hl.var  = 'jE.Pt()'
+			bname = 'jE'
+			r     = 0.4
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th})'.format(bname=bname, radius=r, th=th)
+			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}.root'.format(th=th))
+
 
 		hl.var  = 'jr.Pt()'
 		hl.reset_jet_cuts(bname='jr', radius=0.2)
@@ -273,6 +316,7 @@ if __name__=="__main__":
 
 	if '--drawpt' in sys.argv:
 		draw_pt(nev)
+		draw_pt_bias()
 
 	if '--tspectrum' in sys.argv:
 		hl          = GetHL()
@@ -304,6 +348,8 @@ if __name__=="__main__":
 		hl          = GetHL()
 		hl.data_dir = data_dir
 		hl.nev      = nev
+		hl.bwidth   = 5. # 4 GeV bins
+		hl.thr      = 10
 		#hl.var      = 'tgEJE.fE:j.Pt()' # for whatever reason this doesn't work
 		hl.reset_jet_cuts(bname='j', radius=0.4)
 
