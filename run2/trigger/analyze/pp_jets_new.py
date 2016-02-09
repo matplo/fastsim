@@ -214,21 +214,23 @@ def draw_tcut():
 
 def draw_trejections():
 	hname = 'o_0'
-	files = [#'tEJE.root',
-			 #'tEJE8x8.root',
+	files = ['tEJE.root',
+			 'tEJE8x8.root',
 			'tEJEmax.root',
-			'tEJEmax8x8.root']
+			'tEJEmax8x8.root',
+			'tDJEmax8x8.root']
 
 	hl = dlist.ListStorage('trejections')
 	for f in files:
 		lname = f.replace('.root', '')
-		hl.add_from_file('tspectra', hname, f, lname, 'p')
+		hl.add_from_file('tspectra', hname, f, lname, 'l')
 	hl.get('tspectra').scale(1./10000.)
 
 	hl.append(dlist.fractional_yats(hl.get('tspectra')))
 
 	hl.draw_all(logy=True)
-
+	hl.set_grid_x()	
+	hl.set_grid_y()
 	tu.gList.append(hl)
 
 if __name__=="__main__":
@@ -280,15 +282,18 @@ if __name__=="__main__":
 		hl.cuts    = '(1)*(hd.xsec)'
 		hl.refcuts = '(1)'
 
-		#hl.var  = 'tgEJE.fE'
-		#hl.make_hl_1d(outfname = 'tEJE.root')
-		#hl.var  = 'tgEJE8x8.fE'
-		#hl.make_hl_1d(outfname = 'tEJE8x8.root')
+		hl.var  = 'tgEJE.fE'
+		hl.make_hl_1d(outfname = 'tEJE.root')
+		hl.var  = 'tgEJE8x8.fE'
+		hl.make_hl_1d(outfname = 'tEJE8x8.root')
 
 		hl.var  = 'tg.maxjECAL'
 		hl.make_hl_1d(outfname = 'tEJEmax.root')
 		hl.var  = 'tg.maxjECAL8x8'
 		hl.make_hl_1d(outfname = 'tEJEmax8x8.root')
+
+		hl.var  = 'tg.maxjDCAL8x8'
+		hl.make_hl_1d(outfname = 'tDJEmax8x8.root')
 
 	if '--drawrej' in sys.argv:
 		draw_trejections()
