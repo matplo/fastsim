@@ -284,7 +284,7 @@ if __name__=="__main__":
 		hl          = GetHL()
 		hl.data_dir = data_dir
 		hl.nev      = nev
-		hl.bwidth   = 5. # 20 GeV bins
+		hl.bwidth   = 10. # 20 GeV bins
 
 		hl.var  = 'j.Pt()'
 		hl.reset_jet_cuts(bname='j', radius=0.4)
@@ -293,14 +293,6 @@ if __name__=="__main__":
 		hl.var  = 'jE.Pt()'
 		hl.reset_jet_cuts(bname='jE', radius=0.4)
 		hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4.root')
-		for th in [0, 5, 10, 15, 20, 25, 30]:
-			hl.var  = 'jE.Pt()'
-			bname = 'jE'
-			r     = 0.4
-			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
-			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th})'.format(bname=bname, radius=r, th=th)
-			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}.root'.format(th=th))
-
 
 		hl.var  = 'jr.Pt()'
 		hl.reset_jet_cuts(bname='jr', radius=0.2)
@@ -313,6 +305,29 @@ if __name__=="__main__":
 		hl.var  = 'jDr.Pt()'
 		hl.reset_jet_cuts(bname='jDr', radius=0.2)
 		hl.make_hl_1d(outfname = 'jetpt_DCal_0.2.root')
+
+		for th in [0, 5, 10, 15, 20, 25, 30]:
+			hl.bwidth   = 5. # 20 GeV bins
+			hl.var = 'jE.Pt()'
+			bname  = 'jE'
+			r      = 0.4
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th})'.format(bname=bname, radius=r, th=th)
+			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}.root'.format(th=th))
+
+			hl.var = 'jE.Pt()'
+			bname  = 'jE'
+			r      = 0.4
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL8x8 > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL8x8 > {th})'.format(bname=bname, radius=r, th=th)
+			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}_8x8.root'.format(th=th))
+
+			hl.var = 'jEr.Pt()'
+			bname  = 'jEr'
+			r      = 0.2
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjDCAL8x8 > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjDCAL8x8 > {th})'.format(bname=bname, radius=r, th=th)
+			hl.make_hl_1d(outfname = 'jetpt_DCal_0.2_{th}_8x8.root'.format(th=th))
 
 	if '--drawpt' in sys.argv:
 		draw_pt(nev)
