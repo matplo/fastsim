@@ -134,7 +134,7 @@ def fname_to_title(fname):
 		retval = retval.replace(r[0], r[1])
 	return retval
 
-def draw_pt(nev):
+def draw_pt(nev=-1):
 	files = [#'jetpt_0.4.root',
 			 'jetpt_EMCal_0.4.root',
 			 #'jetpt_DCal_0.4.root',
@@ -150,35 +150,41 @@ def draw_pt(nev):
 		#hl.add_from_file('pt', 'o_0', f, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist +f1001 +a20')
 		fn = os.path.join(subdir, f)
 		print fn
-		hl.add_from_file('pt', 'o_0', fn, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
+		hl.add_from_file('pt', 'o_0', fn, fname_to_title(f).replace('jetpt', ''), 'p')
 
-	hl.get('pt').scale(1./nev)
-	hl.get('pt').reset_axis_titles('jet p_{T}', 'xsection (mb)')
-	hl.draw_all(orient=1, logy=True)
+	if nev < 0:
+		nev = 10000.
+	topb = 1.e9
+	#dphiscaleup=1./((ROOT.TMath.DegToRad() * 110. - 0.4 - 0.4)/(ROOT.TMath.Pi()*2.))
+	#hl.get('pt').scale(1./nev * topb / 0.6 / 10. * dphiscaleup) # deta is (0.7-0.4) x 2
+	#hl.get('pt').reset_axis_titles('jet p_{T}', 'd#sigma/dp_{T}/d#eta (pb)')
 
+	hl.get('pt').scale(1./nev * topb)
+	hl.get('pt').reset_axis_titles('jet p_{T}', '#sigma (pb)')
+
+	hl.draw_all(orient=0, logy=True, legtitle='anti-k_{T}; pp@13TeV')
+	hl.zoom_axis(0, 0, 200)
+	hl.set_grid_x()
+	hl.set_grid_y()
+	hl.resize_window(800,800)
 	tu.gList.append(hl)
+	hl.pdf()
+	hl.png()
 
-def draw_pt_bias(nev):
+def draw_pt_bias(nev, files = None, title = ''):
 
-	files = [
-			'jetpt_EMCal_0.4_0.root',
-			'jetpt_EMCal_0.4_5.root',
-			'jetpt_EMCal_0.4_10.root',
-			'jetpt_EMCal_0.4_15.root',
-			'jetpt_EMCal_0.4_20.root',
-			'jetpt_EMCal_0.4_25.root',
-			'jetpt_EMCal_0.4_30.root'
-			]
-
+	if files == None:
+		files = [ 'jetpt_EMCal_0.4_0.root', 'jetpt_EMCal_0.4_5.root', 'jetpt_EMCal_0.4_10.root', 'jetpt_EMCal_0.4_15.root', 'jetpt_EMCal_0.4_20.root', 'jetpt_EMCal_0.4_25.root', 'jetpt_EMCal_0.4_30.root' ]
+	titles = [ 'minbias', '5 GeV', '10 GeV', '15 GeV', '20 GeV', '25 GeV', '30 GeV' ]
 
 	subdir = './'
 	subdir = './jetpt'
 
-	hl = dlist.ListStorage('draw_pt_bias_0')
-	for f in files:
+	hl = dlist.ListStorage('trigger bias {}'.format(title))
+	for i,f in enumerate(files):
 		fn = os.path.join(subdir, f)
 		print fn
-		hl.add_from_file('pt', 'o_0', fn, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
+		hl.add_from_file('pt', 'o_0', fn, titles[i], 'hist')
 
 	lnev = -1
 	if nev == -1:
@@ -189,10 +195,12 @@ def draw_pt_bias(nev):
 		lx.scale(1./lnev)
 		lx.reset_axis_titles('jet p_{T}', 'xsection (mb)')
 
-	hlb = dlist.ListStorage('draw_pt_bias_b')
+	hlb = dlist.ListStorage('draw_pt_bias_b {}'.format(title))
 	for lx in hl.lists:
 		print lx.name
 		hlbias = lx.ratio_to(0, 'l')
+		hlbias.title = title
+		hlbias.reset_axis_titles('p_{T}', 'ratio')
 		hlb.append(hlbias)
 
 		#hlbias = hl.get('pt').ratio_to(0, 'l')
@@ -202,11 +210,14 @@ def draw_pt_bias(nev):
 		#hl.append(hlbias)
 		#tu.gList.append(hlbias)
 
-	hl.draw_all(orient=0, logy=False)
+	hl.draw_all(orient=0, logy=True)
 	tu.gList.append(hl)
 
-	hlb.draw_all(orient=0, logy=True)
+	hlb.draw_all(orient=0, logy=False, maxy=1.6)
 	tu.gList.append(hlb)
+
+	hlb.pdf()
+	hlb.png()
 
 
 def draw_fidu():
@@ -285,24 +296,30 @@ def draw_tcut():
 def draw_trejections():
 	hname = 'o_0'
 	files = ['tEJE.root',
-			 'tEJE8x8.root',
+			'tEJE8x8.root',
 			'tEJEmax.root',
 			'tEJEmax8x8.root',
 			'tDJEmax8x8.root']
 
+	subdir = './'
+	subdir = './trej'
+
 	hl = dlist.ListStorage('trejections')
 	for f in files:
-		lname = f.replace('.root', '')
-		hl.add_from_file('tspectra', hname, f, lname, 'l')
+		fn = os.path.join(subdir, f)
+		lname = fn.replace('.root', '')
+		hl.add_from_file('tspectra', hname, fn, lname, 'l')
 	hl.get('tspectra').scale(1./10000.)
 
 	hl.append(dlist.fractional_yats(hl.get('tspectra')))
-
-	hl.draw_all(logy=True)
+	hl.zoom_axis(0, 0, 30)
+	hl.draw_all(logy=True, miny=1e-6)
 	hl.set_grid_x()	
 	hl.set_grid_y()
 	tu.gList.append(hl)
-
+	hl.pdf()
+	hl.png()
+	
 if __name__=="__main__":
 	tu.setup_basic_root()
 
@@ -368,7 +385,14 @@ if __name__=="__main__":
 		draw_pt(nev)
 
 	if '--drawbias' in sys.argv:
-		draw_pt_bias(nev)
+		files = [ 'jetpt_EMCal_0.4_0.root', 'jetpt_EMCal_0.4_5.root', 'jetpt_EMCal_0.4_10.root', 'jetpt_EMCal_0.4_15.root', 'jetpt_EMCal_0.4_20.root', 'jetpt_EMCal_0.4_25.root', 'jetpt_EMCal_0.4_30.root' ]
+		draw_pt_bias(nev, files, 'EMC R=0.4 [16x16]')
+
+		files = [ 'jetpt_EMCal_0.4_0_8x8.root', 'jetpt_EMCal_0.4_5_8x8.root', 'jetpt_EMCal_0.4_10_8x8.root', 'jetpt_EMCal_0.4_15_8x8.root', 'jetpt_EMCal_0.4_20_8x8.root', 'jetpt_EMCal_0.4_25_8x8.root', 'jetpt_EMCal_0.4_30_8x8.root' ]
+		draw_pt_bias(nev, files, 'EMC R=0.4 [8x8]')
+
+		files = [ 'jetpt_DCal_0.2_0_8x8.root', 'jetpt_DCal_0.2_5_8x8.root', 'jetpt_DCal_0.2_10_8x8.root', 'jetpt_DCal_0.2_15_8x8.root', 'jetpt_DCal_0.2_20_8x8.root', 'jetpt_DCal_0.2_25_8x8.root', 'jetpt_DCal_0.2_30_8x8.root' ]
+		draw_pt_bias(nev, files, 'DMC R=0.2 [8x8]')
 
 	if '--tspectrum' in sys.argv:
 		hl          = GetHL()
