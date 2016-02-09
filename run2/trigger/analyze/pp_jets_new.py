@@ -219,7 +219,11 @@ if __name__=="__main__":
 	if ut.get_arg_with('--dir') != None:
 		data_dir = ut.get_arg_with('--dir')
 
-	nev = 1000
+	nev = -1
+	if ut.is_arg_set('--nev'):
+		nev = int(ut.get_arg_with('--nev'))
+	print '[i] nev setup:',nev
+
 	if '--jetpt' in sys.argv:
 		hl          = GetHL()
 		hl.data_dir = data_dir
@@ -251,7 +255,7 @@ if __name__=="__main__":
 	if '--tcut' in sys.argv:
 		hl          = GetHL()
 		hl.data_dir = data_dir
-		hl.nev      = 100
+		hl.nev      = nev
 		#hl.var      = 'tgEJE.fE:j.Pt()' # for whatever reason this doesn't work
 		hl.reset_jet_cuts(bname='j', radius=0.4)
 
@@ -282,7 +286,7 @@ if __name__=="__main__":
 	if '--jetfidu' in sys.argv:
 		hl          = GetHL()
 		hl.data_dir = data_dir
-		hl.nev      = 1000
+		hl.nev      = nev
 		hl.xhigh    =  4
 		hl.xlow     = -4
 		hl.bwidth   = 0.1
