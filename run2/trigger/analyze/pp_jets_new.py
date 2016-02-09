@@ -182,7 +182,7 @@ def draw_tcut():
 	hname = 'o_16'
 
 	pTmin = 0
-	pTmax = 20
+	pTmax = 30
 	step  = 4
 
 	files = [ 	'eje_j.root',
@@ -249,6 +249,7 @@ if __name__=="__main__":
 		hl          = GetHL()
 		hl.data_dir = data_dir
 		hl.nev      = nev
+		hl.bwidth   = 20. # 20 GeV bins
 
 		hl.var  = 'j.Pt()'
 		hl.reset_jet_cuts(bname='j', radius=0.4)
@@ -277,6 +278,7 @@ if __name__=="__main__":
 		hl          = GetHL()
 		hl.data_dir = data_dir
 		hl.nev      = nev
+		hl.bwidth   = 2. # 2 GeV bins
 
 		hl.reset_jet_cuts(bname='j', radius=0.4)
 		hl.cuts    = '(1)*(hd.xsec)'
