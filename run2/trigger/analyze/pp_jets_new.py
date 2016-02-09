@@ -46,7 +46,7 @@ class GetHL(object):
 		self.thr      = 10
 		self.R        = 0.4
 		
-		self.cuts     = '(abs({bname}.Eta()) < 0.9 - {radius}) * (xsec)	'
+		self.cuts     = '(abs({bname}.Eta()) < 0.9 - {radius}) * (hd.xsec)	'
 		self.refcuts  = '(abs({bname}.Eta()) < 0.9 - {radius})			'
 
 	def reset_jet_cuts(self, bname, radius = None):
@@ -56,7 +56,7 @@ class GetHL(object):
 				r = 0.2
 		else:
 			r = radius
-		self.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) * (xsec)'.format(bname=bname, radius=r)
+		self.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) * (hd.xsec)'.format(bname=bname, radius=r)
 		self.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius}))'.format(bname=bname, radius=r)
 
 	def make_hl_1d(self, outfname = None):
@@ -142,10 +142,15 @@ def draw_pt(nev):
 			 'jetpt_EMCal_0.2.root',
 			 'jetpt_DCal_0.2.root']
 
+	subdir = './'
+	subdir = './jetpt'
+
 	hl = dlist.ListStorage('draw_jetpt')
 	for f in files:
 		#hl.add_from_file('pt', 'o_0', f, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist +f1001 +a20')
-		hl.add_from_file('pt', 'o_0', f, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
+		fn = os.path.join(subdir, f)
+		print fn
+		hl.add_from_file('pt', 'o_0', fn, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
 
 	hl.get('pt').scale(1./nev)
 	hl.get('pt').reset_axis_titles('jet p_{T}', 'xsection (mb)')
@@ -153,7 +158,8 @@ def draw_pt(nev):
 
 	tu.gList.append(hl)
 
-def draw_pt_bias():
+def draw_pt_bias(nev):
+
 	files = [
 			'jetpt_EMCal_0.4_0.root',
 			'jetpt_EMCal_0.4_5.root',
@@ -163,24 +169,48 @@ def draw_pt_bias():
 			'jetpt_EMCal_0.4_25.root',
 			'jetpt_EMCal_0.4_30.root'
 			]
+
+
+	subdir = './'
+	subdir = './jetpt'
+
 	hl = dlist.ListStorage('draw_pt_bias_0')
 	for f in files:
-		hl.add_from_file('pt', 'o_0', f, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
-	hl.get('pt').scale(1./nev)
-	hl.get('pt').reset_axis_titles('jet p_{T}', 'xsection (mb)')
-	hl.draw_all(orient=1, logy=True)
+		fn = os.path.join(subdir, f)
+		print fn
+		hl.add_from_file('pt', 'o_0', fn, fname_to_title(f).replace('jetpt', 'jet p_{T}'), 'hist')
 
+	lnev = -1
+	if nev == -1:
+		lnev = 10000
+
+	for lx in hl.lists:
+		print lx.name
+		lx.scale(1./lnev)
+		lx.reset_axis_titles('jet p_{T}', 'xsection (mb)')
+
+	hlb = dlist.ListStorage('draw_pt_bias_b')
+	for lx in hl.lists:
+		print lx.name
+		hlbias = lx.ratio_to(0, 'l')
+		hlb.append(hlbias)
+
+		#hlbias = hl.get('pt').ratio_to(0, 'l')
+		#hlbias.make_canvas()
+		#hlbias.draw(miny=0, maxy=2)
+		#hlbias.self_legend()
+		#hl.append(hlbias)
+		#tu.gList.append(hlbias)
+
+	hl.draw_all(orient=0, logy=False)
 	tu.gList.append(hl)
 
-	hlbias = hl.get('pt').ratio_to(0, 'l')
-	hlbias.make_canvas()
-	hlbias.draw(miny=0, maxy=2)
-	hlbias.self_legend()
-
-	tu.gList.append(hlbias)
+	hlb.draw_all(orient=0, logy=True)
+	tu.gList.append(hlb)
 
 
 def draw_fidu():
+
 	feta = ['jeteta_0.2.root',
 			'jeteta_0.4.root',
 			'jeteta_EMCal_0.2.root',
@@ -194,11 +224,16 @@ def draw_fidu():
 			'jetphi_DCal_0.2.root',
 			'jetphi_DCal_0.4.root']
 
+	subdir = './'
+	subdir = './phieta'
+
 	hl = dlist.ListStorage('draw_acceptance')
 	for f in feta:
-		hl.add_from_file('#eta', 'o_0', f, fname_to_title(f).replace('jeteta', '#eta'), 'hist +f1001 +a20')
+		fn = os.path.join(subdir, f)
+		hl.add_from_file('#eta', 'o_0', fn, fname_to_title(f).replace('jeteta', '#eta'), 'hist +f1001 +a20')
 	for f in fphi:
-		hl.add_from_file('#varphi', 'o_0', f, fname_to_title(f).replace('jetphi', '#varphi'), 'hist +f1001 +a20')
+		fn = os.path.join(subdir, f)
+		hl.add_from_file('#varphi', 'o_0', fn, fname_to_title(f).replace('jetphi', '#varphi'), 'hist +f1001 +a20')
 
 	hl.get('#eta').reset_axis_titles('jet #eta', 'counts x xsection (arb. units)')
 	hl.get('#varphi').reset_axis_titles('jet #varphi', 'counts x xsection (arb. units)')
@@ -311,27 +346,29 @@ if __name__=="__main__":
 			hl.var = 'jE.Pt()'
 			bname  = 'jE'
 			r      = 0.4
-			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th}) * (hd.xsec)'.format(bname=bname, radius=r, th=th)
 			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL > {th})'.format(bname=bname, radius=r, th=th)
 			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}.root'.format(th=th))
 
 			hl.var = 'jE.Pt()'
 			bname  = 'jE'
 			r      = 0.4
-			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL8x8 > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL8x8 > {th}) * (hd.xsec)'.format(bname=bname, radius=r, th=th)
 			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjECAL8x8 > {th})'.format(bname=bname, radius=r, th=th)
 			hl.make_hl_1d(outfname = 'jetpt_EMCal_0.4_{th}_8x8.root'.format(th=th))
 
 			hl.var = 'jEr.Pt()'
 			bname  = 'jEr'
 			r      = 0.2
-			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjDCAL8x8 > {th}) * (xsec)'.format(bname=bname, radius=r, th=th)
+			hl.cuts     = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjDCAL8x8 > {th}) * (hd.xsec)'.format(bname=bname, radius=r, th=th)
 			hl.refcuts  = '(abs({bname}.Eta()) < (0.9 - {radius})) && (tg.maxjDCAL8x8 > {th})'.format(bname=bname, radius=r, th=th)
 			hl.make_hl_1d(outfname = 'jetpt_DCal_0.2_{th}_8x8.root'.format(th=th))
 
 	if '--drawpt' in sys.argv:
 		draw_pt(nev)
-		draw_pt_bias()
+
+	if '--drawbias' in sys.argv:
+		draw_pt_bias(nev)
 
 	if '--tspectrum' in sys.argv:
 		hl          = GetHL()
