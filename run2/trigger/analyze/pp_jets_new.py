@@ -212,6 +212,25 @@ def draw_tcut():
 		hlr.update()
 		tu.gList.append(hlr)
 
+def draw_trejections():
+	hname = 'o_0'
+	files = [#'tEJE.root',
+			 #'tEJE8x8.root',
+			'tEJEmax.root',
+			'tEJEmax8x8.root']
+
+	hl = dlist.ListStorage('trejections')
+	for f in files:
+		lname = f.replace('.root', '')
+		hl.add_from_file('tspectra', hname, f, lname, 'p')
+	hl.get('tspectra').scale(1./10000.)
+
+	hl.append(dlist.fractional_yats(hl.get('tspectra')))
+
+	hl.draw_all(logy=True)
+
+	tu.gList.append(hl)
+
 if __name__=="__main__":
 	tu.setup_basic_root()
 
@@ -252,6 +271,28 @@ if __name__=="__main__":
 	if '--drawpt' in sys.argv:
 		draw_pt(nev)
 
+	if '--tspectrum' in sys.argv:
+		hl          = GetHL()
+		hl.data_dir = data_dir
+		hl.nev      = nev
+
+		hl.reset_jet_cuts(bname='j', radius=0.4)
+		hl.cuts    = '(1)*(hd.xsec)'
+		hl.refcuts = '(1)'
+
+		#hl.var  = 'tgEJE.fE'
+		#hl.make_hl_1d(outfname = 'tEJE.root')
+		#hl.var  = 'tgEJE8x8.fE'
+		#hl.make_hl_1d(outfname = 'tEJE8x8.root')
+
+		hl.var  = 'tg.maxjECAL'
+		hl.make_hl_1d(outfname = 'tEJEmax.root')
+		hl.var  = 'tg.maxjECAL8x8'
+		hl.make_hl_1d(outfname = 'tEJEmax8x8.root')
+
+	if '--drawrej' in sys.argv:
+		draw_trejections()
+
 	if '--tcut' in sys.argv:
 		hl          = GetHL()
 		hl.data_dir = data_dir
@@ -259,25 +300,25 @@ if __name__=="__main__":
 		#hl.var      = 'tgEJE.fE:j.Pt()' # for whatever reason this doesn't work
 		hl.reset_jet_cuts(bname='j', radius=0.4)
 
-		hl.var      = 'tg.maxEJE.fE:j.Pt()'
+		hl.var      = 'tg.maxjECAL:j.Pt()'
 		hl.make_hl_2d('eje_j.root')		
-		#hl.var      = 'tg.maxEJE.fE:j.Pt()[0]'
+		#hl.var      = 'tg.maxjECAL:j.Pt()[0]'
 		#hl.make_hl_2d('eje_j_lead.root')
 
 		hl.reset_jet_cuts(bname='jE', radius=0.4)
-		hl.var      = 'tg.maxEJE.fE:jE.Pt()'
+		hl.var      = 'tg.maxjECAL:jE.Pt()'
 		hl.make_hl_2d('eje_jE.root')
-		#hl.var      = 'tg.maxEJE.fE:jE.Pt()[0]'
+		#hl.var      = 'tg.maxjECAL:jE.Pt()[0]'
 		#hl.make_hl_2d('eje_jE_lead.root')
 
 		hl.reset_jet_cuts(bname='jE', radius=0.4)
-		hl.var      = 'tg.maxEJE8x8.fE:jE.Pt()'
+		hl.var      = 'tg.maxjECAL8x8:jE.Pt()'
 		hl.make_hl_2d('eje_jE.root')
 
 		hl.reset_jet_cuts(bname='jDr', radius=0.2)
-		hl.var      = 'tg.maxDJE8x8.fE:jDr.Pt()'
+		hl.var      = 'tg.maxjDCAL8x8:jDr.Pt()'
 		hl.make_hl_2d('dje_jDr.root')
-		#hl.var      = 'tg.maxDJE8x8.fE:jDr.Pt()[0]'
+		#hl.var      = 'tg.maxjDCAL8x8:jDr.Pt()[0]'
 		#hl.make_hl_2d('dje_jDr_lead.root')
 
 	if '--drawtcut' in sys.argv:
