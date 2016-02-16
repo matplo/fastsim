@@ -22,7 +22,7 @@ class ENoterSetup:
     default_sandbox    = True
     default_use_cache  = True
     default_cache      = './cache/default/'
-    
+    default_NS_url     = 'https://www.evernote.com/shard/s44/notestore'
     def __init__(self, **args):        
         self.c_secret  = not_none(self.default_c_secret,  args.get('c_secret'))
         self.c_key     = not_none(self.default_c_key,     args.get('c_key'))
@@ -260,6 +260,7 @@ def create_notebook(client, name = 'Dev Notebook'):
     
 dev_token='S=s1:U=904fb:E=152ac1870e0:C=14b54674120:P=1cd:A=en-devtoken:V=2:H=1993fecb1c0c1cf6158801c186d0e51d'
 prod_token='S=s44:U=4a1a5a:E=152ac4525a7:C=14b5493f670:P=1cd:A=en-devtoken:V=2:H=f76e7e0a01f049e12e9748e82bde0cbe'
+prod_token = 'S=s44:U=4a1a5a:E=15a43e23848:C=152ec310a98:P=1cd:A=en-devtoken:V=2:H=16a3a9ea170e1a3877d20e76485357c2'
 
 def test():
     token = dev_token
