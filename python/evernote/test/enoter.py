@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 import evernote.api.client as enClient
 import evernote.edam.notestore as enStore
 import evernote.edam.type.ttypes as enTypes
@@ -16,7 +17,7 @@ import datetime
     
 class ENoterSetup:
     default_dev_token  = 'S=s1:U=904fb:E=152ac1870e0:C=14b54674120:P=1cd:A=en-devtoken:V=2:H=1993fecb1c0c1cf6158801c186d0e51d'
-    default_prod_token = 'S=s44:U=4a1a5a:E=152ac4525a7:C=14b5493f670:P=1cd:A=en-devtoken:V=2:H=f76e7e0a01f049e12e9748e82bde0cbe'
+    default_prod_token = 'S=s44:U=4a1a5a:E=15a43e23848:C=152ec310a98:P=1cd:A=en-devtoken:V=2:H=16a3a9ea170e1a3877d20e76485357c2' #'S=s44:U=4a1a5a:E=152ac4525a7:C=14b5493f670:P=1cd:A=en-devtoken:V=2:H=f76e7e0a01f049e12e9748e82bde0cbe'
     default_c_secret   = '9f451936519fb24e'
     default_c_key      = 'ploskon'
     default_sandbox    = True
@@ -289,7 +290,7 @@ def test1():
     else:
         use_cache = True
     setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
-    #print Inspector(setup).table_members_all()
+    #prodrint Inspector(setup).table_members_all()
     debug ( setup )
     enoter = ENoter(setup)
     enoter.get_client()
@@ -344,6 +345,143 @@ def main():
             debug ( n )
                 
     debug ('.')
-    
+
+def to_file_name(s):
+        return "".join([x if x.isalnum() else "_" for x in s])
+
+def make_output_dir(cdir):
+    if os.path.isdir(cdir):
+        try:
+            os.removedirs(cdir)
+        except OSError as e:
+            print >> sys.stderr, '[e] unable to remove',cdir,'error is:',e
+            if '--force' in sys.argv:
+                shutil.rmtree(cdir, ignore_errors=True)
+                print >> sys.stderr, '[w] forcing...'
+                if os.path.exists(cdir):
+                    print >> sys.stderr, '[e] still there? bailing out.',cdir
+                    return False
+                else:
+                    print >> sys.stderr, '[i] directory removed.'
+            else:
+                return False
+    try:
+        os.makedirs(cdir)
+    except:
+        print >> sys.stderr, '[e] unable to create output directory:',cdir
+        return False
+    return True
+
+def fix_string(entry_text = '', to = ' '):
+    #entry_text = entry_text.encode('utf-8', 'replace')
+    ret = ''
+    if entry_text==None:
+        return ret
+    for c in entry_text:
+        try:
+            c2 = c.decode('utf-8')
+        except:
+            c2 = unicode(to)
+        ret += unicode(c2)
+    return ret
+
+def text_between(text, starts, ends):
+    start = 0
+    end   = len(text)
+    try:
+        start = string.find(text, starts)
+        end   = string.find(text, ends) + len(ends)
+        out   = text[start:end]
+    except:
+        print >> sys.stderr, '[e] bad root tag, problem with <>'
+        print >> sys.stderr, '    returning the same string...'
+        out = ''
+    return out
+
+def replace_text_betwen(text, starts, ends):
+    out   = []
+    srepl = text_between(text, starts, ends)
+    while srepl != '':
+        text = text.replace(srepl, render_rootjs_tag(srepl))
+        srepl = text_between(text, starts, ends)
+    return text
+
+def make_pages():
+    use_cache = True
+    sandbox = False
+    setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
+    setup.filter_words = get_arg_with('--filter')
+    enoter = ENoter(setup)
+    notebooks = enoter.get_notebooks()
+    note_list = enoter.get_note_list(nlast = 99)
+    if note_list:
+        outdir = './md_enote_pages_' + to_file_name(setup.filter_words)
+        if make_output_dir(outdir) == False:
+            return
+        for i,n in enumerate(note_list.notes):
+            foutname = to_file_name(n.title) + '.md'
+            foutname = os.path.join(outdir, foutname)
+            note = enoter.get_note(n.guid)
+            with open(foutname, 'w') as f:
+                print >> f, 'title:', n.title
+                print >> f, 'date:', n.created
+                print >> f, 'published: true'
+                print >> f, 'template: page.html'
+                print >> f, 'tags: [{}]'.format(setup.filter_words)
+                content = note.content.split('<en-note>')[1].split('</en-note>')[0]
+                #content = content.replace('<div>', '<br>').replace('</div>', '</br>')
+                content = content.replace('<br/></br>', '</br>')
+                content = content.replace('<br></br>', '\n')
+                #print >> f, fix_string(content)
+                content = fix_string(content)
+                content = content.replace('href=', 'target="_blank" href=')
+                f.write(content)
+            print '[i] written',foutname
+
+def make_single_page():
+    use_cache = True
+    sandbox = False
+    setup = ENoterSetup(sandbox=sandbox,use_cache=use_cache)
+    setup.filter_words = get_arg_with('--filter')
+    enoter = ENoter(setup)
+    notebooks = enoter.get_notebooks()
+    note_list = enoter.get_note_list(nlast = 99)
+    if note_list:
+        foutname = get_arg_with('--out')
+        if foutname == None:
+            outdir = './md_enote_single_page_' + to_file_name(setup.filter_words)
+            if make_output_dir(outdir) == False:
+                return
+            ptitle = to_file_name(setup.filter_words)
+            foutname = ptitle + '.md'
+            foutname = os.path.join(outdir, foutname)
+        with open(foutname, 'w') as f:
+            print >> f, 'title:', setup.filter_words
+            print >> f, 'subtitle: Note: this pages is auto generated from evernote...'
+            print >> f, 'date:', datetime.date.today()
+            print >> f, 'published: true'
+            print >> f, 'template: page.html'
+            print >> f, 'tags: [evernote]'
+            print >> f, ''
+            for i,n in enumerate(note_list.notes):
+                print >> f, '#{}'.format(n.title)
+                note = enoter.get_note(n.guid)
+                content = note.content.split('<en-note>')[1].split('</en-note>')[0]
+                #content = content.replace('<div>', '<br>').replace('</div>', '</br>')
+                #content = content.replace('<br/></br>', '</br>')
+                content = content.replace('<br></br>', '\n')
+                content = content.replace('<div><br/></div>', '')
+                #print >> f, fix_string(content)
+                content = fix_string(content)
+                content = content.replace('href=', 'target="_blank" href=')
+                f.write(content)
+        print '[i] written',foutname
+
 if __name__=='__main__':
-    main()
+    if '--make-pages' in sys.argv:
+        if '--single' in sys.argv:
+            make_single_page()
+        else:
+            make_pages()
+    else:
+        main()
