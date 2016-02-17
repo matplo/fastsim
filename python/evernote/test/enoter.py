@@ -457,7 +457,7 @@ def make_single_page():
             foutname = os.path.join(outdir, foutname)
         with open(foutname, 'w') as f:
             print >> f, 'title:', setup.filter_words
-            print >> f, 'subtitle: Note: this pages is auto generated from evernote...'
+            print >> f, 'subtitle: Note, this pages is generated from notes in evernote...'
             print >> f, 'date:', datetime.date.today()
             print >> f, 'published: true'
             print >> f, 'template: page.html'
