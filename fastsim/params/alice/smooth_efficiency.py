@@ -1,4 +1,4 @@
-#!/usr/bin/env python -i
+#!/usr/bin/env python
 
 import sys
 import tutils
@@ -11,7 +11,9 @@ def smoothed(hname, fname, xmin, xmax, ntimes):
     hl = dlist.dlist('effi_tmp')
     htitle = 'sm_{}_{}_{}'.format(xmin, xmax, ntimes)
     hl.add_from_file(hname, fname, htitle, 'p')
-    hl.last().obj.GetXaxis().SetRange(xmin, xmax)
+    ibmin = hl.last().obj.GetXaxis().FindBin(xmin)
+    ibmax = hl.last().obj.GetXaxis().FindBin(xmax)
+    hl.last().obj.GetXaxis().SetRange(ibmin, ibmax)
     hl.last().obj.Smooth(ntimes, 'R')
     tutils.gList.append(hl)
     return hl.last().obj
@@ -23,7 +25,7 @@ def main():
     hl.add_from_file('MB', finput, 'default', 'p')
 
     for n in range(1, 7, 2):
-        hsm = smoothed('MB', finput, 15, 200, n)
+        hsm = smoothed('MB', finput, 5, 200, n)
         hl.add(hsm, 'smoothed ntimes={}'.format(n), 'p')
 
     tc = hl.make_canvas(500, 800)

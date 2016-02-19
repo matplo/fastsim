@@ -1,0 +1,87 @@
+project(toymcpy8 CXX)
+cmake_minimum_required(VERSION 2.8.11)
+
+# indep. if root built with cmake assume the root-cint is in the path
+execute_process ( COMMAND root-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+#message ("[info] ROOT_DIR: ${ROOT_DIR}")
+execute_process ( COMMAND root-config --etcdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_ETCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
+#message ("[info] CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+find_package(ROOT REQUIRED EG)
+
+execute_process ( COMMAND root-config --libs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+execute_process ( COMMAND fastjet-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+execute_process ( COMMAND fastjet-config --cxxflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
+execute_process ( COMMAND fastjet-config --libs --plugins WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
+message( "FASTJET_DIR: ${FASTJET_DIR}")
+message( "FASTJET_CXXFLAGS: ${FASTJET_CXXFLAGS}")
+message( "FASTJET_LIBS: ${FASTJET_LIBS}")
+
+execute_process ( COMMAND pythia8-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+execute_process ( COMMAND pythia8-config --cxxflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
+execute_process ( COMMAND pythia8-config --ldflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
+#execute_process ( COMMAND pythia8-config --includedir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_INCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+#message( "PYTHIA8_INCDIR: ${PYTHIA8_INCDIR}")
+message( "PYTHIA8_DIR: ${PYTHIA8_DIR}")
+message( "PYTHIA8_CXXFLAGS: ${PYTHIA8_CXXFLAGS}")
+message( "PYTHIA8_LDFLAGS: ${PYTHIA8_LDFLAGS}")
+
+set(CMAKE_MACOSX_RPATH 1)
+
+set(SOURCES_LIB
+	util.cxx
+	toymcpy8.cxx
+	emctrig.cxx
+	emctrig_par.cxx
+	emctrig_par_revent.cxx
+	rstructures.cxx
+	revent.cxx
+	emctrig_test.cxx
+)
+
+set(SOURCES_EXE main.cxx)
+
+# Headers from sources
+string(REPLACE ".cxx" ".h" HEADERS_LIB "${SOURCES_LIB}")
+string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
+
+#set_source_files_properties(${SOURCES}
+#       PROPERTIES
+#       COMPILE_FLAGS "${FASTJET_CXXFLAGS}")
+
+#SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${FASTJET_CXXFLAGS} ${PYTHIA8_CXXFLAGS} " )
+#SET( CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_LD_LINKER_FLAGS} ${FASTJET_LIBS} -Wl,-rpath,${PYTHIA8_DIR}/lib ${PYTHIA8_LDFLAGS}" )
+#SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${FASTJET_LIBS} -Wl,-rpath,${PYTHIA8_DIR}/lib ${PYTHIA8_LDFLAGS}" )
+#SET( CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} ${FASTJET_LIBS} ${PYTHIA8_LDFLAGS}" )
+#SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -L/home/mateusz/devel/sandbox/hepsoft/pythia/8212/lib/libpythia8.a ${FASTJET_LIBS} ${PYTHIA8_LDFLAGS}" )
+
+#include_directories(${ROOT_INCLUDE_DIR} ${PYTHIA8_INCDIR})
+#include_directories(${ROOT_INCLUDE_DIR})
+#link_libraries(${ROOT_LIBRARIES})
+
+set(R2LIBS "-L$ENV{RUN2EMCTRIGGER}/lib" -lEMCALTriggerFast -lAliGenFME -lEMCpidPar -lR2Util )
+set(R2INCLUDES $ENV{RUN2EMCTRIGGER}/include)
+
+set(PROJECT_UTIL_LIB "${PROJECT_NAME}Util")
+add_library(${PROJECT_UTIL_LIB} SHARED ${SOURCES_LIB})
+target_include_directories(${PROJECT_UTIL_LIB} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${R2INCLUDES})  
+target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${R2LIBS} ${ROOT_LIBRARIES} )
+
+add_executable(${PROJECT_NAME} ${SOURCES_EXE})
+target_include_directories(${PROJECT_NAME} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${R2INCLUDES})  
+#target_link_libraries(${PROJECT_NAME} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES} ${PROJECT_UTIL_LIB} )
+target_link_libraries( ${PROJECT_NAME} ${PROJECT_UTIL_LIB} )
+
+#install(TARGETS ${PROJECT_NAME} ${PROJECT_UTIL_LIB}
+#        RUNTIME DESTINATION bin
+#        LIBRARY DESTINATION lib)
+
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin)
+
+install(TARGETS ${PROJECT_UTIL_LIB}
+        LIBRARY DESTINATION lib)
+
+#install(TARGETS ${PROJECT_UTIL_LIB} ARCHIVE DESTINATION bin LIBRARY DESTINATION lib)
+install(FILES ${HEADERS_LIB} DESTINATION include)
