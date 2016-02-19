@@ -14,6 +14,14 @@ def bits(ins):
         if ins[len(ins) - i - 1] == '1':
             sets.append(str(i))
     return ' '.join(reversed(sets))
+
+def bits_from1(ins):
+    sets = []
+    ins = ins.replace(' ', '')
+    for i in range(len(ins)):
+        if ins[len(ins) - i - 1] == '1':
+            sets.append(str(i+1))
+    return ' '.join(reversed(sets))
         
 def main():
     arg = ''
@@ -24,8 +32,9 @@ def main():
         return
     try:
         bins = hextobinary(arg.lstrip('0x'))
-        print '[i] binary is :',bins
-        print '    bits set  :', bits(bins)
+        print '[i] binary is                :',bins
+        print '    bits set (first bit at 0)  :', bits(bins)
+        print '    bits set (first bit at 1)  :', bits_from1(bins)
     except:
         print '[e] converion failed... are you sure that >',arg,'< is a hex number?'
 
