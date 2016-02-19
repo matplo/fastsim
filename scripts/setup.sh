@@ -52,7 +52,7 @@ do
     cp $outdir/$FNAME $HOME/privatemodules
 done
 
-mkdir -pf $THISDIR/../bin
+mkdir -p $THISDIR/../bin
 cp -v $THISDIR/../scripts/build_fastsim.sh $THISDIR/../bin
 
 cd $savedir
