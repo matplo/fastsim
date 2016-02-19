@@ -2,6 +2,7 @@
 
 import math
 import sys
+import string
 
 def hextobinary(hex_string):
     binary = lambda x: ' '.join(reversed( [i+j for i,j in zip( *[ ["{0:04b}".format(int(c,16)) for c in reversed('0'+x)][n::2] for n in [1,0] ] ) ] ))
@@ -13,7 +14,8 @@ def bits(ins):
     for i in range(len(ins)):
         if ins[len(ins) - i - 1] == '1':
             sets.append(str(i))
-    return ' '.join(reversed(sets))
+    #return ' '.join(reversed(sets))
+    return ' '.join(reversed([string.rjust(s, 2) for s in sets]))
 
 def bits_from1(ins):
     sets = []
@@ -21,7 +23,8 @@ def bits_from1(ins):
     for i in range(len(ins)):
         if ins[len(ins) - i - 1] == '1':
             sets.append(str(i+1))
-    return ' '.join(reversed(sets))
+    #return ' '.join(reversed(sets))
+    return ' '.join(reversed([string.rjust(s, 2) for s in sets]))
         
 def main():
     arg = ''
