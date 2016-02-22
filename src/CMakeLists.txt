@@ -35,6 +35,7 @@ set(SOURCES_LIB
 	header.cxx
 	fjwrapper.cxx
 	revent.cxx
+	tests.cxx
 )
 
 set(SOURCES_EXE main.cxx)
@@ -46,7 +47,7 @@ string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
 set(FASTSIMLIBS "-L$ENV{FASTSIM}/lib")
 set(FASTSIMINCLUDES $ENV{FASTSIM}/include)
 
-set(PROJECT_UTIL_LIB "${PROJECT_NAME}Util")
+set(PROJECT_UTIL_LIB "${PROJECT_NAME}util")
 add_library(${PROJECT_UTIL_LIB} SHARED ${SOURCES_LIB})
 target_include_directories(${PROJECT_UTIL_LIB} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${FASTSIMINCLUDES})  
 target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${FASTSIMLIBS} ${ROOT_LIBRARIES} )
