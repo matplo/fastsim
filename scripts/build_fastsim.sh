@@ -29,6 +29,7 @@ if [ -d $FASTSIM ]; then
     done
   fi
 
+#  for pack in AliGenFME/src src
   for pack in src
   do
     bdir=$FASTSIM/.build/$pack
