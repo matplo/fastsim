@@ -78,7 +78,7 @@ void test_fj_wrapper()
 	delete w;
 }
 
-void test_wrapp()
+void test_wrapp_0()
 {
 	double R = 1.0;
 	double power = -1;
@@ -112,3 +112,28 @@ void test_wrapp()
 	fj::PseudoJet *p = 0;
 	wr.get(p);
 }
+
+void test_wrapp()
+{
+	Wrapp wr;
+	double R = 1.0;
+	double power = -1;
+    fj::JetDefinition *jd = new fj::JetDefinition(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
+    wr.add(jd);
+
+	std::vector <fj::PseudoJet> *py_hard_event = new std::vector <fj::PseudoJet>();
+
+	fj::PseudoJet v(10,0,0,10);
+	py_hard_event->push_back(v);
+	wr.add(py_hard_event);
+
+    fj::ClusterSequence *cs_hard = new fj::ClusterSequence(*py_hard_event, *jd);
+    wr.add(cs_hard);
+
+    fj::ClusterSequence *cs = wr.get(cs_hard);
+    std::vector <fj::PseudoJet> jets = cs->inclusive_jets();
+
+    std::cout << jets[0].perp() << std::endl;
+
+}
+
