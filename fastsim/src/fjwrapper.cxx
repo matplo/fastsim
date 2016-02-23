@@ -14,7 +14,7 @@ Wrapper::~Wrapper()
 unsigned int Wrapper::addCS(fastjet::ClusterSequence *cs, const char *name /*= "ClusterSequence"*/)
 {
 	unsigned int uid = fUniqueIDs.size();
-	fCSv.push_back(Container<fj::ClusterSequence>(cs, name, uid));
+	fCSv.push_back(Container<fj::ClusterSequence>(cs, uid, name));
 	fUniqueIDs.push_back(uid);
 	return uid;
 }
@@ -32,7 +32,7 @@ fastjet::ClusterSequence * Wrapper::getCS(const char *name /*= "ClusterSequence"
 unsigned int Wrapper::addJD(fastjet::JetDefinition *JD, const char *name /*= "JetDefinition"*/)
 {
 	unsigned int uid = fUniqueIDs.size();
-	fJDv.push_back(Container<fj::JetDefinition>(JD, name, uid));
+	fJDv.push_back(Container<fj::JetDefinition>(JD, uid, name));
 	fUniqueIDs.push_back(uid);
 	return uid;
 }
@@ -73,7 +73,7 @@ void test_fj_wrapper()
 
    	TestGC *t = new TestGC();
     std::vector< Container<TestGC> > v;
-    v.push_back(Container<TestGC>(t, "test container", 0));
+    v.push_back(Container<TestGC>(t, 0, "test container"));
 
 	delete w;
 }
@@ -84,16 +84,31 @@ void test_wrapp()
 	double power = -1;
     fj::JetDefinition *jd = new fj::JetDefinition(fj::genkt_algorithm, R, power); // this is for signal - anti-kT
 
+    fj::PseudoJet *j = 0;
+
 	Wrapp wr;
 	wr.add(new TestGC());
-	//wr.add(jd);
+	wr.add(jd);
 
 	TestGC *x = 0;
+	cout << std::type_index(typeid(x)).hash_code() << endl;
+	cout << std::type_index(typeid(jd)).hash_code() << endl;
+	TestGC *x2 = 0;
+	cout << std::type_index(typeid(x2)).hash_code() << endl;
+
 	wr.get(&x);
-	std::cout << "x pointer is:" << x << std::endl;
+	std::cout << "[i] x pointer is:" << x << std::endl;
 	x->test_call();
-	std::cout << "x pointer is:" << x << std::endl;
+	std::cout << "[i] x pointer is:" << x << std::endl;
 
 	wr.get(&jd);
-	std::cout << "jd pointer is:" << jd << std::endl;
+	std::cout << "[i] jd pointer is:" << jd << std::endl;
+
+	cout << std::type_index(typeid(x)).hash_code() << endl;
+	cout << std::type_index(typeid(jd)).hash_code() << endl;
+
+	wr.get(&j);
+
+	fj::PseudoJet *p = 0;
+	wr.get(p);
 }
