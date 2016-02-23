@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <typeindex>
+
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/JetDefinition.hh"
 #include "fastjet/AreaDefinition.hh"
@@ -13,56 +15,106 @@
 class VoidType
 {
 public:
-	VoidType() {;}
-	virtual ~VoidType() {;}
+	VoidType()
+	: fName("no name")
+	, fID(0)
+	, fHashCode(0)
+	{
+		;
+	}
+
+	virtual ~VoidType() 
+	{
+		;
+	}
+
+	void set_name(const char *name)
+	{
+		fName = name;
+	}
+
+	void set_hashcode(size_t hash)
+	{
+		fHashCode = hash;
+	}
+
+	void set_id(unsigned int uid)
+	{
+		fID = uid;
+	}
+
+	unsigned int get_id()
+	{
+		return fID;
+	}
+
+	std::string get_name()
+	{
+		return fName;
+	}
+
+	size_t get_hashcode()
+	{
+		return fHashCode;
+	}
+
+protected:
+	std::string 		fName;
+	unsigned int		fID;
+	size_t				fHashCode;
 };
 
 template <class T> class Container : public VoidType
 {
 public:
-	Container(T* p, const char *name, unsigned int id)
+	Container(T* p, unsigned int id = 0, const char *name = 0)
 	: VoidType()
 	, fUP(p)
 	, fpU(0)
-	, fName(name)
-	, fUID(id)
 	{
-		;
+		set_hashcode( std::type_index(typeid(p)).hash_code() );
+		if (name != 0)
+			set_name(name);
+		else
+			set_name( std::type_index(typeid(p)).name() );
+		set_id(id);
 	}
 
 	Container(const Container<T> &c)
 	: VoidType()
 	, fUP(c.fUP)
 	, fpU(0)
-	, fName(c.fName)
-	, fUID(c.fUID)
 	{
-		TakeOwnership();
+		set_name(c.fName.c_str());
+		set_id(c.fID);
+		set_hashcode(c.fHashCode);
+
+		take_ownership();
 	}
 
-	void TakeOwnership()
+	void take_ownership()
 	{
 		if (fpU != 0)
 		{
 			delete fpU;
 			fpU = 0;
 		}
-		fpU = new std::unique_ptr<T>(fUP);		
+		fpU   = new std::unique_ptr<T>(fUP);
 	}
 
 	virtual ~Container()
 	{
-		Delete();
+		self_delete();
 	}
 
-	void Delete()
+	void self_delete()
 	{
 		delete fpU;		
 	}
 
 	T* get(unsigned int i) const
 	{
-		if (i == fUID)
+		if (i == get_id())
 			return fUP;
 		return 0x0;
 	}
@@ -79,12 +131,18 @@ public:
 		return false;
 	}
 
+	template <class X>
+	bool HasHash(X* p)
+	{
+		size_t tmphash = std::type_index(typeid(p)).hash_code();
+		std::cout << "- comparing: " << fHashCode << " : " << tmphash << std::endl;
+		return get_hashcode() == tmphash;
+	}
+
 private:
 	Container() {;}
 	T*				 	fUP;
 	std::unique_ptr<T> 	*fpU;
-	std::string 		fName;
-	unsigned int		fUID;
 };
 
 class Wrapper

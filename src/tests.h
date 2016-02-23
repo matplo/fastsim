@@ -15,7 +15,7 @@ class Wrapp
 		{
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
-				std::cout << "Deleting " << typeid(fPointers[i]).name() << std::endl;
+				std::cout << "Deleting " << fPointers[i]->get_name() << std::endl;
 				delete fPointers[i];
 			}
 		}
@@ -23,11 +23,11 @@ class Wrapp
 		template <class T>
 		unsigned int 	add(T *p)
 		{
-			unsigned int id = fPositions.size();
-			Container<T> *c = new Container<T>(p, "no name", id);
-			c->TakeOwnership();
+			unsigned int id = fPointers.size();
+			std::string name = std::type_index(typeid(p)).name();
+			Container<T> *c = new Container<T>(p, id, name.c_str());
+			c->take_ownership();
 			fPointers.push_back(c);
-			fPositions.push_back(id);
 			return id;
 		}
 
@@ -38,9 +38,13 @@ class Wrapp
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
 				Container<T> *c = (Container<T>*)(fPointers[i]);
-				std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
-				if (c != 0x0)
+				if (c == 0x0)
+					continue;
+				bool has_hash = c->HasHash(*p);
+				std::cout << "---> is of the same type?:" << has_hash << std::endl;
+				if (has_hash)
 				{
+					std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
 					T *tmp = (T*)c->get();
 					if (tmp != 0x0)
 					{
@@ -53,10 +57,34 @@ class Wrapp
 			return 0x0;
 		}
 
+		template <class T>
+		T* get(T *)
+		{
+			for (unsigned int i = 0; i < fPointers.size(); i++)
+			{
+				Container<T> *c = (Container<T>*)(fPointers[i]);
+				if (c == 0x0)
+					continue;
+				T *p = 0;
+				bool has_hash = c->HasHash(p);
+				std::cout << "---> is of the same type?:" << has_hash << std::endl;
+				if (has_hash)
+				{
+					std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
+					T *tmp = (T*)c->get();
+					if (tmp != 0x0)
+					{
+						std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
+					}
+					return c->get();
+				}
+			}
+			return 0x0;
+		}
+
 	protected:
 
 		std::vector< VoidType* >		fPointers;
-		std::vector<unsigned int> 		fPositions;
 
 	private:
 
