@@ -131,7 +131,7 @@ public:
 	bool HasHash(X* p)
 	{
 		size_t tmphash = std::type_index(typeid(p)).hash_code();
-		std::cout << "- comparing: " << fHashCode << " : " << tmphash << std::endl;
+		//std::cout << "- comparing: " << fHashCode << " : " << tmphash << std::endl;
 		return get_hashcode() == tmphash;
 	}
 
@@ -153,7 +153,7 @@ class Wrapper
 		{
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
-				std::cout << "Deleting " << fPointers[i]->get_name() << std::endl;
+				//std::cout << "Deleting " << fPointers[i]->get_name() << std::endl;
 				delete fPointers[i];
 			}
 		}
@@ -179,14 +179,14 @@ class Wrapper
 				if (c == 0x0)
 					continue;
 				bool has_hash = c->HasHash(*p);
-				std::cout << "---> is of the same type?:" << has_hash << std::endl;
+				//std::cout << "---> is of the same type?:" << has_hash << std::endl;
 				if (has_hash)
 				{
-					std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
+					//std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
 					T *tmp = (T*)c->get();
 					if (tmp != 0x0)
 					{
-						std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
+						//std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
 					}
 					*p = c->get();
 					return c->get();
@@ -205,14 +205,14 @@ class Wrapper
 					continue;
 				T *p = 0;
 				bool has_hash = c->HasHash(p);
-				std::cout << "---> is of the same type?:" << has_hash << std::endl;
+				//std::cout << "---> is of the same type?:" << has_hash << std::endl;
 				if (has_hash)
 				{
-					std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
+					//std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
 					T *tmp = (T*)c->get();
 					if (tmp != 0x0)
 					{
-						std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
+						//std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
 					}
 					return c->get();
 				}
@@ -235,16 +235,14 @@ public:
 	WrapTestClass(const WrapTestClass &t) : i (t.i) {;}
 	virtual ~WrapTestClass()
 	{
-		std::cout << "WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
+		//std::cout << "WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
 	}
 	void test_call()
 	{
-		std::cout << "WrapTestClass test_call" << i << std::endl;
+		//std::cout << "WrapTestClass test_call" << i << std::endl;
 	}
 private:
 	int i;
 };
-
-void test_wrapper();
 
 #endif // __WRAPPER__HH
