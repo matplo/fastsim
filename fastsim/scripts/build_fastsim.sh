@@ -30,7 +30,7 @@ if [ -d $FASTSIM ]; then
   fi
 
 #  for pack in AliGenFME/src src
-  for pack in src
+  for pack in wrapper/src src
   do
     bdir=$FASTSIM/.build/$pack
     if is_arg_set "realclean" ;
