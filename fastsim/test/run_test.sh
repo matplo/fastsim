@@ -7,6 +7,7 @@ module load fastsim
 module list
 
 cd $FASTSIM/test/
-fastsim.exe 
+fastsim
+
 
 

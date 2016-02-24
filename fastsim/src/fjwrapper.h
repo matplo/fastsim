@@ -27,12 +27,16 @@ public:
     void set_ghost_max_rap(double ghmaxrap)     {fGhostMaxRap = ghmaxrap;}
     void set_area_type(fastjet::AreaType at)    {fAreaType = at;}
 
+    Wrapper* run(std::vector<fastjet::PseudoJet> &inv, double overrideR = 0);
+    Wrapper* run_warea(std::vector<fastjet::PseudoJet> &inv, double overrideR = 0);
+    Wrapper* run_bg_estimator(std::vector<fastjet::PseudoJet> &inv, int nhardignore = 2, double overrideR = 0);
+
     Wrapper* run(double overrideR = 0);
     Wrapper* run_warea(double overrideR = 0);
     Wrapper* run_bg_estimator(int nhardignore = 2, double overrideR = 0);
 
 private:
-    std::vector<Wrapper *>             fWrappers; // this is for memory management
+    std::vector<Wrapper *>              fWrappers; // this is for memory management
     std::vector<fastjet::PseudoJet>     fInput;
     fastjet::JetAlgorithm               fAlgorithm;
     double                              fR;

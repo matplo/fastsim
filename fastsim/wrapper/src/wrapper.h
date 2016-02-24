@@ -423,6 +423,4 @@ private:
 	int i;
 };
 
-int WrapTestClass::counter = 0;
-
 #endif // __WRAPPER__HH

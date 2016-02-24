@@ -35,6 +35,7 @@ set(SOURCES_LIB
 	header.cxx
 	fjwrapper.cxx
 	revent.cxx
+	pythia_run.cxx
 )
 
 set(SOURCES_EXE main.cxx)
@@ -43,7 +44,7 @@ set(SOURCES_EXE main.cxx)
 string(REPLACE ".cxx" ".h" HEADERS_LIB "${SOURCES_LIB}")
 string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
 
-set(FASTSIMLIBS "-L$ENV{FASTSIM}/lib")
+set(FASTSIMLIBS "-L$ENV{FASTSIM}/lib" -lrutil)
 set(FASTSIMINCLUDES $ENV{FASTSIM}/include)
 
 set(PROJECT_UTIL_LIB "${PROJECT_NAME}util")

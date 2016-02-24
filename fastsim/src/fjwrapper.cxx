@@ -82,6 +82,11 @@ void FJWrapper::reset()
 
 Wrapper* FJWrapper::run(double overrideR /*= 0*/)
 {
+    return run(fInput, overrideR);
+}
+
+Wrapper* FJWrapper::run(std::vector<fastjet::PseudoJet> &inv, double overrideR /*= 0*/)
+{
     double r = fR;
     if (overrideR > 0)
         r = overrideR;
@@ -90,7 +95,7 @@ Wrapper* FJWrapper::run(double overrideR /*= 0*/)
         jet_def = new fj::JetDefinition(fAlgorithm, r, fPower);
     else
         jet_def = new fj::JetDefinition(fAlgorithm, r);
-    fj::ClusterSequence *cs        = new fj::ClusterSequence(fInput, *jet_def);
+    fj::ClusterSequence *cs        = new fj::ClusterSequence(inv, *jet_def);
 
     Wrapper *w = new Wrapper();
     w->add(jet_def);
@@ -103,6 +108,11 @@ Wrapper* FJWrapper::run(double overrideR /*= 0*/)
 
 Wrapper* FJWrapper::run_warea(double overrideR /*= 0*/)
 {
+    return run_warea(fInput, overrideR);
+}
+
+Wrapper* FJWrapper::run_warea(std::vector<fastjet::PseudoJet> &inv, double overrideR /*= 0*/)
+{
     double r = fR;
     if (overrideR > 0)
         r = overrideR;
@@ -113,7 +123,7 @@ Wrapper* FJWrapper::run_warea(double overrideR /*= 0*/)
         jet_def = new fj::JetDefinition(fAlgorithm, r);
     fj::GhostedAreaSpec     *area_spec = new fj::GhostedAreaSpec(fGhostMaxRap);
     fj::AreaDefinition      *area_def  = new fj::AreaDefinition(fAreaType, *area_spec);
-    fj::ClusterSequenceArea *cs        = new fj::ClusterSequenceArea(fInput, *jet_def, *area_def);
+    fj::ClusterSequenceArea *cs        = new fj::ClusterSequenceArea(inv, *jet_def, *area_def);
 
     Wrapper *w = new Wrapper();
     w->add(jet_def);
@@ -127,6 +137,11 @@ Wrapper* FJWrapper::run_warea(double overrideR /*= 0*/)
 }    
 
 Wrapper* FJWrapper::run_bg_estimator(int nhardignore /*= 2*/, double overrideR /* = 0*/)
+{
+    return run_bg_estimator(fInput, nhardignore, overrideR);
+}
+
+Wrapper* FJWrapper::run_bg_estimator(std::vector<fastjet::PseudoJet> &inv, int nhardignore /*= 2*/, double overrideR /* = 0*/)
 {
     double r = fR;
     if (overrideR > 0)
@@ -151,7 +166,7 @@ Wrapper* FJWrapper::run_bg_estimator(int nhardignore /*= 2*/, double overrideR /
     // estimator but the usage below can more easily be accomodated to a
     // loop over a set of events.
     // ----------------------------------------------------------
-    bkgd_estimator->set_particles(fInput);
+    bkgd_estimator->set_particles(inv);
 
     //double rho   = bkgd_estimator.rho();
     //double sigma = bkgd_estimator.sigma();
