@@ -35,7 +35,6 @@ set(SOURCES_LIB
 	header.cxx
 	fjwrapper.cxx
 	revent.cxx
-	tests.cxx
 )
 
 set(SOURCES_EXE main.cxx)
