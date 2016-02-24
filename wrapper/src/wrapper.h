@@ -129,7 +129,8 @@ public:
 
 	void self_delete()
 	{
-		delete fpU;		
+		fpU->reset();
+		delete fpU;
 	}
 
 	T* get(unsigned int i) const
@@ -175,6 +176,8 @@ class Wrapper
 {
 	public:
 		Wrapper()
+		: fPointers()
+		, idcount(0)
 		{
 			;
 		}
@@ -191,7 +194,13 @@ class Wrapper
 		template <class T>
 		unsigned int 	add(T *p)
 		{
-			unsigned int id = fPointers.size();
+			if (contains(p))
+			{
+				std::string name = std::type_index(typeid(p)).name();
+				throw std::runtime_error(std::string("adding same pointer twice (?) typeid name: ") + name);
+			}
+			unsigned int id = idcount;
+			idcount++;
 			std::string name = std::type_index(typeid(p)).name();
 			WrapContainer<T> *c = new WrapContainer<T>(p, id, name.c_str());
 			c->take_ownership();
@@ -207,19 +216,61 @@ class Wrapper
 		}
 
 		template <class T>
+		bool contains(T *p)
+		{
+			for (unsigned int i = 0; i < fPointers.size(); i++)
+			{
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]); // always returns c!=0
+				if (c->get() == p)
+					return true;
+			}
+			return false;
+		}
+
+		template <class T>
 		T* get()
 		{
-			T *p = 0;
+			T *p = 0x0;
 			size_t tmphash = std::type_index(typeid(p)).hash_code();
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
 				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]); // always returns c!=0
 				if (c->HasHash(tmphash))
 				{
-					return c->get();
+					p = c->get();
 				}
 			}
-			return 0x0;
+			return p;
+		}
+
+		template <class T>
+		long index()
+		{
+			long idx = -1;
+			T *p = 0x0;
+			size_t tmphash = std::type_index(typeid(p)).hash_code();
+			for (unsigned int i = 0; i < fPointers.size(); i++)
+			{
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]); // always returns c!=0
+				if (c->HasHash(tmphash))
+				{
+					idx = i;
+				}
+			}
+			return idx;
+		}
+
+		template <class T>
+		void remove_all()
+		{
+			T *p = 0x0;
+			long idx = index<T>();
+			while (idx >= 0)
+			{
+				delete fPointers[idx];
+				fPointers.erase(fPointers.begin() + idx);
+				idx = index<T>();
+			}
 		}
 
 		void list()
@@ -237,9 +288,10 @@ class Wrapper
 	protected:
 
 		std::vector< WrapType* >		fPointers;
+		//std::forward_list< WrapType* >		fPointers;
 
 	private:
-
+		unsigned int idcount;
 };
 
 class WrapTestClass
@@ -249,11 +301,11 @@ public:
 	WrapTestClass(const WrapTestClass &t) : i (t.i) {;}
 	virtual ~WrapTestClass()
 	{
-		std::cout << "WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
+		std::cout << "---> WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
 	}
 	void test_call()
 	{
-		std::cout << "WrapTestClass test_call" << i << std::endl;
+		std::cout << "---> WrapTestClass test_call i = " << i << std::endl;
 	}
 private:
 	int i;

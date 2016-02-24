@@ -17,6 +17,7 @@ void test_wrapper()
 
 	Wrapper wr;
 	wr.add(tc);
+	wr.add(new WrapTestClass());
 
 	WrapTestClass *tc1 = wr.get<WrapTestClass>();
 	std::cout << "   tc1 at " << tc1 << std::endl;
@@ -46,13 +47,27 @@ void test_wrapper()
 
 	std::cout << std::endl;
 	wr.list();
+
+	std::cout << "[i] index of <int> is: " << wr.index<int>() << std::endl;
+	std::cout << "[i] index of vector<int> is: " << wr.index< std::vector<int> >() << std::endl;
+
+	wr.remove_all<WrapTestClass>();
+
+	//tc->test_call();
+
+	wr.list();
+
+	wr.add(new WrapTestClass);
+
+	wr.list();
+
 }
 
 int main ( int argc, char *argv[] )
 {
-	for (unsigned int i = 0; i < 1e12; i++)
+	for (unsigned int i = 0; i < 1e1; i++)
 	{		
-		if (i % 100000 == 0)
+		if (i % 100000 == 0 && i > 0)
 		{
 			std::cout << i << std::endl;
 		}
