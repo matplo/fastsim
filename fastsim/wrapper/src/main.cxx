@@ -66,12 +66,26 @@ void test_wrapper()
 		p->test_call();
 	}
 
+	bool rm = wr.remove(tc);
+	std::cout << "- removed " << tc << " with status " << rm << std::endl;
+	rm = wr.remove(tc);
+	std::cout << "- removed " << tc << " with status " << rm << std::endl;
+
+	it.reset(false);
+	while ( ( p = it.next() ) != 0)
+	{
+		std::cout << " iterating: " << p << std::endl;
+		p->test_call();
+	}
+
+	std::cout << " remove all WrapTestClass " << std::endl;
 	wr.remove_all<WrapTestClass>();
 
 	//tc->test_call();
 
 	wr.list();
 
+	std::cout << " add new WrapTestClass " << std::endl;
 	wr.add(new WrapTestClass);
 
 	wr.list();

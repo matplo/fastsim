@@ -228,6 +228,22 @@ class Wrapper
 		}
 
 		template <class T>
+		bool remove(T *p)
+		{
+			for (unsigned int i = 0; i < fPointers.size(); i++)
+			{
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]); // always returns c!=0
+				if (c->get() == p)
+					{
+						delete fPointers[i];
+						fPointers.erase(fPointers.begin() + i);
+						return true;
+					}
+			}
+			return false;			
+		}
+
+		template <class T>
 		T* get() const
 		{
 			T *p = 0x0;
@@ -396,11 +412,11 @@ public:
 	WrapTestClass(const WrapTestClass &t) : i (t.i) {;}
 	virtual ~WrapTestClass()
 	{
-		std::cout << "---> WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
+		std::cout << "debug: ---> WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
 	}
 	void test_call()
 	{
-		std::cout << "---> WrapTestClass test_call i = " << i << std::endl;
+		std::cout << "debug: ---> WrapTestClass test_call i = " << i << std::endl;
 	}
 	static int counter;
 private:
