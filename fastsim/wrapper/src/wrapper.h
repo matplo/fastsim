@@ -335,7 +335,7 @@ public:
 	, fPos (0)
 	, fIndexes()
 	{
-		reset();
+		reset(forward);
 	}
 
 	void reset(bool forward = true)
