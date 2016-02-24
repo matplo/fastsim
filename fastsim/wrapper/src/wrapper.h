@@ -39,23 +39,44 @@ public:
 		fID = uid;
 	}
 
-	unsigned int get_id()
+	void set_type_name(const char *tname)
+	{
+		fTypeName = tname;
+	}
+
+	unsigned int get_id() const
 	{
 		return fID;
 	}
 
-	std::string get_name()
+	std::string get_name() const
 	{
 		return fName;
 	}
 
-	size_t get_hashcode()
+	size_t get_hashcode() const
 	{
 		return fHashCode;
 	}
 
+	std::string get_type_name() const 
+	{
+		return fTypeName;
+	}
+
+	friend std::ostream& operator <<(std::ostream& out, const WrapType& c)
+	{
+		out << "> @ 0x" << &c << " type name: " << std::type_index(typeid(c)).name() << std::endl
+			<< "    name:     " << c.get_name() << std::endl
+			<< "    type:     " << c.get_type_name() << std::endl
+			<< "    hashcode: " << c.get_hashcode() << std::endl
+			<< "    id:       " << c.get_id() << std::endl;
+		return out;
+	} 
+
 protected:
 	std::string 		fName;
+	std::string         fTypeName;
 	unsigned int		fID;
 	size_t				fHashCode;
 };
@@ -67,13 +88,15 @@ public:
 	: WrapType()
 	, fUP(p)
 	, fpU(0)
+	, fIdx(typeid(p))
 	{
-		set_hashcode( std::type_index(typeid(p)).hash_code() );
+		set_hashcode( fIdx.hash_code() );
 		if (name != 0)
 			set_name(name);
 		else
-			set_name( std::type_index(typeid(p)).name() );
+			set_name( fIdx.name() );
 		set_id(id);
+		set_type_name(fIdx.name());
 	}
 
 	WrapContainer(const WrapContainer<T> &c)
@@ -135,10 +158,16 @@ public:
 		return get_hashcode() == tmphash;
 	}
 
+	bool HasHash(size_t tmphash)
+	{
+		return get_hashcode() == tmphash;
+	}
+
 private:
 	WrapContainer() {;}
 	T*				 	fUP;
 	std::unique_ptr<T> 	*fpU;
+	std::type_index     fIdx;
 };
 
 class Wrapper
@@ -170,54 +199,43 @@ class Wrapper
 		}
 
 		template <class T>
-		T* get(T **p)
+		unsigned int 	add(const T &o)
 		{
-			*p = 0x0;
+			T *p = new T(o);
+			unsigned int id = fPointers.size();
+			std::string name = std::type_index(typeid(p)).name();
+			WrapContainer<T> *c = new WrapContainer<T>(p, id, name.c_str());
+			c->take_ownership();
+			fPointers.push_back(c);
+			return id;
+		}
+
+		template <class T>
+		T* get()
+		{
+			T *p = 0;
+			size_t tmphash = std::type_index(typeid(p)).hash_code();
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
-				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]);
-				if (c == 0x0)
-					continue;
-				bool has_hash = c->HasHash(*p);
-				//std::cout << "---> is of the same type?:" << has_hash << std::endl;
-				if (has_hash)
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]); // always returns c!=0
+				if (c->HasHash(tmphash))
 				{
-					//std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
-					T *tmp = (T*)c->get();
-					if (tmp != 0x0)
-					{
-						//std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
-					}
-					*p = c->get();
 					return c->get();
 				}
 			}
 			return 0x0;
 		}
 
-		template <class T>
-		T* get(T *)
+		void list()
 		{
+			std::cout << "[i] Wrapper::list() ..." << std::endl << std::endl;
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
-				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[i]);
-				if (c == 0x0)
-					continue;
-				T *p = 0;
-				bool has_hash = c->HasHash(p);
-				//std::cout << "---> is of the same type?:" << has_hash << std::endl;
-				if (has_hash)
-				{
-					//std::cout << i << " c is: " << c << " " << typeid(c).name() << std::endl;
-					T *tmp = (T*)c->get();
-					if (tmp != 0x0)
-					{
-						//std::cout << "    " << " cast to " << typeid(T).name() << " " << typeid(c->get()).name() << " ok " << std::endl;
-					}
-					return c->get();
-				}
-			}
-			return 0x0;
+				// this is a trick - we do not need a template argument here
+				WrapContainer<bool> *c = (WrapContainer<bool>*)(fPointers[i]); // always returns c!=0
+				WrapContainer<bool> &rc = *c;
+				std::cout << rc << std::endl;
+			}			
 		}
 
 	protected:
@@ -235,11 +253,11 @@ public:
 	WrapTestClass(const WrapTestClass &t) : i (t.i) {;}
 	virtual ~WrapTestClass()
 	{
-		//std::cout << "WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
+		std::cout << "WrapTestClass::~WrapTestClass() " << i << " at 0x" << this << std::endl;
 	}
 	void test_call()
 	{
-		//std::cout << "WrapTestClass test_call" << i << std::endl;
+		std::cout << "WrapTestClass test_call" << i << std::endl;
 	}
 private:
 	int i;
