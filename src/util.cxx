@@ -137,7 +137,8 @@ bool add_pythia_particles(py::Pythia &pythia,
 	int    select  = 2;      // Which particles are included?
 	int    massSet = 0;      // Which mass are they assumed to have? 2-self masses; 1-pions; 0-zero
 
-	parts.resize(0);
+	//parts.resize(0);
+	parts.clear();
 
 	py::Info& info = pythia.info;
 	py::Event& event = pythia.event;

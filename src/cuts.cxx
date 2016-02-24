@@ -187,4 +187,22 @@ class Wrapp
 
 };
 
+void FJWrapper::clear_input()
+{
+    fInput.clear();        
+}
+
+void FJWrapper::add_input(fj::PseudoJet v)
+{
+    fInput.push_back(v);
+}
+
+void FJWrapper::add_input(std::vector<fj::PseudoJet> vv)
+{
+    for (unsigned int i = 0; i < vv.size(); i++)
+    {
+        fInput.push_back(vv[i]);
+    }
+}
+
 #endif

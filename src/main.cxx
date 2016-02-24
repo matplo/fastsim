@@ -1,6 +1,7 @@
 //#include "toymcpy8.h"
 #include "util.h"
 #include "fjwrapper.h"
+#include "pythia_run.h"
 
 int main ( int argc, char *argv[] )
 {
@@ -8,7 +9,10 @@ int main ( int argc, char *argv[] )
 
 	//test_fj_wrapper();
 
-	test_wrapp();
+	//test_wrapp();
+
+	pythia_run(argc, argv);
+
 	return 0;
 };
 
