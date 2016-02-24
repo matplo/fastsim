@@ -103,6 +103,7 @@ public:
 	: WrapType()
 	, fUP(c.fUP)
 	, fpU(0)
+	, fIdx(c.fIdx)
 	{
 		set_name(c.fName.c_str());
 		set_id(c.fID);
@@ -202,12 +203,7 @@ class Wrapper
 		unsigned int 	add(const T &o)
 		{
 			T *p = new T(o);
-			unsigned int id = fPointers.size();
-			std::string name = std::type_index(typeid(p)).name();
-			WrapContainer<T> *c = new WrapContainer<T>(p, id, name.c_str());
-			c->take_ownership();
-			fPointers.push_back(c);
-			return id;
+			return add(p);
 		}
 
 		template <class T>
