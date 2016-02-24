@@ -51,6 +51,21 @@ void test_wrapper()
 	std::cout << "[i] index of <int> is: " << wr.index<int>() << std::endl;
 	std::cout << "[i] index of vector<int> is: " << wr.index< std::vector<int> >() << std::endl;
 
+	WrapperIterator<WrapTestClass> it(&wr);
+	WrapTestClass *p = 0;
+	while ( ( p = it.next() ) != 0)
+	{
+		std::cout << " iterating: " << p << std::endl;
+		p->test_call();
+	}
+
+	it.reset(false);
+	while ( ( p = it.next() ) != 0)
+	{
+		std::cout << " iterating: " << p << std::endl;
+		p->test_call();
+	}
+
 	wr.remove_all<WrapTestClass>();
 
 	//tc->test_call();

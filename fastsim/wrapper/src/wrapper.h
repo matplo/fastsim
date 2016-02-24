@@ -228,7 +228,7 @@ class Wrapper
 		}
 
 		template <class T>
-		T* get()
+		T* get() const
 		{
 			T *p = 0x0;
 			size_t tmphash = std::type_index(typeid(p)).hash_code();
@@ -239,6 +239,32 @@ class Wrapper
 				{
 					p = c->get();
 				}
+			}
+			return p;
+		}
+
+		template <class T>
+		T* get_unchecked(unsigned int iwhich) const
+		{
+			T *p = 0x0;
+			if ( iwhich < fPointers.size())
+			{
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[iwhich]); // always returns c!=0
+				p = c->get();
+			}
+			return p;
+		}
+
+		template <class T>
+		T* get(unsigned int iwhich) const 
+		{
+			T *p = 0x0;
+			if ( iwhich < fPointers.size() )
+			{
+				size_t tmphash = std::type_index(typeid(p)).hash_code();
+				WrapContainer<T> *c = (WrapContainer<T>*)(fPointers[iwhich]); // always returns c!=0
+				if (c->HasHash(tmphash))
+					p = c->get();
 			}
 			return p;
 		}
@@ -285,6 +311,11 @@ class Wrapper
 			}			
 		}
 
+		unsigned int size() const
+		{
+			return fPointers.size();
+		}
+
 	protected:
 
 		std::vector< WrapType* >		fPointers;
@@ -294,10 +325,74 @@ class Wrapper
 		unsigned int idcount;
 };
 
+template <class T>
+class WrapperIterator
+{
+public:
+	WrapperIterator (const Wrapper *w, bool forward = true)
+	: fWrapper(w)
+	, fForward(forward)
+	, fPos (0)
+	, fIndexes()
+	{
+		reset();
+	}
+
+	void reset(bool forward = true)
+	{
+		fForward = forward;
+		fIndexes.clear();
+		unsigned int isize = fWrapper->size();
+		for (unsigned int i = 0; i < isize; i++)
+		{
+			if (fWrapper->get<T>(i) != 0x0)
+				fIndexes.push_back(i);
+		}
+		if (fForward == false)
+		{
+			fPos = fIndexes.size();
+		}
+		else
+		{
+			fPos = 1;
+		}
+	}
+
+	~WrapperIterator() {;}
+
+	T *next()
+	{
+		T *p = 0;
+		if (fPos == 0)
+		{
+			return p;
+		}
+		if (fPos - 1 < fIndexes.size())
+		{
+			p = fWrapper->get<T>(fPos - 1);
+			if (fForward == false)
+			{
+				fPos--;
+			}
+			else
+			{
+				fPos++;
+			}
+		}
+		return p;
+	}
+
+private:
+	const Wrapper *fWrapper;
+	bool fForward;
+	unsigned int fPos;
+	std::vector<unsigned int> fIndexes;
+};
+
 class WrapTestClass
 {
 public:
-	WrapTestClass() : i(1) {;}
+	WrapTestClass() : i(counter++) {;}
 	WrapTestClass(const WrapTestClass &t) : i (t.i) {;}
 	virtual ~WrapTestClass()
 	{
@@ -307,8 +402,11 @@ public:
 	{
 		std::cout << "---> WrapTestClass test_call i = " << i << std::endl;
 	}
+	static int counter;
 private:
 	int i;
 };
+
+int WrapTestClass::counter = 0;
 
 #endif // __WRAPPER__HH
