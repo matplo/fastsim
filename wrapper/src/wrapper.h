@@ -178,6 +178,7 @@ class Wrapper
 		Wrapper()
 		: fPointers()
 		, idcount(0)
+		, debug(0)
 		{
 			;
 		}
@@ -186,7 +187,12 @@ class Wrapper
 		{
 			for (unsigned int i = 0; i < fPointers.size(); i++)
 			{
-				//std::cout << "Deleting " << fPointers[i]->get_name() << std::endl;
+				if (debug) 
+					{
+						std::cout << "[d] Deleting... " << fPointers[i]->get_name() << std::endl;
+						std::cout << *fPointers[i] << std::endl;
+					}
+
 				delete fPointers[i];
 			}
 		}
@@ -332,13 +338,19 @@ class Wrapper
 			return fPointers.size();
 		}
 
+		void set_debug(unsigned int idbg)
+		{
+			debug = idbg;
+		}
+
 	protected:
 
 		std::vector< WrapType* >		fPointers;
 		//std::forward_list< WrapType* >		fPointers;
 
 	private:
-		unsigned int idcount;
+		unsigned int 	idcount;
+		unsigned int	debug;
 };
 
 template <class T>

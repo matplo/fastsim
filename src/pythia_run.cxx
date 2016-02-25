@@ -99,6 +99,7 @@ void pythia_run ( int argc, char *argv[] )
 
 	// setup generator
 	Wrapper pywrapp;
+	pywrapp.set_debug(1);
 	py::Pythia *ppythia = get_pythia();
 	pywrapp.add(ppythia); // no need to remember to delete
 
@@ -145,11 +146,23 @@ void pythia_run ( int argc, char *argv[] )
 	    Wrapper *jf = w.run(pyrecord.f);
 	    std::vector<fj::PseudoJet> j = jf->get<fj::ClusterSequence>()->inclusive_jets();
     	//std::cout << " event #" << iEvent << " => #jets: " << v.size() << endl;
+    	revent.FillBranch("j", fj::sorted_by_pt(j));
+
+		std::vector<fj::PseudoJet> sjets;
+	    for (unsigned int i = 0; i < j.size(); i++)
+	    {
+	    	std::vector<fj::PseudoJet> cons = j[i].constituents();
+		    Wrapper *sj = w.run(cons, 0.1);
+		    std::vector<fj::PseudoJet> v = fj::sorted_by_pt(sj->get<fj::ClusterSequence>()->inclusive_jets());
+		    sjets.insert(sjets.end(), v.begin(), v.end());
+	    }
+    	revent.FillBranch("sjs", sjets);
+
+	    Wrapper *jfr = w.run(pyrecord.f, 0.1);
+    	revent.FillBranch("jr", fj::sorted_by_pt(jfr->get<fj::ClusterSequence>()->inclusive_jets()));
 
 	    Wrapper *jfvc = w.run(pyrecord.fv_charged);
 	    std::vector<fj::PseudoJet> jvc = jfvc->get<fj::ClusterSequence>()->inclusive_jets();
-
-    	revent.FillBranch("j", fj::sorted_by_pt(j));
     	revent.FillBranch("jvc", fj::sorted_by_pt(jvc));
 
 		revent.FinishEvent();
