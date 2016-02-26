@@ -4,6 +4,7 @@
 #include <TRandom.h>
 #include <TMath.h>
 #include <TLorentzVector.h>
+#include <TParticle.h>
 #include <TSystem.h>
 #include <TH2I.h>
 #include <TFile.h>
@@ -190,5 +191,141 @@ bool add_pythia_particles(py::Pythia &pythia,
 	return true;
 }
 
+//pythia helpers
 
+py::Pythia* get_pythia(string cmndfile /*= "pythia.cmnd"*/)
+{
+	// Generator. Shorthand for event.
+	py::Pythia *ppythia = new py::Pythia();
+	// Read in commands from external file.
+	ppythia->readFile(cmndfile.c_str());
+	ppythia->init();
+
+	return ppythia;
+}
+
+void pythia_fj_record::clear()
+{
+	partons.clear();
+	f.clear(); // final
+	fv.clear(); // final and visible
+	fv_charged.clear(); // ...&charged
+	fv_neutral.clear(); // ...&neutral
+}
+
+void pythia_fj_record::fill_event(const py::Pythia &pythia, double etamax /*= 5*/)
+{
+	const py::Event& event    = pythia.event;
+	for (int i = 0; i < event.size(); ++i)
+	{
+		// now the partons
+		if ( i == 5 || i == 6)
+		{
+			fj::PseudoJet p = event[i];
+			partons.push_back(p);
+    	}
+
+		if (abs(event[i].eta()) > etamax) continue;
+
+		if ( event[i].isFinal() )
+		{
+			fj::PseudoJet particleTemp = event[i];
+			particleTemp.set_user_index(i);
+
+			f.push_back(particleTemp);
+
+			if (event[i].isVisible())
+			{
+				fv.push_back(particleTemp);
+
+				if (event[i].isCharged())
+				{
+					fv_charged.push_back( particleTemp );
+				}
+				else
+				{
+					fv_neutral.push_back( particleTemp );
+				}
+			} // for the visible particles
+		} // for the final particles
+    } // particle loop within an event
+} // fill_event
+
+
+// pythia -> root TParticle
+
+	TParticle py8particle_to_TParticle(py::Particle &part)
+	{
+		TParticle p(
+		part.id(),
+		part.isFinal(),
+		part.mother1(),
+		part.mother2(),
+		part.daughter1(),
+		part.daughter2(),
+		part.px(),     // [GeV/c]
+		part.py(),     // [GeV/c]
+		part.pz(),     // [GeV/c]
+		part.e(),      // [GeV]
+		part.xProd(),  // [mm]
+		part.yProd(),  // [mm]
+		part.zProd(),  // [mm]
+		part.tProd()); // [mm/c]
+		return p;
+	};
+
+	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Particle &part)
+	{
+		TParticle p(
+		part.id(),
+		part.isFinal(),
+		part.mother1(),
+		part.mother2(),
+		part.daughter1(),
+		part.daughter2(),
+		part.px(),     // [GeV/c]
+		part.py(),     // [GeV/c]
+		part.pz(),     // [GeV/c]
+		part.e(),      // [GeV]
+		part.xProd(),  // [mm]
+		part.yProd(),  // [mm]
+		part.zProd(),  // [mm]
+		part.tProd()); // [mm/c]
+		v.push_back(p);
+	};
+
+	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Pythia *py, int i)
+	{
+		//TParticle p(
+		//py->event[i].id(),
+		//py->event[i].isFinal(),
+		//py->event[i].mother1(),
+		//py->event[i].mother2(),
+		//py->event[i].daughter1(),
+		//py->event[i].daughter2(),
+		//py->event[i].px(),     // [GeV/c]
+		//py->event[i].py(),     // [GeV/c]
+		//py->event[i].pz(),     // [GeV/c]
+		//py->event[i].e(),      // [GeV]
+		//py->event[i].xProd(),  // [mm]
+		//py->event[i].yProd(),  // [mm]
+		//py->event[i].zProd(),  // [mm]
+		//py->event[i].tProd()); // [mm/c]
+
+		TParticle p = py8particle_to_TParticle(py->event[i]);
+		v.push_back(p);
+	};
+
+	std::vector<TParticle> py8_event_to_vector(py::Pythia *py, bool final /*= false */)
+	{
+		std::vector<TParticle> v;
+		const py::Event& event    = py->event;
+		for (int i = 0; i < event.size(); ++i)
+			{
+				if (final == true && !event[i].isFinal())
+					continue;
+				add_py8particle_to_TParticle_vector(v, py, i);
+			}
+		return v;
+	};
 };

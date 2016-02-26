@@ -6,6 +6,7 @@
 #pragma link off all typedef;
 
 #pragma link C++ class std::vector<TLorentzVector>+;
+#pragma link C++ class std::vector<TParticle>+;
 
 #pragma link C++ nestedclass;
 #pragma link C++ nestedtypedef;

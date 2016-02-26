@@ -1,7 +1,7 @@
 #include "rutil.h"
 #include <boost/math/constants/constants.hpp>
 
-namespace R2Util
+namespace RUtil
 {
 	const double pi = boost::math::constants::pi<double>();
 };

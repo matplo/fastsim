@@ -2,7 +2,7 @@
 #define RUTIL_HH
 
 #include <TLorentzVector.h>
-#include <TString.h>
+#include <TParticle.h>
 #include <vector>
 
 namespace RUtil
