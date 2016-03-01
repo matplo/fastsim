@@ -1,5 +1,5 @@
 #include "fjwrapper.h"
-#include <wrapper.h>
+#include <wrapper/wrapper.h>
 
 #include <string>
 #include <vector>
@@ -20,7 +20,6 @@ namespace fj = fastjet;
 
 #include <iostream>
 using namespace std;
-
 
 FJWrapper::FJWrapper()
     : fWrappers()

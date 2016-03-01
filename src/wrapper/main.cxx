@@ -1,4 +1,7 @@
 #include "wrapper.h"
+#include "wrapperiterator.h"
+#include "wraptestclass.h"
+
 #include <iostream>
 
 void other_function(Wrapper &wr)

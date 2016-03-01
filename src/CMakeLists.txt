@@ -1,71 +1,27 @@
 project(fastsim CXX)
 cmake_minimum_required(VERSION 2.8.11)
 
-# indep. if root built with cmake assume the root-cint is in the path
-execute_process ( COMMAND root-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
-#message ("[info] ROOT_DIR: ${ROOT_DIR}")
-execute_process ( COMMAND root-config --etcdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_ETCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
-set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
-#message ("[info] CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
-find_package(ROOT REQUIRED EG)
-
-execute_process ( COMMAND root-config --libs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
-
 execute_process ( COMMAND fastjet-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
 execute_process ( COMMAND fastjet-config --cxxflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
 execute_process ( COMMAND fastjet-config --libs --plugins WORKING_DIRECTORY /tmp OUTPUT_VARIABLE FASTJET_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
-message( "FASTJET_DIR: ${FASTJET_DIR}")
-message( "FASTJET_CXXFLAGS: ${FASTJET_CXXFLAGS}")
-message( "FASTJET_LIBS: ${FASTJET_LIBS}")
+message( STATUS "FASTJET_DIR: ${FASTJET_DIR}")
+message( STATUS "FASTJET_CXXFLAGS: ${FASTJET_CXXFLAGS}")
+message( STATUS "FASTJET_LIBS: ${FASTJET_LIBS}")
 
 execute_process ( COMMAND pythia8-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
 execute_process ( COMMAND pythia8-config --cxxflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_CXXFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
 execute_process ( COMMAND pythia8-config --ldflags WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE )
 #execute_process ( COMMAND pythia8-config --includedir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE PYTHIA8_INCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
 #message( "PYTHIA8_INCDIR: ${PYTHIA8_INCDIR}")
-message( "PYTHIA8_DIR: ${PYTHIA8_DIR}")
-message( "PYTHIA8_CXXFLAGS: ${PYTHIA8_CXXFLAGS}")
-message( "PYTHIA8_LDFLAGS: ${PYTHIA8_LDFLAGS}")
+message( STATUS "PYTHIA8_DIR: ${PYTHIA8_DIR}")
+message( STATUS "PYTHIA8_CXXFLAGS: ${PYTHIA8_CXXFLAGS}")
+message( STATUS "PYTHIA8_LDFLAGS: ${PYTHIA8_LDFLAGS}")
 
 set(CMAKE_MACOSX_RPATH 1)
 
-set(SOURCES_LIB
-	util.cxx
-	#toymcpy8.cxx
-	header.cxx
-	fjwrapper.cxx
-	revent.cxx
-	pythia_run.cxx
-)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-set(SOURCES_EXE main.cxx)
-
-# Headers from sources
-string(REPLACE ".cxx" ".h" HEADERS_LIB "${SOURCES_LIB}")
-string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
-
-set(FASTSIMLIBS "-L$ENV{FASTSIM}/lib" -lrutil)
-set(FASTSIMINCLUDES $ENV{FASTSIM}/include)
-
-set(PROJECT_UTIL_LIB "${PROJECT_NAME}util")
-add_library(${PROJECT_UTIL_LIB} SHARED ${SOURCES_LIB})
-target_include_directories(${PROJECT_UTIL_LIB} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${FASTSIMINCLUDES})  
-target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${FASTSIMLIBS} ${ROOT_LIBRARIES} )
-
-add_executable(${PROJECT_NAME} ${SOURCES_EXE})
-target_include_directories(${PROJECT_NAME} PUBLIC "${ROOT_INCLUDE_DIR}" "${FASTJET_DIR}/include" "${PYTHIA8_DIR}/include" ${FASTSIMINCLUDES})  
-#target_link_libraries(${PROJECT_NAME} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES} ${PROJECT_UTIL_LIB} )
-target_link_libraries( ${PROJECT_NAME} ${PROJECT_UTIL_LIB} )
-
-#install(TARGETS ${PROJECT_NAME} ${PROJECT_UTIL_LIB}
-#        RUNTIME DESTINATION bin
-#        LIBRARY DESTINATION lib)
-
-install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION bin)
-
-install(TARGETS ${PROJECT_UTIL_LIB}
-        LIBRARY DESTINATION lib)
-
-#install(TARGETS ${PROJECT_UTIL_LIB} ARCHIVE DESTINATION bin LIBRARY DESTINATION lib)
-install(FILES ${HEADERS_LIB} DESTINATION include)
+add_subdirectory(rutil)
+add_subdirectory(wrapper)
+add_subdirectory(fjwrapper)
+add_subdirectory(fastsim)

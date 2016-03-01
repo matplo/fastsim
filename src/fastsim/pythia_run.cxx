@@ -1,5 +1,8 @@
 #include "pythia_run.h"
 
+#include <fjwrapper/fjwrapper.h>
+#include <wrapper/wrapper.h>
+
 #include <Pythia8/Pythia.h>
 #include <Pythia8Plugins/FastJet3.h>
 #include <iostream> // needed for io
@@ -7,9 +10,6 @@ using namespace std;
 
 //using namespace fastjet; - conflicts with root
 namespace fj = fastjet;
-
-#include "fjwrapper.h"
-#include <wrapper.h>
 
 #include "util.h"
 #include "revent.h"
