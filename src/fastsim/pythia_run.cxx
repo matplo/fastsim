@@ -12,8 +12,8 @@ using namespace std;
 namespace fj = fastjet;
 
 #include "util.h"
-#include "revent.h"
-#include "header.h"
+#include <revent/revent.h>
+#include <revent/header.h>
 
 //ROOT
 #include <TFile.h>

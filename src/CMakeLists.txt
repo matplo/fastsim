@@ -17,10 +17,32 @@ message( STATUS "PYTHIA8_DIR: ${PYTHIA8_DIR}")
 message( STATUS "PYTHIA8_CXXFLAGS: ${PYTHIA8_CXXFLAGS}")
 message( STATUS "PYTHIA8_LDFLAGS: ${PYTHIA8_LDFLAGS}")
 
+find_package(Boost REQUIRED math_c99)
+if (BOOST-NOTFOUND)
+	message(SEND_ERROR "Boost or one of the components not found. Will not compile ${EXE_NAME}")
+endif (BOOST-NOTFOUND)
+
+# indep. if root built with cmake assume the root-cint is in the path
+execute_process ( COMMAND root-config --prefix WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_DIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+#message ("[info] ROOT_DIR: ${ROOT_DIR}")
+execute_process ( COMMAND root-config --etcdir WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_ETCDIR OUTPUT_STRIP_TRAILING_WHITESPACE )
+set( CMAKE_MODULE_PATH "${ROOT_ETCDIR}/cmake" )
+#message ("[info] CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
+find_package(ROOT REQUIRED EG)
+
+execute_process ( COMMAND root-config --libs WORKING_DIRECTORY /tmp OUTPUT_VARIABLE ROOT_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+if(DEFINED ROOT_USE_FILE) 
+  include(${ROOT_USE_FILE}) 
+else() 
+  include_directories(${ROOT_INCLUDE_DIRS}) 
+endif() 
+
 set(CMAKE_MACOSX_RPATH 1)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+add_subdirectory(revent)
 add_subdirectory(rutil)
 add_subdirectory(wrapper)
 add_subdirectory(fjwrapper)
