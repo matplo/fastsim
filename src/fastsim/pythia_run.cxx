@@ -75,9 +75,10 @@ void pythia_run ( int argc, char *argv[] )
 		pyrecord.fill_event(pythia);
 
 		// py8 particles into TParticles
-		std::vector<TParticle> v = GenerUtil::py8_event_to_vector(ppythia, true); //only final
-		//for (unsigned int i = 0; i < v.size(); i++)
-		//	std::cout << v[i].GetName() << endl;
+		// std::vector<TParticle> v = GenerUtil::py8_event_to_vector(ppythia, true); //only final
+		// for (unsigned int i = 0; i < v.size(); i++) std::cout << v[i].GetName() << endl;
+    	std::vector<TParticle> tpevent = GenerUtil::py8_event_to_vector(ppythia);
+    	revent.FillBranch("parts", tpevent);
 
 		// run jet finders
 	    FJWrapper w;

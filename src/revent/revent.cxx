@@ -4,7 +4,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TLorentzVector.h>
-
+#include <TSystem.h>
 
 #include <iostream> // needed for io
 using namespace std;
@@ -13,12 +13,23 @@ namespace fj = fastjet;
 //using namespace Pythia8; - conflicts with root
 namespace py = Pythia8;
 
+bool REvent::sLibsLoaded = false;
+
+void REvent::LoadLibs()
+{
+	int loaded = gSystem->Load("librutil"); // this is needed on ubuntu but not on mac os x (?)
+	cout << "[i] Loading librutil... - status: " << loaded << " (0 is success)." << endl;
+}
+
 REvent::REvent()
 	: fout(0)
 	, tree(0)
 	, pPythia(0)
 {
-	;
+	if (sLibsLoaded == false)
+	{
+		LoadLibs();
+	}
 }
 
 REvent::~REvent()
@@ -62,6 +73,30 @@ void REvent::FillBranch(const char* name, std::vector <fj::PseudoJet> in)
 	b->Fill();
 	pv->clear();
 	delete pv;
+}
+
+void REvent::FillBranch(const char* name, std::vector <TParticle> in)
+{
+	std::vector <TParticle> *pin = &in;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pin, 1);
+	}
+	b->SetAddress(&pin);
+	b->Fill();
+}
+
+void REvent::FillBranch(const char* name, std::vector <TLorentzVector> in)
+{
+	std::vector <TLorentzVector> *pin = &in;
+	TBranch *b = tree->GetBranch(name);
+	if (b == 0)
+	{
+		b = tree->Branch(name, &pin, 1);
+	}
+	b->SetAddress(&pin);
+	b->Fill();
 }
 
 void REvent::FinishEvent()

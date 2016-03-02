@@ -1,3 +1,3 @@
 {
-	gSystem->Load("libR2Util");
+	gSystem->Load("librutil");
 }

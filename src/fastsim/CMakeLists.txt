@@ -13,7 +13,7 @@ string(REPLACE ".cxx" ".h" HEADERS_EXE "${SOURCES_EXE}")
 set(PROJECT_UTIL_LIB "${PROJECT_NAME}util")
 add_library(${PROJECT_UTIL_LIB} SHARED ${SOURCES_LIB})
 target_include_directories(${PROJECT_UTIL_LIB} PUBLIC ${ROOT_INCLUDE_DIR} ${FASTJET_DIR}/include ${PYTHIA8_DIR}/include)  
-target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES} fjwrapper rutil wrapper revent)
+target_link_libraries(${PROJECT_UTIL_LIB} ${PYTHIA8_LDFLAGS} ${FASTJET_LIBS} ${ROOT_LIBRARIES} fjwrapper wrapper revent rutil)
 
 add_executable(${PROJECT_NAME} ${SOURCES_EXE})
 target_include_directories(${PROJECT_NAME} PUBLIC ${ROOT_INCLUDE_DIR} ${FASTJET_DIR}/include ${PYTHIA8_DIR}/include)  
