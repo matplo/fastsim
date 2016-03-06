@@ -12,6 +12,8 @@ using namespace std;
 namespace fj = fastjet;
 
 #include "util.h"
+#include "response.h"
+
 #include <revent/revent.h>
 #include <revent/header.h>
 
@@ -56,6 +58,8 @@ void pythia_run ( int argc, char *argv[] )
 	outputFnameTree += outputFname;
 	revent.Init(outputFnameTree.Data());
 
+	double jetR = 0.4;
+
 	GenerUtil::pythia_fj_record pyrecord;
 	// Begin event loop. Generate event. Skip if error.
 	for (int iEvent = 0; iEvent < nEvent; ++iEvent) 
@@ -80,12 +84,22 @@ void pythia_run ( int argc, char *argv[] )
     	std::vector<TParticle> tpevent = GenerUtil::py8_event_to_vector(ppythia);
     	revent.FillBranch("parts", tpevent);
 
+	    Response resp;
+	    resp.SetEtaAbsCut(1.);
+	    std::vector<fastjet::PseudoJet> pyfr = resp(pyrecord.f);
+
 		// run jet finders
 	    FJWrapper w;
-	    Wrapper *jf = w.run(pyrecord.f);
+	    //Wrapper *jf = w.run( pyrecord.f );
+	    Wrapper *jf = w.run( pyfr, jetR );
 	    std::vector<fj::PseudoJet> j = jf->get<fj::ClusterSequence>()->inclusive_jets();
-    	//std::cout << " event #" << iEvent << " => #jets: " << v.size() << endl;
+
+	    resp.SetEtaAbsCut(1. - jetR);
+	    std::vector<fj::PseudoJet> jcut = resp(j);
+	    // std::cout << "before: " << j.size() << " after: " << jcut.size() << std::endl;
+    	// std::cout << " event #" << iEvent << " => #jets: " << v.size() << endl;
     	revent.FillBranch("j", fj::sorted_by_pt(j));
+    	revent.FillBranch("jcut", fj::sorted_by_pt(jcut));
 
 		std::vector<fj::PseudoJet> sjets;
 	    for (unsigned int i = 0; i < j.size(); i++)

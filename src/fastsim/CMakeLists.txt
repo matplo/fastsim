@@ -2,6 +2,7 @@ set(SOURCES_LIB
 	util.cxx
 	#toymcpy8.cxx
 	pythia_run.cxx
+	response.cxx
 )
 
 set(SOURCES_EXE main.cxx)

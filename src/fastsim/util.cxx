@@ -213,7 +213,7 @@ void pythia_fj_record::clear()
 	fv_neutral.clear(); // ...&neutral
 }
 
-void pythia_fj_record::fill_event(const py::Pythia &pythia, double etamax /*= 5*/)
+void pythia_fj_record::fill_event(const py::Pythia &pythia, double etamax /*= 10*/)
 {
 	const py::Event& event    = pythia.event;
 	for (int i = 0; i < event.size(); ++i)
@@ -222,6 +222,7 @@ void pythia_fj_record::fill_event(const py::Pythia &pythia, double etamax /*= 5*
 		if ( i == 5 || i == 6)
 		{
 			fj::PseudoJet p = event[i];
+			p.set_user_index(i);
 			partons.push_back(p);
     	}
 

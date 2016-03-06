@@ -51,7 +51,7 @@ namespace GenerUtil
 		std::vector <fastjet::PseudoJet> partons;
 
 		void clear();
-		void fill_event(const py::Pythia &pythia, double etamax = 5);
+		void fill_event(const py::Pythia &pythia, double etamax = 10);
 	};
 
 	TParticle py8particle_to_TParticle(py::Particle &part);
