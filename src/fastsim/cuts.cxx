@@ -1,3 +1,54 @@
+/// this is from the main event loop pythia_run - demo of possibilities
+
+	GenerUtil::pythia_fj_record pyrecord;
+
+		// particles into vectors
+		pyrecord.clear();
+		pyrecord.fill_event(pythia);
+
+		// py8 particles into TParticles
+		// std::vector<TParticle> v = GenerUtil::py8_event_to_vector(ppythia, true); //only final
+		// for (unsigned int i = 0; i < v.size(); i++) std::cout << v[i].GetName() << endl;
+    	std::vector<TParticle> tpevent = GenerUtil::py8_event_to_vector(ppythia);
+    	revent.FillBranch("parts", tpevent);
+    	std::vector<TParticle> alicharged = aliresp(tpevent);
+    	revent.FillBranch("aliparts", alicharged);
+
+	    std::vector<fastjet::PseudoJet> pyfr = resp(pyrecord.f);
+
+		// run jet finders
+	    FJWrapper w;
+	    //Wrapper *jf = w.run( pyrecord.f );
+	    Wrapper *jf = w.run( pyfr, jetR );
+	    std::vector<fj::PseudoJet> j = jf->get<fj::ClusterSequence>()->inclusive_jets();
+
+	    resp.SetEtaAbsCut(1. - jetR);
+	    std::vector<fj::PseudoJet> jcut = resp(j);
+	    // std::cout << "before: " << j.size() << " after: " << jcut.size() << std::endl;
+    	// std::cout << " event #" << iEvent << " => #jets: " << v.size() << endl;
+    	revent.FillBranch("j", fj::sorted_by_pt(j));
+    	revent.FillBranch("jcut", fj::sorted_by_pt(jcut));
+
+		std::vector<fj::PseudoJet> sjets;
+	    for (unsigned int i = 0; i < j.size(); i++)
+	    {
+	    	std::vector<fj::PseudoJet> cons = j[i].constituents();
+		    Wrapper *sj = w.run(cons, 0.1);
+		    std::vector<fj::PseudoJet> v = fj::sorted_by_pt(sj->get<fj::ClusterSequence>()->inclusive_jets());
+		    sjets.insert(sjets.end(), v.begin(), v.end());
+	    }
+    	revent.FillBranch("sjs", sjets);
+
+	    Wrapper *jfr = w.run(pyrecord.f, 0.1);
+    	revent.FillBranch("jr", fj::sorted_by_pt(jfr->get<fj::ClusterSequence>()->inclusive_jets()));
+
+	    Wrapper *jfvc = w.run(pyrecord.fv_charged);
+	    std::vector<fj::PseudoJet> jvc = jfvc->get<fj::ClusterSequence>()->inclusive_jets();
+    	revent.FillBranch("jvc", fj::sorted_by_pt(jvc));
+
+
+
+
 #include <typeinfo>
 
 			std::string s = typeid(*p).name();

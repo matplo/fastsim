@@ -44,6 +44,7 @@ if [ -d $FASTSIM ]; then
     debug="-DCMAKE_BUILD_TYPE=Release"
     #cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
     is_arg_set "debug" && debug=-DCMAKE_BUILD_TYPE=Debug
+    #is_arg_set "o3" && export CXXFLAGS=-O3 # Release does it
     cmake -DCMAKE_INSTALL_PREFIX=$FASTSIM $debug $FASTSIM/$pack
     is_arg_set "clean" && make clean
     is_arg_set "verbose" && verbose="VERBOSE=1"

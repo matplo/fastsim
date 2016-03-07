@@ -37,6 +37,16 @@ namespace GenerUtil
 
 	bool 						has_pythia(const fastjet::PseudoJet v);
 	double 						pt_matched(const fastjet::PseudoJet pyjet, const fastjet::PseudoJet fulljet);
+	double 						pt_matched_any(const fastjet::PseudoJet pyjet, const fastjet::PseudoJet fulljet);
+	std::vector<fastjet::PseudoJet> 
+	matched_jets_any(const std::vector<fastjet::PseudoJet> &jets, 
+					const std::vector<fastjet::PseudoJet> &jetscut);
+
+	std::vector<fastjet::PseudoJet> 
+	matched_jets_dr(const std::vector<fastjet::PseudoJet> &jets, 
+					const std::vector<fastjet::PseudoJet> &jetscut, 
+					double drcut);
+
 	void 						add_particles(std::vector <fastjet::PseudoJet> &to, std::vector <fastjet::PseudoJet> &from, double rotate_phi = 0);
 	bool 						add_pythia_particles(py::Pythia &pythia, std::vector <fastjet::PseudoJet> &parts, double etaMax = 4., UInt_t offset = 0);
 
@@ -58,7 +68,6 @@ namespace GenerUtil
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Particle &part);
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Pythia *py, int i);
 	std::vector<TParticle> py8_event_to_vector(py::Pythia *py, bool final = false);
-
 };
 
 #endif // GENERUTIL_HH

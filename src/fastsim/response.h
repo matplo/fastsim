@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <limits>
 
 class Wrapper;
 class TParticle;
@@ -11,6 +12,8 @@ namespace fastjet
 	class PseudoJet;
 };
 
+#include <Pythia8/Pythia.h>
+
 class Response
 {
 public:
@@ -18,9 +21,17 @@ public:
 	Response();
 	virtual ~Response();
 
-	virtual bool Accept(const TParticle &p);
+	virtual bool Accept(const TParticle &p) const;
+	virtual bool AcceptEta(const TParticle &p) const;
+	virtual bool AcceptPt(const TParticle &p) const;
+	virtual bool AcceptCharge(const TParticle &p) const;
+	virtual bool AcceptStatus(const TParticle &p) const;
 
-	virtual bool AcceptEta(const TParticle &p);
+	virtual void SetPtCut(double pt, double ptmax = std::numeric_limits<double>::max())
+	{
+		fPtMin = pt;
+		fPtMax = ptmax;
+	}
 
 	virtual void SetEtaCut(double emin, double emax)
 	{
@@ -34,18 +45,57 @@ public:
 		fEtaMax = +1. * fabs(emax);
 	}
 
-  bool operator () (const TParticle &p);
-  bool operator () (const fastjet::PseudoJet &pj);
+	virtual void SetAcceptChargedParticles(bool flag)
+	{
+		fChargedParticles = flag;
+	}
 
-  std::vector<TParticle> operator () (const std::vector<TParticle> &v);
-  std::vector<fastjet::PseudoJet> operator () (const std::vector<fastjet::PseudoJet> &v);
+	virtual void SetAcceptNeutralParticles(bool flag)
+	{
+		fNeutralParticles = flag;
+	}
+
+	virtual void SetAcceptChargedNeutral(bool chflag, bool nflag)
+	{
+		fChargedParticles = chflag;
+		fNeutralParticles = nflag;		
+	}
+
+	virtual void SetAcceptStatus(int flag)
+	{
+		// -1 - do not care - default behavior
+		// 0 - accept particles with this flag 
+		// 1 - accept only particles with this glag - isFinal
+		// 2 - only partons
+		fStatusFlag = flag;
+	}
+
+	bool operator () (const TParticle &p);
+	bool operator () (const fastjet::PseudoJet &pj);
+
+	std::vector<TParticle> operator () (const Pythia8::Pythia &py);
+	std::vector<TParticle> operator () (const std::vector<TParticle> &v);
+	std::vector<fastjet::PseudoJet> operator () (const std::vector<fastjet::PseudoJet> &v);
+
+	static std::vector<fastjet::PseudoJet> convert(const std::vector<TParticle> &v);
+	static std::vector<fastjet::PseudoJet> convert(const std::vector<TParticle> &v, const Response &resp);
+
+protected:
+
+	Wrapper* 	fStorage;
 
 private:
 
-	Wrapper* 	fStorage;
 	double      fEtaMin;
 	double      fEtaMax;
 
+	double      fPtMin;
+	double		fPtMax;
+
+	bool    	fChargedParticles;
+	bool    	fNeutralParticles;
+
+	int 		fStatusFlag;
 };
 
 #endif //__RESPONSE_HH

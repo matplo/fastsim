@@ -7,4 +7,14 @@ module load fastsim
 module list
 
 cd $FASTSIM/test/
-time fastsim
+nev=$1
+[ -z $nev ] && nev=1000
+# the code below makes a 10 GeV uubar-qark events
+#time fastsim -nev $nev -pgunid 2 -pgunpt 10.
+#for q in 1 2 3 4 5 6 21
+#do
+#	time fastsim -nev $nev -pgunid $q -pgunpt 1.0 -pgunptmax 100.0 -out parton_$q.root
+#done
+
+# this is using the .cmnd file
+time fastsim -nev $nev
