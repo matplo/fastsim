@@ -78,7 +78,11 @@ if __name__=="__main__":
     for i,v in enumerate(vars):
         jmax = 0
         if i > 0:
-            jmax = float(tutils.get_arg_with('--jmax'))
+            jmaxtmp = tutils.get_arg_with('--jmax')
+            if jmaxtmp:
+                jmax = float(jmaxtmp)
+            else:
+                jmax = 0
         if jmax <= 0:
             jmax = v[2]
         effi(fname, v[0], v[1], jmax, v[3], v[4])
