@@ -36,16 +36,16 @@ function write_script
     NEV=$4
     OPT=$5
     echo "[i] make script for: pThatMin=$1 pThatMax=$2 | $ECM | $NEV | $OPT |"
-    newdir="./$ECM/$OPT/hardQCD/bin-$1-$2"
+    newdir="./output/$ECM/$OPT/hardQCD/bin-$1-$2"
     photons=false
     if is_arg_set "photons"; then 
         photons=true
-        newdir="./$OPT/photons/bin-$1-$2"
+        newdir="./output/$ECM/$OPT/photons/bin-$1-$2"
     fi
     minbias=false
     if [ $1 == "0" ]; then
         minbias=true
-        newdir="./$ECM/$OPT/hardQCD/minbias"
+        newdir="./output/$ECM/$OPT/hardQCD/minbias"
     fi
     mkdir -p $newdir
     echo "find \$PWD -name \"$jobfile\" -exec {} \;" > $newdir/../run_all.sh
