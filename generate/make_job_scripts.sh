@@ -101,6 +101,12 @@ function write_script
     cd - > /dev/null
 }
 
+if is_arg_set "-h" ;
+then
+    echo "$0 [ECM in GeV=5000] [NEV=1000] [OPT=default]"
+    exit
+fi
+
 if is_arg_set "submit" ;
 then
     echo "[w] you are sure you want to generate and submit in one go? Continue? [N/y]"
