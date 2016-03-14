@@ -216,19 +216,20 @@ void pythia_run ( int argc, char *argv[] )
 		std::vector<fj::PseudoJet> jchargedalicut 	= jet_resp(jchargedali);
 
 		// check what what jets were found from the input
-		std::vector<fj::PseudoJet> jfound  			= GenerUtil::matched_jets_any(jcut, 	   	jchargedalicut);
-		std::vector<fj::PseudoJet> jfound5			= GenerUtil::matched_jets_any(jcut, 	   	jet_resp5(jchargedalicut));
-		std::vector<fj::PseudoJet> jfound10			= GenerUtil::matched_jets_any(jcut, 	   	jet_resp10(jchargedalicut));
-		std::vector<fj::PseudoJet> jchargedfound  	= GenerUtil::matched_jets_any(jchargedcut, 	jchargedalicut);
+		std::vector<fj::PseudoJet> jfound  			= GenerUtil::matched_jets_any(jcut, 	   		jchargedalicut);
+		std::vector<fj::PseudoJet> jfound5			= GenerUtil::matched_jets_any(jcut, 	   		jet_resp5(jchargedalicut));
+		std::vector<fj::PseudoJet> jfound10			= GenerUtil::matched_jets_any(jcut, 	   		jet_resp10(jchargedalicut));
+		std::vector<fj::PseudoJet> jfound20			= GenerUtil::matched_jets_any(jcut, 	   		jet_resp20(jchargedalicut));
+		std::vector<fj::PseudoJet> jchargedfound  	= GenerUtil::matched_jets_any(jchargedcut, 		jchargedalicut);
 
-		std::vector<fj::PseudoJet> jfoundpartonsfull= GenerUtil::matched_jets_dr(jpartonscut,		jcut, jetR / 4.);
+		std::vector<fj::PseudoJet> jfoundpartonsfull= GenerUtil::matched_jets_dr(jpartonscut,		jcut, jetR / 2.);
 
-		//std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(psjpartons,   		jchargedalicut, jetR / 4.);
-		std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(jpartonscut,		jchargedalicut, jetR / 4.);
+		//std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(psjpartons,   		jchargedalicut, jetR / 2.);
+		std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(jpartonscut,		jchargedalicut, jetR / 2.);
 
-		std::vector<fj::PseudoJet> jfoundpartons5	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp5(jchargedalicut), jetR / 4.);
-		std::vector<fj::PseudoJet> jfoundpartons10	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp10(jchargedalicut), jetR / 4.);
-		std::vector<fj::PseudoJet> jfoundpartons20	= GenerUtil::matched_jets_dr(jpartonscut, 		jet_resp20(jchargedalicut), jetR / 4.);
+		std::vector<fj::PseudoJet> jfoundpartons5	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp5(jchargedalicut), jetR / 2.);
+		std::vector<fj::PseudoJet> jfoundpartons10	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp10(jchargedalicut), jetR / 2.);
+		std::vector<fj::PseudoJet> jfoundpartons20	= GenerUtil::matched_jets_dr(jpartonscut, 		jet_resp20(jchargedalicut), jetR / 2.);
 
 		//GenerUtil::dump(partons);
 		//GenerUtil::dump(jpartons);
@@ -266,6 +267,7 @@ void pythia_run ( int argc, char *argv[] )
     	revent.FillBranch("jfound",		 		jfound);
     	revent.FillBranch("jfound5",	 		jfound5);
     	revent.FillBranch("jfound10",	 		jfound10);
+    	revent.FillBranch("jfound20",	 		jfound20);
 
     	revent.FillBranch("jchargedcut", 		jchargedcut);
     	revent.FillBranch("jchargedalicut",		jchargedalicut);
