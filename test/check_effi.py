@@ -14,6 +14,7 @@ def effi(fname, var1, var2, ptzoom, bwidth = 0.1, dopt='E1'):
 
     ntname = 't'
     cuts = '(header.sigma) * (1)'
+    #cuts = '(1)'
     tc   = tu.getTempCanvas()
     tc.cd()
     href = dn.h1d_from_ntuple(fname, ntname, var1, cuts, bwidth=bwidth, xlow=0, xhigh = 100)
@@ -62,15 +63,16 @@ if __name__=="__main__":
     vars = [
             [ 'pcharged.Pt()' ,     'pchargedali.Pt()'          , 10, 0.1,  'E1'],
             [ 'jcut.Pt()',          'jfound.Pt()'               , 50, jbin,  'hist l'],
-            [ 'jcut.Pt()',          'jfound10.Pt()'             , 50, jbin,  'hist l'],
             [ 'jcut.Pt()',          'jfound5.Pt()'              , 50, jbin,  'hist l'],
+            [ 'jcut.Pt()',          'jfound10.Pt()'             , 50, jbin,  'hist l'],
+            [ 'jcut.Pt()',          'jfound20.Pt()'             , 50, jbin,  'hist l'],
             [ 'jchargedcut.Pt()',   'jchargedfound.Pt()'        , 50, jbin,  'hist l'],
             #[ 'jchargedfound.Pt()', 'jchargedalicut.Pt()'       , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundpartonfull.Pt()'    , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundparton.Pt()'        , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundparton5.Pt()'       , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundparton10.Pt()'      , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundparton20.Pt()'      , 50, jbin,  'hist l']
+            #[ 'jparton.Pt()',        'jfoundpartonfull.Pt()'    , 50, jbin,  'hist l'],
+            #[ 'jparton.Pt()',        'jfoundparton.Pt()'        , 50, jbin,  'hist l'],
+            #[ 'jparton.Pt()',        'jfoundparton5.Pt()'       , 50, jbin,  'hist l'],
+            #[ 'jparton.Pt()',        'jfoundparton10.Pt()'      , 50, jbin,  'hist l'],
+            #[ 'jparton.Pt()',        'jfoundparton20.Pt()'      , 50, jbin,  'hist l']
         ];
 
     fname = 'tree-default_fastsim_out.root'
