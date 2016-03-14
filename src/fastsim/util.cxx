@@ -72,6 +72,27 @@ void init_defaults()
 	cout << "[i] GenerUtil::init_defaults() " << endl;
 }
 
+void dump(const std::vector<TParticle> &v)
+{
+	cout << "- Printing vector of size: " << v.size() << endl;
+	for (unsigned int i = 0; i < v.size(); i++)
+	{
+		cout << "  index: " << i << " " << v[i].GetName() << " pt = " << v[i].Pt() << endl;
+		cout << "  daughters: " << v[i].GetDaughter(0) << " - " << v[i].GetDaughter(1) << endl;
+		//v[i].Dump();
+	}
+}
+
+void dump(const std::vector<fj::PseudoJet> &v)
+{
+	cout << "- Printing vector:" << endl;
+	for (unsigned int i = 0; i < v.size(); i++)
+	{
+		cout << "  index: " << i << " pt=" << v[i].perp() << endl;
+		cout << "  " << v[i].description() << endl;
+	}
+}
+
 bool has_pythia(const fj::PseudoJet v)
 {
 	vector<fj::PseudoJet> consts = v.constituents();
@@ -130,32 +151,30 @@ std::vector<fj::PseudoJet> matched_jets_any(const std::vector<fj::PseudoJet> &je
 {
 	unsigned int nmultiplematch = 0;
 	unsigned int n = jetscut.size();
-	std::vector<int> indexes(n, -1);
+	std::vector<unsigned int> indexes(n, 0);
 	//indexes.resize(n, -1);
 	//std::fill(indexes.begin(), indexes.end(), false);
 
 	std::vector<fj::PseudoJet> matched_jets;
 	for (unsigned int ik = 0; ik < jetscut.size(); ik++)
 	{
-		fj::PseudoJet jcut = jetscut[ik];
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
 		{
-			fj::PseudoJet j = jets[ij];
-			double ptm = GenerUtil::pt_matched_any(j, jcut);
-			if (ptm > jcut.perp() / 2.)
+			double ptm = GenerUtil::pt_matched_any(jets[ij], jetscut[ik]);
+			if (ptm > jetscut[ik].perp() / 2.)
 			{
-				fj::PseudoJet nj = j;
-				if (indexes[ik] >= 0)
+				if (indexes[ik] > 0)
 				{
-					cerr << "[w] [pt match] multiple match found for index #" << ij << " <=> #" << ik << " is already matched to index #" << indexes[ik] << endl;
-					cerr << "    #2 pt = " << jcut.perp() << endl;
-					cerr << "    pt of previous match: " << jets[indexes[ik]].perp() << " this: " << jets[ij].perp() << endl;
+					cerr << "[w] [pt match] multiple match found for index #" << ij << " <=> #" << ik << " is already matched to index #" << indexes[ik]-1 << endl;
+					cerr << "    #2 pt = " << jetscut[ik].perp() << endl;
+					cerr << "    pt of previous match: " << jets[indexes[ik]-1].perp() << " this: " << jets[ij].perp() << endl;
 					nmultiplematch++;
 				}
 				else
 				{
-					indexes[ik] = int(ij);
+					indexes[ik] = ij + 1;
 				}
+				fj::PseudoJet nj = jets[ij];
 				nj.set_user_index(ik);
 				matched_jets.push_back(nj);
 			}
@@ -174,7 +193,7 @@ std::vector<fj::PseudoJet> matched_jets_dr(const std::vector<fj::PseudoJet> &jet
 {
 	unsigned int nmultiplematch = 0;
 	unsigned int n = jetscut.size();
-	std::vector<int> indexes(n, -1);
+	std::vector<unsigned int> indexes(n, 0);
 	//indexes.resize(n, -1);
 	//std::fill(indexes.begin(), indexes.end(), -1);
 
@@ -182,31 +201,28 @@ std::vector<fj::PseudoJet> matched_jets_dr(const std::vector<fj::PseudoJet> &jet
 
 	for (unsigned int ik = 0; ik < jetscut.size(); ik++)
 	{
-		fj::PseudoJet jcut = jetscut[ik];
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
 		{
-			fj::PseudoJet j = jets[ij];
-			double dr = j.delta_R(jcut);
+			double dr = jets[ij].delta_R(jetscut[ik]);
 			if (dr < drcut)
 			{
-				unsigned int imatch = ik;
-				if (indexes[ik] >= 0)
+				if (indexes[ik] > 0)
 				{
-					//cerr << "[w] multiple match found for index #" << ij << " <=> #" << ik << " is already matched to index #" << indexes[ik] << endl;
-					//cerr << "    j1 pt = " << j.perp() << " j2 pt = " << jcut.perp() << endl;
-					//cerr << "    pt of previous match: " << jets[indexes[ik]].perp() << " this: " << jets[ij].perp() << endl;
-					//cerr << "    indexes[ik] = " << indexes[ik] << " imatch = " << imatch << endl;
-					//cerr << "    delta_R previous: " << jets[indexes[ik]].delta_R(jcut) << " current: " << dr << endl;
+					//cerr << "[w] multiple match found for index #" << ij << " <=> #" << ik << " is already matched to index #" << indexes[ik]-1 << endl;
+					//cerr << "    j1 pt = " << jets[ij].perp() << " j2 pt = " << jetscut[ik].perp() << endl;
+					//cerr << "    pt of previous match: " << jets[indexes[ik]-1].perp() << " this: " << jets[ij].perp() << endl;
+					//cerr << "    indexes[ik]-1 = " << indexes[ik]-1 << " ik = " << ik << endl;
+					//cerr << "    delta_R previous: " << jets[indexes[ik]-1].delta_R(jetscut[ik]) << " current: " << dr << endl;
 					nmultiplematch++;
 				}
 				else
 				{
-					indexes[ik] = int(ij);
+					indexes[ik] = ij + 1;
 					//cerr << "[d] matching " << ij << " with " << ik << " index[" << ik << "] = " << indexes[ik] << endl;
-					//cerr << "    pt of this match: " << jetscut[imatch].perp() << endl;
+					//cerr << "    pt of this match: " << jetscut[ik].perp() << " -> " << jets[ij].perp() << endl;
 				}
-				fj::PseudoJet nj = j;
-				nj.set_user_index(imatch);
+				fj::PseudoJet nj = jets[ij];
+				nj.set_user_index(ik);
 				matched_jets.push_back(nj);
 			}
 		}

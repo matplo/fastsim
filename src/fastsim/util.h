@@ -64,6 +64,8 @@ namespace GenerUtil
 		void fill_event(const py::Pythia &pythia, double etamax = 10);
 	};
 
+	void dump(const std::vector<TParticle> &v);
+	void dump(const std::vector<fastjet::PseudoJet> &v);
 	TParticle py8particle_to_TParticle(py::Particle &part);
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Particle &part);
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Pythia *py, int i);

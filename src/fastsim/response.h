@@ -6,13 +6,13 @@
 #include <limits>
 
 class Wrapper;
-class TParticle;
 namespace fastjet
 {
 	class PseudoJet;
 };
 
 #include <Pythia8/Pythia.h>
+#include <TParticle.h>
 
 class Response
 {
@@ -67,8 +67,14 @@ public:
 		// 0 - accept particles with this flag 
 		// 1 - accept only particles with this glag - isFinal
 		// 2 - only partons
+		// 3 - only "final" branch partons
 		fStatusFlag = flag;
 	}
+
+	bool IsGluon(const TParticle &p) const;
+	bool IsQuark(const TParticle &p) const;
+	bool IsFinalBranchParton(const TParticle &p) const;
+	bool IsParton(const TParticle &p) const;
 
 	bool operator () (const TParticle &p);
 	bool operator () (const fastjet::PseudoJet &pj);
@@ -96,6 +102,9 @@ private:
 	bool    	fNeutralParticles;
 
 	int 		fStatusFlag;
+
+	const Pythia8::Pythia *fPythia; // !set only when () called
+	std::vector<TParticle> fPythiaStack; // !set only when () called
 };
 
 #endif //__RESPONSE_HH

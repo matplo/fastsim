@@ -104,7 +104,7 @@ void pythia_run ( int argc, char *argv[] )
 	double jetR = 0.4;
 
     Response respPartons;
-    respPartons.SetEtaAbsCut(0.9 - jetR);
+	respPartons.SetEtaAbsCut(0.9 - jetR);
     respPartons.SetPtCut(0.05);
     respPartons.SetAcceptStatus(2);
 
@@ -127,6 +127,10 @@ void pythia_run ( int argc, char *argv[] )
     Response jet_resp;
     jet_resp.SetPtCut(0.1);
     jet_resp.SetEtaAbsCut(0.9 - jetR);
+
+    Response jet_resp5;
+    jet_resp5.SetPtCut(5);
+    jet_resp5.SetEtaAbsCut(0.9 - jetR);
 
     Response jet_resp10;
     jet_resp10.SetPtCut(10);
@@ -169,8 +173,13 @@ void pythia_run ( int argc, char *argv[] )
 		head.fValues.push_back(xsec);
 		revent.FillHeader(&head);
 
+	    respPartons.SetAcceptStatus(2);
 		std::vector<TParticle> 		partons       = respPartons(pythia);
-		std::vector<fj::PseudoJet> 	psjpartons    = Response::convert(partons);		
+	    respPartons.SetAcceptStatus(3);
+		std::vector<TParticle> 		partonsf      = respPartons(pythia);
+		//GenerUtil::dump(partons);
+		//GenerUtil::dump(partonsf);
+		std::vector<fj::PseudoJet> 	psjpartons    = Response::convert(partonsf);
 
 		std::vector<TParticle> 		pfinal        = resp(pythia);
 		std::vector<fj::PseudoJet> 	psjfinal      = Response::convert(pfinal);		
@@ -208,16 +217,21 @@ void pythia_run ( int argc, char *argv[] )
 
 		// check what what jets were found from the input
 		std::vector<fj::PseudoJet> jfound  			= GenerUtil::matched_jets_any(jcut, 	   	jchargedalicut);
+		std::vector<fj::PseudoJet> jfound5			= GenerUtil::matched_jets_any(jcut, 	   	jet_resp5(jchargedalicut));
 		std::vector<fj::PseudoJet> jfound10			= GenerUtil::matched_jets_any(jcut, 	   	jet_resp10(jchargedalicut));
 		std::vector<fj::PseudoJet> jchargedfound  	= GenerUtil::matched_jets_any(jchargedcut, 	jchargedalicut);
 
-		std::vector<fj::PseudoJet> jfoundpartonsfull= GenerUtil::matched_jets_dr(jpartonscut,		jcut, jetR / 2.);
+		std::vector<fj::PseudoJet> jfoundpartonsfull= GenerUtil::matched_jets_dr(jpartonscut,		jcut, jetR / 4.);
 
-		//std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(psjpartons,   jchargedalicut, jetR / 2.);
-		std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(jpartonscut,		jchargedalicut, jetR / 2.);
+		//std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(psjpartons,   		jchargedalicut, jetR / 4.);
+		std::vector<fj::PseudoJet> jfoundpartons	= GenerUtil::matched_jets_dr(jpartonscut,		jchargedalicut, jetR / 4.);
 
-		std::vector<fj::PseudoJet> jfoundpartons10	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp10(jchargedalicut), jetR / 2.);
-		std::vector<fj::PseudoJet> jfoundpartons20	= GenerUtil::matched_jets_dr(jpartonscut, 		jet_resp20(jchargedalicut), jetR / 2.);
+		std::vector<fj::PseudoJet> jfoundpartons5	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp5(jchargedalicut), jetR / 4.);
+		std::vector<fj::PseudoJet> jfoundpartons10	= GenerUtil::matched_jets_dr(jpartonscut,		jet_resp10(jchargedalicut), jetR / 4.);
+		std::vector<fj::PseudoJet> jfoundpartons20	= GenerUtil::matched_jets_dr(jpartonscut, 		jet_resp20(jchargedalicut), jetR / 4.);
+
+		//GenerUtil::dump(partons);
+		//GenerUtil::dump(jpartons);
 
 		// fill output
 		for (unsigned int ij = 0; ij < jfound.size(); ij++)
@@ -235,6 +249,7 @@ void pythia_run ( int argc, char *argv[] )
 		}
 
     	revent.FillBranch("parton", 			partons);
+    	revent.FillBranch("partonf", 			partonsf);
 
     	revent.FillBranch("pfinal", 			pfinal);
     	revent.FillBranch("pcharged", 			pcharged);
@@ -243,11 +258,13 @@ void pythia_run ( int argc, char *argv[] )
     	revent.FillBranch("jparton", 			jpartonscut);
     	revent.FillBranch("jfoundpartonfull", 	jfoundpartonsfull);
     	revent.FillBranch("jfoundparton", 		jfoundpartons);
+    	revent.FillBranch("jfoundparton5",		jfoundpartons5);
     	revent.FillBranch("jfoundparton10",		jfoundpartons10);
     	revent.FillBranch("jfoundparton20",		jfoundpartons20);
 
     	revent.FillBranch("jcut",		 		jcut);
     	revent.FillBranch("jfound",		 		jfound);
+    	revent.FillBranch("jfound5",	 		jfound5);
     	revent.FillBranch("jfound10",	 		jfound10);
 
     	revent.FillBranch("jchargedcut", 		jchargedcut);

@@ -63,10 +63,12 @@ if __name__=="__main__":
             [ 'pcharged.Pt()' ,     'pchargedali.Pt()'          , 10, 0.1,  'E1'],
             [ 'jcut.Pt()',          'jfound.Pt()'               , 50, jbin,  'hist l'],
             [ 'jcut.Pt()',          'jfound10.Pt()'             , 50, jbin,  'hist l'],
+            [ 'jcut.Pt()',          'jfound5.Pt()'              , 50, jbin,  'hist l'],
             [ 'jchargedcut.Pt()',   'jchargedfound.Pt()'        , 50, jbin,  'hist l'],
             #[ 'jchargedfound.Pt()', 'jchargedalicut.Pt()'       , 50, jbin,  'hist l'],
-            [ 'jparton.Pt()',        'jfoundpartonfull.Pt()'        , 50, jbin,  'hist l'],
+            [ 'jparton.Pt()',        'jfoundpartonfull.Pt()'    , 50, jbin,  'hist l'],
             [ 'jparton.Pt()',        'jfoundparton.Pt()'        , 50, jbin,  'hist l'],
+            [ 'jparton.Pt()',        'jfoundparton5.Pt()'       , 50, jbin,  'hist l'],
             [ 'jparton.Pt()',        'jfoundparton10.Pt()'      , 50, jbin,  'hist l'],
             [ 'jparton.Pt()',        'jfoundparton20.Pt()'      , 50, jbin,  'hist l']
         ];

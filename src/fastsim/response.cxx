@@ -17,6 +17,8 @@ Response::Response()
 	, fChargedParticles(true)
 	, fNeutralParticles(true)
 	, fStatusFlag(-1)
+	, fPythia(0x0)
+	, fPythiaStack()
 {
 	fStorage->set_debug(1);
 }
@@ -56,25 +58,81 @@ bool Response::AcceptCharge(const TParticle &p) const
 	return false;
 }
 
+bool Response::IsGluon(const TParticle &p) const
+{
+	return (p.GetPdgCode() == 21);
+}
+
+bool Response::IsQuark(const TParticle &p) const
+{
+	return (IsParton(p) && p.GetPdgCode() != 21);
+}
+
+bool Response::IsParton(const TParticle &p) const
+{
+	if (p.GetPdgCode() == 21)
+		return true;
+	// this is a string in pythia - not a parton
+	if (p.GetPdgCode() == 90)
+		return false;
+	TParticlePDG *pdg = p.GetPDG ( 1 );
+	if ( pdg == 0x0 )
+	{
+		// by default reject unknown particles (including "system")
+		return false;
+	}
+	Double_t ch          = pdg->Charge();
+	//std::cout << " charge: " << fabs(ch) << " name: " << p.GetName() << std::endl;
+	if ( fabs(ch) < 3.0 && fabs(ch) > 0.0) // ROOT returns charge in units |e|/3 <-> quarks
+		return true;
+	return false;
+}
+
+bool Response::IsFinalBranchParton(const TParticle &p) const
+{
+	if (fPythia == 0x0)
+	{
+		cerr << "[e] Response::AcceptStatus needs pythia for status fStatusFlag == 3" << endl;
+		return false;
+	}
+	if (IsParton(p))
+	{
+		bool retval = true;
+		for (unsigned int i = p.GetDaughter(0); i <= p.GetDaughter(1); i++)
+		{
+			if (fPythiaStack.size() < i)
+			{
+				TParticle d(fPythiaStack[i]);
+				if (IsParton(d))
+				{
+					//cout << "parton: " << p.GetName() 
+					//	<< " is not a 'final shower' parton because one of the daugters is a parton:" 
+					//	<< d.GetName() << " pdg code: " << d.GetPdgCode() << endl;
+					retval = false;
+				}
+			}
+		}
+		return retval;
+	}
+	return false;
+}
+
 bool Response::AcceptStatus(const TParticle &p) const
 {
 	if (fStatusFlag == -1)
 		return true;
 	if (fStatusFlag == 2)
 	{
-		if (p.GetPdgCode() == 21)
+		if (IsParton(p))
 			return true;
-		TParticlePDG *pdg = p.GetPDG ( 1 );
-		if ( pdg == 0x0 )
-		{
-			// by default reject unknown particles
-			return false;
-		}
-		Double_t ch          = pdg->Charge();
-		//std::cout << " charge: " << fabs(ch) << " name: " << p.GetName() << std::endl;
-		if ( fabs(ch) < 3.0 && fabs(ch) > 0.0) // ROOT returns charge in units |e|/3.
+		// this is a string in pythia
+		if (p.GetPdgCode() == 90)
 			return true;
 		return false;
+	}
+	if (fStatusFlag == 3)
+	{
+		return IsFinalBranchParton(p);
 	}
 	return (p.GetStatusCode() == fStatusFlag);
 }
@@ -133,6 +191,8 @@ std::vector<TParticle> Response::operator () (const Pythia8::Pythia &py)
 {
 	std::vector<TParticle> ret;
 	const Pythia8::Event& event    = py.event;
+	fPythia = &py;
+	fPythiaStack.clear();
 	for (int i = 0; i < event.size(); ++i)
 		{
 			TParticle p(
@@ -150,7 +210,7 @@ std::vector<TParticle> Response::operator () (const Pythia8::Pythia &py)
 						event[i].yProd(),  // [mm]
 						event[i].zProd(),  // [mm]
 						event[i].tProd()); // [mm/c]
-
+			fPythiaStack.push_back(p);
 			if (Accept(p))
 			{
 				//if (fStatusFlag == 2)
@@ -158,6 +218,7 @@ std::vector<TParticle> Response::operator () (const Pythia8::Pythia &py)
 				ret.push_back(p);
 			}
 		}
+	fPythia = 0x0;
 	return ret;
 }
 
