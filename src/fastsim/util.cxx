@@ -140,11 +140,76 @@ double pt_matched_any(const fj::PseudoJet pyjet, const fj::PseudoJet fulljet)
 				// printf("|-> %3.2f %3.2f %3.2f | %3.2f %3.2f %3.2f \n",
 				// 	 consts_py[i].perp(), consts_py[i].perp(), consts_py[i].perp(),
 				// 	 consts_full[j].perp(), consts_full[j].perp(), consts_full[j].perp());
-				ptmatch += consts_py[i].perp();
+				if (consts_py[i].perp()>0.01)
+					ptmatch += consts_py[i].perp();
 			}
 		}
 	}
 	return ptmatch;
+}
+
+bool index_in(unsigned int idx, const fj::PseudoJet j)
+{
+	vector<fj::PseudoJet> consts   =   j.constituents();
+	for (unsigned int i = 0; i < consts.size(); i++)
+	{
+		if ( idx == consts[i].user_index() )
+			return true;
+	}
+	return false;
+}
+
+double sum_perp_constit(const fj::PseudoJet j)
+{
+	double sum_perp = 0;
+	vector<fj::PseudoJet> consts   =   j.constituents();
+	for (unsigned int i = 0; i < consts.size(); i++)
+	{
+		sum_perp += consts[i].perp();
+	}	
+	return sum_perp;
+}
+
+void debug_constituents(const fj::PseudoJet j0, const fj::PseudoJet j1, const fj::PseudoJet j2)
+{
+	cout << "\t \t pt \t j1 \t j2" << endl;
+	vector<fj::PseudoJet> consts   =   j0.constituents();
+	double sum0 = 0;
+	double sum1 = 0;
+	double sum2 = 0;
+	for (unsigned int i = 0; i < consts.size(); i++)
+	{
+		unsigned int idx = consts[i].user_index();
+		bool in1 = index_in(idx, j1);
+		bool in2 = index_in(idx, j2);
+		cout << "\t \t "
+			<< consts[i].perp() 
+			<< " \t " << in1
+			<< " \t " << in2
+			<< endl;
+		sum0 += consts[i].perp();
+		sum1 += int(in1) * consts[i].perp();
+		sum2 += int(in2) * consts[i].perp();
+	}
+	cout << "\t \t -----------------------" << endl;
+	cout << "\t sum \t "
+		<< sum0
+		<< " \t " << sum1
+		<< " \t " << sum2
+		<< endl;
+	cout << "\t \t -----------------------" << endl;
+	double sum_perp1 = sum_perp_constit(j1);
+	double sum_perp2 = sum_perp_constit(j2);	
+	cout << "\t of \t "
+		<< sum0
+		<< " \t " << sum_perp1 
+		<< " \t " << sum_perp2
+		<< endl;
+	cout << "\t s-p \t "
+		<< sum0 - j0.perp()
+		<< " \t " << sum_perp1 - j1.perp()
+		<< " \t " << sum_perp2 - j2.perp()
+		<< endl;	
 }
 
 std::vector<fj::PseudoJet> matched_jets_any(const std::vector<fj::PseudoJet> &jets, const std::vector<fj::PseudoJet> &jetscut)
@@ -161,13 +226,23 @@ std::vector<fj::PseudoJet> matched_jets_any(const std::vector<fj::PseudoJet> &je
 		for (unsigned int ij = 0; ij < jets.size(); ij++)
 		{
 			double ptm = GenerUtil::pt_matched_any(jets[ij], jetscut[ik]);
-			if (ptm > jetscut[ik].perp() / 2.)
+			//if (ptm / jetscut[ik].perp() > 0.5)
+			if (ptm / sum_perp_constit(jetscut[ik]) > 0.5)
 			{
 				if (indexes[ik] > 0)
 				{
 					cerr << "[w] [pt match] multiple match found for index #" << ij << " <=> #" << ik << " is already matched to index #" << indexes[ik]-1 << endl;
 					cerr << "    #2 pt = " << jetscut[ik].perp() << endl;
 					cerr << "    pt of previous match: " << jets[indexes[ik]-1].perp() << " this: " << jets[ij].perp() << endl;
+					double ptm_old = GenerUtil::pt_matched_any(jets[indexes[ik]-1], jetscut[ik]);
+					cerr << "    matched fraction pt's: " << endl
+						<< "        current: " << ptm / jetscut[ik].perp() << endl
+						<< "        previous: " << ptm_old / jetscut[ik].perp() << endl;
+					cerr << "    deltaR's: " << endl
+						<< "        new-old match: " << jets[ij].delta_R(jets[indexes[ik]-1])  << endl
+						<< "        this-new match :" << jetscut[ik].delta_R(jets[ij]) << endl
+						<< "        this-old match :" << jetscut[ik].delta_R(jets[indexes[ik]-1]) << endl;
+						debug_constituents(jetscut[ik], jets[ij], jets[indexes[ik]-1]);
 					nmultiplematch++;
 				}
 				else

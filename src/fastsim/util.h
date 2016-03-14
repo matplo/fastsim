@@ -64,6 +64,11 @@ namespace GenerUtil
 		void fill_event(const py::Pythia &pythia, double etamax = 10);
 	};
 
+	bool index_in(unsigned int idx, const fastjet::PseudoJet j);
+	double sum_perp_constit(const fastjet::PseudoJet j);
+	void debug_constituents(const fastjet::PseudoJet j0, const fastjet::PseudoJet j1, const fastjet::PseudoJet j2);
+
+
 	void dump(const std::vector<TParticle> &v);
 	void dump(const std::vector<fastjet::PseudoJet> &v);
 	TParticle py8particle_to_TParticle(py::Particle &part);
