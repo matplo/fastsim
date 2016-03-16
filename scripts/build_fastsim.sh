@@ -45,8 +45,9 @@ if [ -d $FASTSIM ]; then
     #cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
     #is_arg_set "o3" && export CXXFLAGS=-O3 # Release does it
     is_arg_set "debug" && debug=-DCMAKE_BUILD_TYPE=Debug
-    extracxx="-DCMAKE_CXX_FLAGS=-ftrapping-math"
-    cmake -DCMAKE_INSTALL_PREFIX=$FASTSIM $debug $extracxx $FASTSIM/$pack
+    #is_arg_set "debug" && extracxx=-ftrapping-math -fsignaling-nans $CXXFLAGS
+    is_arg_set "debug" && extracxx=-fsignaling-nans
+    cmake -DCMAKE_INSTALL_PREFIX=$FASTSIM $debug -DCMAKE_CXX_FLAGS=$extracxx $FASTSIM/$pack
     is_arg_set "clean" && make clean
     is_arg_set "verbose" && verbose="VERBOSE=1"
     make $verbose && make install
