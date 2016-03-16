@@ -60,7 +60,12 @@ void pythia_run ( int argc, char *argv[] )
 	}
 	else
 	{
-		ppythia = GenerUtil::get_pythia();
+		string cfgfile = SysUtil::getArg("-config", argc, argv);
+		if (cfgfile.length() == 0)
+		{
+			cfgfile = "./pythia.cmnd";
+		}
+		ppythia = GenerUtil::get_pythia(cfgfile);
 		pywrapp.add(ppythia); // no need to remember to delete
 
 		cout << "[i] Setup standard pythia..." << endl;
