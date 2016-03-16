@@ -52,8 +52,10 @@ namespace ExceptionTests
 	#endif
 		signal(SIGFPE, handler);
 
-		cout << "[i] log of a -1: " << log(-1.) << endl;
-		cout << "[i] sqrt of a -1: " << sqrt(-1.) << endl;
+		cout << "    -> trying log(-1) .." << endl;
+		cout << "    log of a -1: " << log(-1.) << endl;
+		cout << "    -> trying sqrt(-1) .." << endl;
+		cout << "    sqrt of a -1: " << sqrt(-1.) << endl;
 
 		cout << "    -> trying division by double zero.." << endl;
 		double dirty = 0.0;
