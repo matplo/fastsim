@@ -64,6 +64,7 @@ void setup_floatp_exceptions()
 		cout << "    flag: " << flags[i] << " : " << test << endl;
 	}
 
+	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
     signal(SIGFPE, handler);
 
 	cout << "[i] log of a -1: " << log(-1.) << endl;
@@ -76,6 +77,9 @@ void setup_floatp_exceptions()
 
 	double dirty = 0.0;
 	double nanval=0.0/dirty;
+
+	int modulo = 10 % 0;
+
    	printf("Succeeded! dirty=%lf, nanval=%lf\n",dirty,nanval);
 }
 
