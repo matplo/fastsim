@@ -24,71 +24,8 @@ namespace fj = fastjet;
 //ROOT
 #include <TFile.h>
 
-#include <csignal>
-#include <cfenv>
-#include <cstdio>
-#include <cstdlib>
-
-#include <limits>
-#include <cmath>
-
-void handler(int sig) 
-{
-    cerr << "Floating Point Exception" << endl;
-    exit(0);
-}
-
-void setup_floatp_exceptions()
-{
-	std::numeric_limits<int>::signaling_NaN();
-	std::numeric_limits<double>::signaling_NaN();
-	cout << std::numeric_limits<double>::has_signaling_NaN << endl;
-	cout << "[i] setup floatp exceptions..." << endl;
-	std::vector<int> flags;
-	flags.push_back(FE_INVALID);
-	flags.push_back(FE_DIVBYZERO);
-	flags.push_back(FE_OVERFLOW);
-	flags.push_back(FE_UNDERFLOW);
-	flags.push_back(FE_ALL_EXCEPT);
-	flags.push_back(FE_ALL_EXCEPT & ~FE_INEXACT);
-	for (unsigned int i = 0; i < flags.size(); i++)
-	{
-		int  test = fetestexcept(flags[i]);
-		cout << "    flag: " << flags[i] << " : " << test << endl;
-	}
-	int itmp = feraiseexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
-	cout << "[i] feraiseexcept returned with " << itmp << endl;
-	for (unsigned int i = 0; i < flags.size(); i++)
-	{
-		int  test = fetestexcept(flags[i]);
-		cout << "    flag: " << flags[i] << " : " << test << endl;
-	}
-
-	#ifndef __clang__
-	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-	#endif
-    signal(SIGFPE, handler);
-
-	cout << "[i] log of a -1: " << log(-1.) << endl;
-	cout << "[i] sqrt of a -1: " << sqrt(-1.) << endl;
-
-	int zero = 0;
-	int trouble = zero/zero;
-	double what = trouble * 1.e350;
-	cout << "[i] trouble is: " << trouble << " what is: " << 0/what << endl;
-
-	double dirty = 0.0;
-	double nanval=0.0/dirty;
-
-	int modulo = 10 % 0;
-
-   	printf("Succeeded! dirty=%lf, nanval=%lf\n",dirty,nanval);
-}
-
 void pythia_run ( int argc, char *argv[] )
 {
-	setup_floatp_exceptions();
-	return;
 	int verbosity = atoi(SysUtil::getArg("-v", argc, argv));
 	cout << "[i] Verbosity : " << verbosity << endl;
 

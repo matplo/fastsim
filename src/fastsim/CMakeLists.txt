@@ -5,6 +5,7 @@ set(SOURCES_LIB
 	response.cxx
 	aliresponse.cxx
 	rndfromh.cxx
+	float_exception_tests.cxx
 )
 
 set(SOURCES_EXE main.cxx)
