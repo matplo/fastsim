@@ -64,7 +64,9 @@ void setup_floatp_exceptions()
 		cout << "    flag: " << flags[i] << " : " << test << endl;
 	}
 
-	//feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+	#ifndef __clang__
+	feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+	#endif
     signal(SIGFPE, handler);
 
 	cout << "[i] log of a -1: " << log(-1.) << endl;
