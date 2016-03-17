@@ -7,16 +7,17 @@ import IPython
 import draw_ntuple as dn
 import dlist
 
-def compare_cr(fname1, fname2, var='jcut.Pt()'):
+def compare_cr(fname1, fname2, var='jcut.Pt()', bwidth = 5.):
 
 	ntname = 't'
 	cuts   = '(1.) * (header.xsec)'
-	bwidth = 2
 
 	print '[i]',var
 
-	h1 = dn.h1d_from_ntuple(fname1, ntname, var, cuts, bwidth=bwidth, xlow=0, xhigh=100)
-	h2 = dn.h1d_from_ntuple(fname2, ntname, var, cuts, bwidth=bwidth, xlow=0, xhigh=100)
+	tutils.getTempCanvas().cd()
+	h1 = dn.h1d_from_ntuple(fname1, ntname, var, cuts, bwidth=bwidth, xlow=0, xhigh=bwidth * 50.)
+	tutils.getTempCanvas().cd()
+	h2 = dn.h1d_from_ntuple(fname2, ntname, var, cuts, bwidth=bwidth, xlow=0, xhigh=bwidth * 50.)
 
 	hl = dlist.dlist('compare_cr_{}'.format(var))
 	hl.add(h1, fname1, 'p')
@@ -46,7 +47,8 @@ def compare_cr(fname1, fname2, var='jcut.Pt()'):
 
 if __name__ == '__main__':
 	tutils.setup_basic_root()
-	compare_cr('tree-NOcr.root', 'tree-cr.root')
-	compare_cr('tree-NOcr.root', 'tree-cr.root', 'partonf.Pt()')
-	compare_cr('tree-NOcr.root', 'tree-cr.root', 'pfinal.Pt()')	
+	#compare_cr('tree-NOcr.root', 'tree-cr.root')
+	compare_cr('tree-NOcr.root', 'tree-cr.root', 'partonf.Pt()', bwidth = 1.)
+	compare_cr('tree-NOcr.root', 'tree-cr.root', 'pfinal.Pt()', bwidth = 0.1)	
+
 	tutils.iprompt()
