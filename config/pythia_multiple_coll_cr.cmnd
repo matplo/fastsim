@@ -28,31 +28,31 @@ HardQCD:all = on                   ! switch on all QCD jet + jet processes
 PromptPhoton:all = on              ! swich on gamma + jet and gamma + gamma 
 PhaseSpace:pTHatMax = 88.        ! minimal pT scale in process 
 PhaseSpace:pTHatMin = 44.          ! minimal pT scale in process 
-#SoftQCD:minBias = on
+! SoftQCD:minBias = on
 
 ! Example 2: t-tbar production.  
-#Top:gg2ttbar = on                  ! g g -> t tbar
-#Top:qqbar2ttbar = on               ! q qbar -> t tbar
+! Top:gg2ttbar = on                  ! g g -> t tbar
+! Top:qqbar2ttbar = on               ! q qbar -> t tbar
 
 ! Example 3: Z0 production; should set mMin.
-#WeakSingleBoson:ffbar2gmZ = on     ! q qbar -> gamma*/Z0
-#PhaseSpace:mHatMin = 50.            
+! WeakSingleBoson:ffbar2gmZ = on     ! q qbar -> gamma*/Z0
+! PhaseSpace:mHatMin = 50.            
 
 ! Example 4: gauge boson pair production; set pTmin. Not yet complete.
-#WeakDoubleBoson:ffbar2ZW = on      ! q qbar -> Z0 W+- 
-#WeakDoubleBoson:ffbar2WW = on      ! q qbar -> W+ W-
+! WeakDoubleBoson:ffbar2ZW = on      ! q qbar -> Z0 W+- 
+! WeakDoubleBoson:ffbar2WW = on      ! q qbar -> W+ W-
 
 ! 5) Switch on/off the key event generation steps. 
-#PartonLevel:MPI = off              ! no multiparton interactions
-#PartonLevel:ISR = off              ! no initial-state radiation 
-#PartonLevel:FSR = off              ! no final-state radiation
-#HadronLevel:Hadronize = off        ! no hadronization
-#HadronLevel:Decay = off            ! no decays
+! PartonLevel:MPI = off              ! no multiparton interactions
+! PartonLevel:ISR = off              ! no initial-state radiation 
+! PartonLevel:FSR = off              ! no final-state radiation
+! HadronLevel:Hadronize = off        ! no hadronization
+! HadronLevel:Decay = off            ! no decays
 
 ! 6) Other settings. Can be expanded as desired.
 Tune:pp = 6                        ! use Tune 4Cx
-ParticleDecays:limitTau0 = on      ! set long-lived particle stable ...
-ParticleDecays:tau0Max = 10        ! ... if c*tau0 > 10 mm
+! ParticleDecays:limitTau0 = on      ! set long-lived particle stable ...
+! ParticleDecays:tau0Max = 10        ! ... if c*tau0 > 10 mm
 
 ! extra settings for color reconnections and multiple collisions
 
