@@ -28,7 +28,7 @@ HardQCD:all = on                   ! switch on all QCD jet + jet processes
 PromptPhoton:all = on              ! swich on gamma + jet and gamma + gamma 
 PhaseSpace:pTHatMax = 88.        ! minimal pT scale in process 
 PhaseSpace:pTHatMin = 44.          ! minimal pT scale in process 
-! SoftQCD:minBias = on
+#SoftQCD:minBias = on
 
 ! Example 2: t-tbar production.  
 ! Top:gg2ttbar = on                  ! g g -> t tbar
@@ -50,6 +50,9 @@ PhaseSpace:pTHatMin = 44.          ! minimal pT scale in process
 ! HadronLevel:Decay = off            ! no decays
 
 ! 6) Other settings. Can be expanded as desired.
-Tune:pp = 6                        ! use Tune 4Cx
+! Tune:pp = 6                        ! use Tune 4Cx
 ! ParticleDecays:limitTau0 = on      ! set long-lived particle stable ...
 ! ParticleDecays:tau0Max = 10        ! ... if c*tau0 > 10 mm
+
+! SoftQCD:nonDiffractive = on
+
