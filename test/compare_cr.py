@@ -45,8 +45,12 @@ def compare_cr(fname1, fname2, var='jcut.Pt()', bwidth = 5.):
 	tutils.gList.append(hl)
 	tutils.gList.append(hlr)
 
+	hl.write_to_file()
+	hlr.write_to_file()
+
 if __name__ == '__main__':
 	tutils.setup_basic_root()
+
 	#compare_cr('tree-NOcr.root', 'tree-cr.root')
 	compare_cr('tree-NOcr.root', 'tree-cr.root', 'partonf.Pt()', bwidth = 1.)
 	compare_cr('tree-NOcr.root', 'tree-cr.root', 'pfinal.Pt()', bwidth = 0.1)	
