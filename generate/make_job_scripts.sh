@@ -121,14 +121,14 @@ fi
 
 ECM=$1
 [ -z $1 ] && ECM=5000
-nevents=$2
+NEV=$2
 [ -z $2 ] && NEV=1000
 OPT=$3
 [ -z $3 ] && OPT="default"
 
 echo "[i] bin edges: "${pThatBins[@]}
 echo "[i] number of bins: "$((${#pThatBins[@]}-1))
-
+echo "[i] ECM = $ECM NEV = $NEV OPT = $OPT"
 for bin in `seq 0 ${#pThatBins[@]}`
 do
     lobin=$bin

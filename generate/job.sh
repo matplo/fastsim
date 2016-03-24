@@ -25,7 +25,8 @@ nev=$1
 #done
 
 # this is using the .cmnd file
-time fastsim -nev $nev
+#time fastsim -nev $nev
+time fastsim -nev $nev --femcpar
 
 date
 
