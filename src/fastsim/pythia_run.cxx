@@ -17,6 +17,7 @@ namespace fj = fastjet;
 #include "util.h"
 #include "response.h"
 #include "aliresponse.h"
+#include "emcalresponse.h"
 
 #include <revent/revent.h>
 #include <revent/header.h>
@@ -111,23 +112,29 @@ void pythia_run ( int argc, char *argv[] )
     Response respPartons;
 	respPartons.SetEtaAbsCut(0.9 - jetR);
     respPartons.SetPtCut(0.05);
-    respPartons.SetAcceptStatus(2);
+    respPartons.SetAcceptStatus(Response::kParton);
 
     Response resp;
     resp.SetEtaAbsCut(0.9);
     resp.SetPtCut(0.05);
-    resp.SetAcceptStatus(1);
+    resp.SetAcceptStatus(Response::kFinal);
 
     Response charged;
     charged.SetEtaAbsCut(0.9);
     charged.SetPtCut(0.05);
-    charged.SetAcceptStatus(1);
+    charged.SetAcceptStatus(Response::kFinal);
     charged.SetAcceptChargedNeutral(true, false);
 
     AliResponse alicharged;
     alicharged.SetAcceptChargedNeutral(true, false);
 	alicharged.SetEfficiency(	"$FASTSIM/params/alice/CombinedEfficiencies_centeta_smooth.root", 
 								"ratiocent_MB_true_effi_tmp_CombinedEfficiencies_centeta_smooth");
+
+	EMCalResponse emcal;
+	emcal.SetupFromArgs(argc, argv);
+	EMCalResponse dcal;
+	dcal.SetupForDCal();
+	dcal.SetupFromArgs(argc, argv);
 
     Response jet_resp;
     jet_resp.SetPtCut(0.1);
@@ -178,9 +185,9 @@ void pythia_run ( int argc, char *argv[] )
 		head.fValues.push_back(xsec);
 		revent.FillHeader(&head);
 
-	    respPartons.SetAcceptStatus(2);
+	    respPartons.SetAcceptStatus(Response::kParton);
 		std::vector<TParticle> 		partons       = respPartons(pythia);
-	    respPartons.SetAcceptStatus(3);
+	    respPartons.SetAcceptStatus(Response::kFinalParton);
 		std::vector<TParticle> 		partonsf      = respPartons(pythia);
 		//GenerUtil::dump(partons);
 		//GenerUtil::dump(partonsf);
@@ -196,6 +203,9 @@ void pythia_run ( int argc, char *argv[] )
 		std::vector<TParticle> 		pchargedali   = alicharged(pythia);
 		//std::vector<fj::PseudoJet> 	psjchargedali = Response::convert(pchargedali);
 		std::vector<fj::PseudoJet> 	psjchargedali = Response::convert(pfinal, alicharged);
+
+		std::vector<TParticle>		emcal_parts   = emcal(pythia);
+		std::vector<TParticle>		dcal_parts    = dcal(pythia);
 
 		// run jet finders
 	    FJWrapper w;
@@ -277,6 +287,9 @@ void pythia_run ( int argc, char *argv[] )
     	revent.FillBranch("jchargedcut", 		jchargedcut);
     	revent.FillBranch("jchargedalicut",		jchargedalicut);
     	revent.FillBranch("jchargedfound",		jchargedfound);
+
+    	revent.FillBranch("emcal_parts", 		emcal_parts);
+    	revent.FillBranch("dcal_parts", 		dcal_parts);
 
 		revent.FinishEvent();
 

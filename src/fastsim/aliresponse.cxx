@@ -36,7 +36,7 @@ bool AliResponse::Efficiency(const TParticle &p) const
 	return false;
 }
 
-bool AliResponse::Accept(const TParticle &p) const
+bool AliResponse::Transform(TParticle &p) const
 {
-	return Response::Accept(p) && Efficiency(p);
+	return Efficiency(p);
 }

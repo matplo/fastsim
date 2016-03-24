@@ -10,7 +10,7 @@ public:
 	AliResponse();
 	virtual ~AliResponse();
 
-	virtual bool Accept(const TParticle &p) const;
+	virtual bool Transform(TParticle &p) const;
 	virtual bool Efficiency(const TParticle &p) const;
 
 	virtual void SetEfficiency(const char *fname, const char *hname);

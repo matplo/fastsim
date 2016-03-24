@@ -12,11 +12,13 @@ Response::Response()
 	: fStorage(new Wrapper)
 	, fEtaMin(-20.)
 	, fEtaMax(20.)
+	, fPhiMin(-20.)
+	, fPhiMax(20.)
 	, fPtMin(1e-3)
 	, fPtMax(std::numeric_limits<double>::max())
 	, fChargedParticles(true)
 	, fNeutralParticles(true)
-	, fStatusFlag(-1)
+	, fStatusFlag(kAny)
 	, fPythia(0x0)
 	, fPythiaStack()
 {
@@ -28,14 +30,36 @@ Response::~Response()
 	delete fStorage;
 }
 
+bool Response::IsInAcceptance(const TParticle &p) const
+{
+	return AcceptEta(p) && AcceptPhi(p);
+}
+
 bool Response::AcceptEta(const TParticle &p) const
 {
 	return (p.Eta() > fEtaMin) && (p.Eta() < fEtaMax);
 }
 
+bool Response::AcceptPhi(const TParticle &p) const
+{
+	return (p.Phi() > fPhiMin) && (p.Phi() < fPhiMax);
+}
+
 bool Response::AcceptPt(const TParticle &p) const
 {
 	return (p.Pt() > fPtMin) && (p.Pt() < fPtMax);
+}
+
+bool Response::IsCharged(const TParticle &p) const
+{
+	TParticlePDG *pdg = p.GetPDG ( 1 );
+	if ( pdg == 0x0 )
+	{
+		// by default reject unknown particles
+		return false;
+	}
+	Double_t ch          = pdg->Charge();
+	return !(ch == 0);	
 }
 
 bool Response::AcceptCharge(const TParticle &p) const
@@ -56,6 +80,22 @@ bool Response::AcceptCharge(const TParticle &p) const
 		return true;
 	}	
 	return false;
+}
+
+bool Response::IsVisible(const TParticle &p) const
+{
+	if (p.GetStatusCode() != 1)
+		{
+			return false;
+		}
+	if (IsCharged(p) == false)
+	{
+		if (p.GetMass() > 0)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 bool Response::IsGluon(const TParticle &p) const
@@ -119,9 +159,9 @@ bool Response::IsFinalBranchParton(const TParticle &p) const
 
 bool Response::AcceptStatus(const TParticle &p) const
 {
-	if (fStatusFlag == -1)
+	if (fStatusFlag == kAny)
 		return true;
-	if (fStatusFlag == 2)
+	if (fStatusFlag == kParton)
 	{
 		if (IsParton(p))
 			return true;
@@ -130,21 +170,27 @@ bool Response::AcceptStatus(const TParticle &p) const
 			return true;
 		return false;
 	}
-	if (fStatusFlag == 3)
+	if (fStatusFlag == kFinalParton)
 	{
 		return IsFinalBranchParton(p);
 	}
-	return (p.GetStatusCode() == fStatusFlag);
+	if (fStatusFlag == kFinal)
+	{
+		return (p.GetStatusCode() == 1);
+	}
+	if (fStatusFlag == kFinalVisible)
+	{
+		return IsVisible(p);
+	}
+	return false;
 }
 
-bool Response::Accept(const TParticle &p) const
+bool Response::Accept(TParticle &p) const
 {
-	return AcceptEta(p) && AcceptPt(p) && AcceptCharge(p) && AcceptStatus(p);
-}
-
-bool Response::operator () (const TParticle &p)
-{
-	return Accept(p);
+	if (Transform(p))
+		return IsInAcceptance(p) && AcceptPt(p) && AcceptCharge(p) && AcceptStatus(p);
+	else
+		return false;
 }
 
 bool Response::operator () (const fastjet::PseudoJet &pj)
@@ -160,8 +206,9 @@ std::vector<TParticle> Response::operator () (const std::vector<TParticle> &v)
 	std::vector<TParticle> ret;
 	for (unsigned int i = 0; i < v.size(); i++)
 	{
-		if (Accept(v[i]))
-			ret.push_back(v[i]);
+		TParticle p(v[i]);
+		if (Accept(p))
+			ret.push_back(p);
 	}
 	return ret;
 }
@@ -195,6 +242,11 @@ std::vector<TParticle> Response::operator () (const Pythia8::Pythia &py)
 	fPythiaStack.clear();
 	for (int i = 0; i < event.size(); ++i)
 		{
+			//if (fStatusFlag == kFinalVisible)
+			//{
+			//	if (!event[i].isVisible())
+			//		continue;
+			//}
 			TParticle p(
 						event[i].id(),
 						event[i].isFinal(),
@@ -239,11 +291,12 @@ std::vector<fastjet::PseudoJet> Response::convert(const std::vector<TParticle> &
 	std::vector<fastjet::PseudoJet> ret;		
 	for (unsigned int i = 0; i < v.size(); i++)
 	{
-		if (resp.Accept(v[i]))
+		TParticle p(v[i]);
+		if (resp.Accept(p))
 		{
-			fastjet::PseudoJet p(v[i].Px(), v[i].Py(), v[i].Pz(), v[i].Energy());
-			p.set_user_index(i);
-			ret.push_back(p);
+			fastjet::PseudoJet psj(v[i].Px(), v[i].Py(), v[i].Pz(), v[i].Energy());
+			psj.set_user_index(i);
+			ret.push_back(psj);
 		}
 	}
 	return ret;
