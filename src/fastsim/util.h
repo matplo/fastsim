@@ -11,6 +11,7 @@ class TH2I;
 class TF1;
 class TRandom;
 class TLorentzVector;
+class TTree;
 #include <TString.h>
 
 #include <Pythia8/Pythia.h>
@@ -20,6 +21,9 @@ namespace py = Pythia8;
 //#include <fastjet/PseudoJet.hh>
 #include <Pythia8Plugins/FastJet3.h>
 
+#include <TriggerMaker.h>
+#include <TriggerMappingEmcalSimple.h>
+
 namespace SysUtil
 {
 bool 		isSet(const char *what, int argc, char **argv);
@@ -27,7 +31,7 @@ const char *getArg(const char *what, int argc, char **argv);
 double 		getArgD(const char *what, int argc, char **argv, double defret);
 };
 
-class AliGenFastModelingEvent;
+//class AliGenFastModelingEvent;
 
 namespace GenerUtil
 {
@@ -75,6 +79,37 @@ namespace GenerUtil
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Particle &part);
 	void add_py8particle_to_TParticle_vector(std::vector<TParticle> &v, py::Pythia *py, int i);
 	std::vector<TParticle> py8_event_to_vector(py::Pythia *py, bool final = false);
+};
+
+namespace EMCalTriggerUtil
+{
+	struct TriggerInfo
+	{
+		Double_t maxjECAL, maxjDCAL, maxjECAL8x8, maxjDCAL8x8, maxgECAL, maxgDCAL;
+		Double_t medjECAL, medjDCAL, medjECAL8x8, medjDCAL8x8, medgECAL, medgDCAL;
+	};
+
+	class EMCTrigger
+	{
+	public:
+		EMCTrigger();
+		virtual ~EMCTrigger();
+		void AddParticles(const std::vector<TParticle> &v);
+		void ProcessEvent();
+		// to be implemented: take the whole event; apply EMCalParamResponse...
+		// void Process(const Pythia8::Pythia &py);
+		void FillBranch(TTree *t, const char *bname);
+		void Reset();
+
+		const TriggerMaker * GetTM() {return &fTM;}
+		const TriggerInfo * GetInfo() {return &fInfo;}
+
+	private:
+		TriggerSetup fSetup;
+		TriggerMaker fTM;
+		TriggerInfo  fInfo;
+	};
+
 };
 
 #endif // GENERUTIL_HH

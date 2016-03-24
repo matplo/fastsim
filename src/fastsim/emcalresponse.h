@@ -16,6 +16,9 @@ public:
 	virtual void SetupForEMCal();
 	virtual void SetupForDCal();
 
+	virtual void SetupForEMCalJet(double R);
+	virtual void SetupForDCalJet(double R);
+
 	virtual bool SetupFromArgs(int argc, char *argv[]);
 
 	virtual double EMCalEnergy(const TParticle &p) const;

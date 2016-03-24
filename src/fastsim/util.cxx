@@ -8,6 +8,7 @@
 #include <TSystem.h>
 #include <TH2I.h>
 #include <TFile.h>
+#include <TTree.h>
 
 namespace fj = fastjet;
 
@@ -535,4 +536,75 @@ void pythia_fj_record::fill_event(const py::Pythia &pythia, double etamax /*= 10
 			}
 		return v;
 	};
+};
+
+namespace EMCalTriggerUtil
+{
+	EMCTrigger::EMCTrigger()
+	: fSetup()
+	, fTM()
+	, fInfo()
+	{
+		fSetup.SetThresholds(0., 0., 0., 0.);
+		fSetup.SetTriggerBitConfig(TriggerBitConfigNew());
+		fTM.SetTriggerSetup(fSetup);
+	}
+
+	EMCTrigger::~EMCTrigger()
+	{
+		;
+	}
+
+	void EMCTrigger::Reset()
+	{
+		fTM.Reset();
+		fInfo.maxjECAL    = -1;
+		fInfo.maxjDCAL    = -1;
+		fInfo.maxjECAL8x8 = -1;
+		fInfo.maxjDCAL8x8 = -1;
+		fInfo.maxgECAL    = -1;
+		fInfo.maxgDCAL    = -1;
+		fInfo.medjECAL    = -1;
+		fInfo.medjDCAL    = -1;
+		fInfo.medjECAL8x8 = -1;
+		fInfo.medjDCAL8x8 = -1;
+		fInfo.medgECAL    = -1;
+		fInfo.medgDCAL    = -1;
+	}
+
+	void EMCTrigger::AddParticles(const std::vector<TParticle> &v)
+	{
+		for (unsigned int i = 0; i < v.size(); i++)
+			fTM.FillChannelMap(v[i].Eta(), v[i].Phi(), v[i].Energy());
+	}
+
+	void EMCTrigger::ProcessEvent()
+	{
+		fTM.FindPatches();
+	}
+
+	void EMCTrigger::FillBranch(TTree *t, const char *bname)
+	{
+		TBranch *b = t->GetBranch(bname);
+		if (b == 0)
+		{
+			b = t->Branch(bname, &fInfo.maxjECAL, "maxjECAL/D:maxjDCAL/D:maxjECAL8x8/D:maxjDCAL8x8/D:maxgECAL/D:maxgDCAL/D:medjECAL/D:medjDCAL/D:medjECAL8x8/D:medjDCAL8x8/D:medgECAL/D:medgDCAL/D");
+		}
+
+		b->SetAddress(&fInfo.maxjECAL);
+		fInfo.maxjECAL    = fTM.GetMaxJetEMCAL().GetADC();
+		fInfo.maxjDCAL    = fTM.GetMaxJetDCALPHOS().GetADC();
+		fInfo.maxjECAL8x8 = fTM.GetMaxJetEMCAL8x8().GetADC();
+		fInfo.maxjDCAL8x8 = fTM.GetMaxJetDCALPHOS8x8().GetADC();
+		fInfo.maxgECAL    = fTM.GetMaxGammaEMCAL().GetADC();
+		fInfo.maxgDCAL    = fTM.GetMaxGammaDCALPHOS().GetADC();
+
+		fInfo.medjECAL    = fTM.GetMedianJetEMCAL();
+		fInfo.medjDCAL    = fTM.GetMedianJetDCALPHOS();
+		fInfo.medjECAL8x8 = fTM.GetMedianJetEMCAL8x8();  		// NOTE: median is calculated based on 8x8 FOR not 16x16
+		fInfo.medjDCAL8x8 = fTM.GetMedianJetDCALPHOS8x8();		// NOTE: median is calculated based on 8x8 FOR not 16x16
+		fInfo.medgECAL    = fTM.GetMedianGammaEMCAL();
+		fInfo.medgDCAL    = fTM.GetMedianGammaDCALPHOS();
+		b->Fill();		
+	}
 };

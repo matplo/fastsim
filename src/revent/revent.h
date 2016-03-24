@@ -29,6 +29,8 @@ public:
 
 	void SetPythia(Pythia8::Pythia *p);
 
+	TTree *GetTree() {return tree;}
+
 	static void LoadLibs();
 
 private:

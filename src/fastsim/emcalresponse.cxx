@@ -35,6 +35,20 @@ void EMCalResponse::SetupForDCal()
 	SetPhiCut(4.55, 5.7);
 }
 
+void EMCalResponse::SetupForEMCalJet(double R)
+{
+	SetEtaAbsCut(0.7 - R);
+	SetPhiCut(1.4 + R, 3.267 - R);
+	SetAcceptStatus(kAny); 
+}
+
+void EMCalResponse::SetupForDCalJet(double R)
+{
+	SetEtaAbsCut(0.7 - R);
+	SetPhiCut(4.55 + R, 5.7 - R);
+	SetAcceptStatus(kAny); 
+}
+
 EMCalResponse::~EMCalResponse()
 {
 	;
@@ -46,11 +60,11 @@ bool EMCalResponse::Transform(TParticle &p) const
 	if (IsInAcceptance(p) && AcceptStatus(p))
 	{
 		//do PID transform
-		cout << "[d] particle:" << p.GetName() << " p = " << p.P() << " E = " << p.Energy();
+		//cout << "[d] particle:" << p.GetName() << " p = " << p.P() << " E = " << p.Energy();
 		double emcE = EMCalEnergy(p);
-		cout << " new E = " << emcE;
+		//cout << " new E = " << emcE;
 		p.SetMomentum(p.Px() / p.P() * emcE, p.Py() / p.P() * emcE, p.Pz() / p.P() * emcE, emcE);
-		cout << " after transform p = " << p.P() << " E = " << p.Energy() << endl;
+		//cout << " after transform p = " << p.P() << " E = " << p.Energy() << endl;
 	}
 	else
 	{
@@ -119,7 +133,6 @@ double EMCalResponse::EMCalEnergy(const TParticle &p) const
 				//cout << " old E = " << p.Energy() << endl;
 				//cout << endl;
 				emc = p.Energy(); // kill fluctuations beyond inc. particle energy
-
 			}
 		}
 		else

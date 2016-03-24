@@ -135,6 +135,16 @@ void pythia_run ( int argc, char *argv[] )
 	EMCalResponse dcal;
 	dcal.SetupForDCal();
 	dcal.SetupFromArgs(argc, argv);
+	EMCalTriggerUtil::EMCTrigger emcT;
+
+	EMCalResponse emcalf1;
+	EMCalTriggerUtil::EMCTrigger emcTf1;
+
+	EMCalResponse emcal_jet;
+	emcal_jet.SetupForEMCalJet(jetR);
+
+	EMCalResponse dcal_jet;
+	dcal_jet.SetupForDCalJet(jetR);
 
     Response jet_resp;
     jet_resp.SetPtCut(0.1);
@@ -207,6 +217,19 @@ void pythia_run ( int argc, char *argv[] )
 		std::vector<TParticle>		emcal_parts   = emcal(pythia);
 		std::vector<TParticle>		dcal_parts    = dcal(pythia);
 
+		std::vector<TParticle>		emcal_partsf1  = emcalf1(pythia);
+
+		emcT.Reset();
+		emcT.AddParticles(emcal_parts);
+		emcT.AddParticles(dcal_parts);
+		emcT.ProcessEvent();
+		emcT.FillBranch(revent.GetTree(), "trig");
+
+		emcTf1.Reset();
+		emcTf1.AddParticles(emcal_partsf1);
+		emcTf1.ProcessEvent();
+		emcTf1.FillBranch(revent.GetTree(), "trigf1");
+
 		// run jet finders
 	    FJWrapper w;
 
@@ -219,11 +242,13 @@ void pythia_run ( int argc, char *argv[] )
 	    Wrapper *jf = w.run( psjfinal, jetR );
 		std::vector<fj::PseudoJet> j    			= fj::sorted_by_pt(jf->get<fj::ClusterSequence>()->inclusive_jets());
 		std::vector<fj::PseudoJet> jcut 			= jet_resp(j);
+		std::vector<fj::PseudoJet> jemc 			= emcal_jet(j);
 
 	    // first on charged particles
 	    Wrapper *jfch = w.run( psjcharged, jetR );
 		std::vector<fj::PseudoJet> jcharged    		= fj::sorted_by_pt(jfch->get<fj::ClusterSequence>()->inclusive_jets());
 		std::vector<fj::PseudoJet> jchargedcut 		= jet_resp(jcharged);
+		std::vector<fj::PseudoJet> jchargedemc 		= emcal_jet(jcharged);
 
 		// charged particles with ALICE cuts
 	    Wrapper *jfalich = w.run( psjchargedali, jetR );
@@ -289,7 +314,12 @@ void pythia_run ( int argc, char *argv[] )
     	revent.FillBranch("jchargedfound",		jchargedfound);
 
     	revent.FillBranch("emcal_parts", 		emcal_parts);
+    	revent.FillBranch("emcal_partsf1", 		emcal_partsf1);
     	revent.FillBranch("dcal_parts", 		dcal_parts);
+
+    	revent.FillBranch("jemc",		 		jemc);
+    	revent.FillBranch("jchargedemc",		jchargedemc);
+
 
 		revent.FinishEvent();
 

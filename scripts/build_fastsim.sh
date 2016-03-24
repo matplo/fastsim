@@ -32,7 +32,7 @@ if [ -d $FASTSIM ]; then
 #  for pack in AliGenFME/src src
 #  for pack in wrapper/src rutil/src src
 #  for pack in rutil/src src
-  for pack in src
+  for pack in EmcalTriggerFast src 
   do
     bdir=$FASTSIM/.build/$pack
     if is_arg_set "realclean" ;
