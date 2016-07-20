@@ -1,0 +1,4 @@
+#figure
+#geom 500x500
+#title: c-pp-2.75.txt.root.draw
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll/c-pp-2.75.txt.root 		:graph___c_pp_2_75_txt :p : title=c-quark FONLL

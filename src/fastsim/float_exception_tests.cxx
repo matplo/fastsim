@@ -64,10 +64,11 @@ namespace ExceptionTests
 		int zero = 0;
 		cout << "    -> trying division by int zero.." << endl;
 		int trouble = zero/zero;
-		cout << "    -> trying zero x 1.e350 .." << endl;
-		double what = trouble * 1.e350;
+		cout << "    -> trying zero x 1.e308 .." << endl;
+		double what = trouble * 1.e308;
 		cout << "[i] trouble is: " << trouble << " what is: " << 0/what << endl;
 
+		#warning Next warning is ok
 		int modulo = 10 % 0;
 
 		printf("[end] Succeeded! dirty=%lf, nanval=%lf\n",dirty,nanval);
