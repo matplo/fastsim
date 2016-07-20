@@ -1,0 +1,8 @@
+#figure
+#geom 500x500
+#title: fonll-charm-2760.root.draw
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll-charm-2760.root 		:qpt :l : title=qpt
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll-charm-2760.root 		:qptw :l : title=qptw
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll-charm-2760.root 		:input :l : title=c-quark FONLL
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll-charm-2760.root 		:tne :p : title=tne
+/Users/ploskon/devel/sandbox/fastsim/hfgun/fonll-charm-2760.root 		:tnh :p : title=tnh

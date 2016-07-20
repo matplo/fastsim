@@ -8,7 +8,7 @@ using namespace Pythia8;
 #include <TNtuple.h>
 #include <TFile.h>
 
-enum {kin, kqpt, ktne, ktnh};
+enum {kin, kqpt, kqptw, ktne, ktnh};
 
 ClassImp(HFGun)
 
@@ -27,8 +27,10 @@ void HFGun::InitOutput()
 {
 	PGun::InitOutput();
 	fOutput->Add(fSpectrum->Clone("input"));
-	TH1F *h = new TH1F("qpt", "qpt", 100, 0, 100);
+	TH1F *h = new TH1F("qpt", "qpt", 200, 0, 400);
 	fOutput->Add(h);
+	TH1F *hw = new TH1F("qptw", "qptw", 200, 0, 400);
+	fOutput->Add(hw);
 	fOutputFile->cd();
 	TNtuple *tne = new TNtuple("tne", "tne", "qpt:qid:hpt:hy:hid:ept:ey:eid:w");
 	tne->SetDirectory(fOutputFile);
@@ -68,6 +70,7 @@ void HFGun::FillOutput()
 		{
 			pIndex = i;
 			Out1D(kqpt)->Fill(event[i].pT());
+			Out1D(kqptw)->Fill(event[i].pT(), fWeight);
 			parton = event[i];
 			if (fDebug) PrintParticle(pIndex);
 			vector<int> decayH  = FollowDaughters(pIndex, hadronIDmin, hadronIDmax, !fDebug);

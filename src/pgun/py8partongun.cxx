@@ -169,10 +169,10 @@ int PGun::Generate(int nEvent)
 			//Int_t ib     = fSpectrum->FindBin(qKine);
 			double qKine = fSpectrum->GetBinLowEdge(ib) + fSpectrum->GetBinWidth(ib) * gRandom->Rndm();
 			//double qKine = fSpectrum->GetBinCenter(ib);
-			//double e   = TMath::Sqrt(qKine * qKine + partonMass * partonMass);
-			//double thr = partonMass * 2.;
-			//if (e < thr)
-			//	continue;
+			double e   = TMath::Sqrt(qKine * qKine + partonMass * partonMass);
+			double thr = partonMass * 1.5;
+			if (e < thr)
+				continue;
 			fWeight      = fSpectrum->GetBinContent(ib)/nEvent; //fSpectrum->GetBinContent(ib) / inputIntegral;
 
 			FillPartons(qKine);
