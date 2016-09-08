@@ -1,0 +1,10 @@
+#-----------------------
+#figure
+#geom 500x500
+#title: params/alice/CombinedEfficiencies_centeta_smooth.root.draw
+#legend 0.63, 0.4, 0.84, 0.6
+/Users/ploskon/devel/sandbox/fastsim/params/alice/CombinedEfficiencies_centeta_smooth.root 		:ratiocent_MB_true_CombinedEfficiencies_centeta_smooth :p : title=default
+/Users/ploskon/devel/sandbox/fastsim/params/alice/CombinedEfficiencies_centeta_smooth.root 		:ratiocent_MB_true_effi_tmp_CombinedEfficiencies_centeta_smooth :p : title=smoothed ntimes=1
+#/Users/ploskon/devel/sandbox/fastsim/params/alice/CombinedEfficiencies_centeta_smooth.root 		:ratiocent_MB_true_effi_tmp_CombinedEfficiencies_centeta_smooth_1 :p : title=smoothed ntimes=3
+#/Users/ploskon/devel/sandbox/fastsim/params/alice/CombinedEfficiencies_centeta_smooth.root 		:ratiocent_MB_true_effi_tmp_CombinedEfficiencies_centeta_smooth_2 :p : title=smoothed ntimes=5
+
